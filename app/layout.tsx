@@ -36,14 +36,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <CartProvider>
-            <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-white" />}>
+          <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-white" />}>
+            <CartProvider>
               <Navbar />
-            </Suspense>
-            <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              {children}
-            </main>
-          </CartProvider>
+              <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {children}
+              </main>
+            </CartProvider>
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>
