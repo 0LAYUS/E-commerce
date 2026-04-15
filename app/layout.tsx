@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { Suspense } from "react";
+import Navbar from "@/components/layout/Navbar";
+import { CartProvider } from "@/components/providers/CartProvider";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -9,8 +12,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Wompi E-commerce",
+  description: "Tienda online básica con Next.js y Wompi",
 };
 
 const geistSans = Geist({
@@ -25,15 +28,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
+    <html lang="es" suppressHydrationWarning>
+      <body className={`${geistSans.className} antialiased min-h-screen bg-gray-50 flex flex-col`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <CartProvider>
+            <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-white" />}>
+              <Navbar />
+            </Suspense>
+            <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              {children}
+            </main>
+          </CartProvider>
         </ThemeProvider>
       </body>
     </html>
