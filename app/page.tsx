@@ -6,9 +6,22 @@ async function ProductsDataLoader() {
   const supabase = await createClient();
 
   const { data: categories } = await supabase.from('categories').select('*');
-  const { data: products } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+  const { data: products } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending: false });
 
-  return <ProductList initialProducts={products || []} categories={categories || []} />;
+  // Get which products have variants
+  const { data: optionTypes } = await supabase
+    .from('product_option_types')
+    .select('product_id')
+
+  const productsWithVariants = new Set(optionTypes?.map(o => o.product_id) || []);
+
+  // Add hasVariants flag to each product
+  const productsWithVariantInfo = products?.map(p => ({
+    ...p,
+    hasVariants: productsWithVariants.has(p.id)
+  })) || [];
+
+  return <ProductList initialProducts={productsWithVariantInfo} categories={categories || []} />;
 }
 
 export default function Index() {

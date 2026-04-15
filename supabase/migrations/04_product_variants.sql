@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS public.product_skus (
   sku_code TEXT NOT NULL UNIQUE,
   price_override INTEGER,  -- NULL means use product base price, otherwise this price
   stock INTEGER NOT NULL DEFAULT 0,
+  active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

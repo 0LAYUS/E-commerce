@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useCart } from "@/components/providers/CartProvider"
 import { CheckCircle } from "lucide-react"
 
@@ -12,6 +13,7 @@ type Product = {
   price: number
   category_id: string
   image_url: string
+  hasVariants?: boolean
 }
 
 type Category = {
@@ -20,6 +22,7 @@ type Category = {
 }
 
 export default function ProductList({ initialProducts, categories }: { initialProducts: Product[], categories: Category[] }) {
+  const router = useRouter()
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL")
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [toastMessage, setToastMessage] = useState<string | null>(null)
@@ -41,6 +44,10 @@ export default function ProductList({ initialProducts, categories }: { initialPr
   }, [toastMessage])
 
   const handleAddToCart = (product: Product) => {
+    if (product.hasVariants) {
+      router.push(`/products/${product.id}`)
+      return
+    }
     addItem({
       id: product.id,
       product_id: product.id,
@@ -113,9 +120,13 @@ export default function ProductList({ initialProducts, categories }: { initialPr
                 </span>
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    product.hasVariants
+                      ? "bg-secondary text-secondary-foreground hover:bg-accent"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  }`}
                 >
-                  Agregar
+                  {product.hasVariants ? "Ver opciones" : "Agregar"}
                 </button>
               </div>
             </div>

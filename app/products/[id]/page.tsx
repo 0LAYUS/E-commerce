@@ -2,8 +2,9 @@ import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
-import { getProductWithVariants } from "@/lib/actions/variantActions"
+import { getProductOptions, getProductVariants } from "@/lib/actions/productActions"
 import ProductVariantSelector from "@/components/product/ProductVariantSelector"
+import AddToCartSimple from "@/components/product/AddToCartSimple"
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -17,23 +18,28 @@ export default async function ProductDetailPage({ params }: PageProps) {
     .from("products")
     .select("*, categories(name)")
     .eq("id", id)
+    .eq("active", true)
     .single()
 
   if (!product) {
     notFound()
   }
 
-  const productWithVariants = await getProductWithVariants(id)
+  const [options, skus] = await Promise.all([
+    getProductOptions(id),
+    getProductVariants(id),
+  ])
 
   const { data: relatedProducts } = await supabase
     .from("products")
     .select("id, name, price, image_url")
     .eq("category_id", product.category_id)
+    .eq("active", true)
     .neq("id", id)
     .limit(4)
 
   const basePrice = product.price
-  const hasVariants = productWithVariants && productWithVariants.options.length > 0
+  const hasVariants = options.length > 0
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -88,9 +94,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
           {hasVariants && (
             <div className="mb-8">
               <ProductVariantSelector
-                options={productWithVariants.options}
-                skus={productWithVariants.skus}
+                options={options}
+                skus={skus}
                 basePrice={basePrice}
+                productId={product.id}
+                productName={product.name}
               />
             </div>
           )}
@@ -98,7 +106,14 @@ export default async function ProductDetailPage({ params }: PageProps) {
           {!hasVariants && (
             <div className="mb-8">
               <div className="text-sm text-muted-foreground mb-2">Stock disponible</div>
-              <div className="text-2xl font-bold text-foreground">{product.stock} unidades</div>
+              <div className="text-2xl font-bold text-foreground mb-4">{product.stock} unidades</div>
+              <AddToCartSimple
+                productId={product.id}
+                productName={product.name}
+                price={product.price}
+                imageUrl={product.image_url}
+                stock={product.stock}
+              />
             </div>
           )}
         </div>

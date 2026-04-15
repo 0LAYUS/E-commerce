@@ -8,6 +8,7 @@ type OrderItem = {
   variant_id?: string
   quantity: number
   price: number
+  name?: string
 }
 
 export async function validateStock(items: OrderItem[]): Promise<{ valid: boolean; insufficient: string[] }> {
@@ -59,9 +60,16 @@ export async function createOrder(
 
   if (!user) throw new Error("Debes iniciar sesión para comprar")
 
-  const stockCheck = await validateStock(items)
-  if (!stockCheck.valid) {
-    throw new Error("Algunos productos no tienen stock suficiente")
+  // Reserve stock atomically (check + decrement in one operation to avoid race conditions)
+  for (const item of items) {
+    const { data: reserved } = await supabase.rpc("reserve_stock", {
+      p_sku_id: item.variant_id || null,
+      p_product_id: item.product_id,
+      p_quantity: item.quantity,
+    })
+    if (!reserved) {
+      throw new Error("Stock insuficiente para: " + item.name)
+    }
   }
 
   const { data: order, error } = await supabase.from("orders")

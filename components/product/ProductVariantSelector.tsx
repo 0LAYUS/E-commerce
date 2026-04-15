@@ -1,19 +1,34 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import type { OptionType, SKU } from "@/lib/actions/variantActions"
+import { useState, useEffect, useMemo } from "react"
 import { useCart } from "@/components/providers/CartProvider"
 
+type OptionDef = { name: string; values: string[] }
+
+type SKU = {
+  id: string
+  product_id: string
+  sku_code: string
+  price_override: number | null
+  stock: number
+  active: boolean
+  option_values: string[]
+}
+
 type ProductVariantSelectorProps = {
-  options: OptionType[]
+  options: OptionDef[]
   skus: SKU[]
   basePrice: number
+  productId: string
+  productName: string
 }
 
 export default function ProductVariantSelector({
   options,
   skus,
   basePrice,
+  productId,
+  productName,
 }: ProductVariantSelectorProps) {
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
   const [selectedSku, setSelectedSku] = useState<SKU | null>(null)
@@ -21,22 +36,34 @@ export default function ProductVariantSelector({
   const [currentStock, setCurrentStock] = useState(0)
   const { addItem } = useCart()
 
+  const activeSkus = useMemo(() => skus.filter(sku => sku.active), [skus])
+  const availableOptions = useMemo(() => 
+    options.map(opt => ({
+      ...opt,
+      values: opt.values.filter(val => 
+        activeSkus.some(sku => sku.option_values.includes(val))
+      )
+    })).filter(opt => opt.values.length > 0),
+  [options, activeSkus])
+
+  // Initialize with first value of each option (from available options)
   useEffect(() => {
-    if (options.length === 0) return
+    if (availableOptions.length === 0) return
 
     const initial: Record<string, string> = {}
-    options.forEach((opt) => {
+    availableOptions.forEach((opt) => {
       if (opt.values.length > 0) {
-        initial[opt.name] = opt.values[0].value
+        initial[opt.name] = opt.values[0]
       }
     })
     setSelectedOptions(initial)
-  }, [options])
+  }, [availableOptions])
 
+  // Find matching SKU when selection changes (only active SKUs)
   useEffect(() => {
-    if (skus.length === 0 || Object.keys(selectedOptions).length === 0) return
+    if (activeSkus.length === 0 || Object.keys(selectedOptions).length === 0) return
 
-    const matchedSku = skus.find((sku) => {
+    const matchedSku = activeSkus.find((sku) => {
       return sku.option_values.every((val) => {
         return Object.values(selectedOptions).includes(val)
       })
@@ -46,8 +73,11 @@ export default function ProductVariantSelector({
       setSelectedSku(matchedSku)
       setCurrentPrice(matchedSku.price_override ?? basePrice)
       setCurrentStock(matchedSku.stock)
+    } else {
+      setSelectedSku(null)
+      setCurrentStock(0)
     }
-  }, [selectedOptions, skus, basePrice])
+  }, [selectedOptions, activeSkus, basePrice])
 
   const handleOptionChange = (optionName: string, value: string) => {
     setSelectedOptions((prev) => ({
@@ -57,38 +87,49 @@ export default function ProductVariantSelector({
   }
 
   const handleAddToCart = () => {
-    if (currentStock === 0) return
+    if (currentStock === 0 || !selectedSku) return
 
     addItem({
-      id: selectedSku?.id || "",
-      product_id: selectedSku?.product_id || "",
-      name: "",
+      id: productId,
+      product_id: productId,
+      variant_id: selectedSku.id,
+      name: productName,
       price: currentPrice,
+      sku_code: selectedSku.sku_code,
     })
+  }
+
+  if (availableOptions.length === 0) {
+    return (
+      <div className="border-t border-border pt-6">
+        <div className="text-sm text-muted-foreground mb-2">Stock disponible</div>
+        <div className="text-2xl font-bold text-foreground">{basePrice} unidades</div>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
-      {options.map((option) => (
-        <div key={option.id}>
+      {availableOptions.map((option) => (
+        <div key={option.name}>
           <label className="block text-sm font-medium text-foreground mb-3">
             {option.name}
           </label>
           <div className="flex flex-wrap gap-2">
-            {option.values.map((val) => {
-              const isSelected = selectedOptions[option.name] === val.value
+            {option.values.map((value) => {
+              const isSelected = selectedOptions[option.name] === value
               return (
                 <button
-                  key={val.id}
+                  key={value}
                   type="button"
-                  onClick={() => handleOptionChange(option.name, val.value)}
+                  onClick={() => handleOptionChange(option.name, value)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium border transition ${
                     isSelected
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-background text-foreground border-input hover:border-primary"
                   }`}
                 >
-                  {val.value}
+                  {value}
                 </button>
               )
             })}

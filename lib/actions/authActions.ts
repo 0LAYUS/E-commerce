@@ -61,16 +61,28 @@ export async function getAllUsers() {
 
   if (!data) return []
 
-  const usersWithEmail = await Promise.all(
-    data.map(async (profile) => {
-      const { data: authUser } = await supabase
-        .from("auth.users")
-        .select("email")
-        .eq("id", profile.id)
-        .single()
-      return { ...profile, email: authUser?.email || "" }
-    })
-  )
+  // Get emails from auth.users using admin API
+  const adminSupabase = await import("@/lib/supabase/admin").then(m => m.createAdminClient())
+  
+  const { data: authUsers, error: authError } = await adminSupabase.auth.admin.listUsers()
+
+  if (authError) {
+    console.error("Error fetching auth users:", authError)
+    // Return profiles without emails rather than failing
+    return data.map(profile => ({ ...profile, email: "" }))
+  }
+
+  // Create email lookup map
+  const emailMap: Record<string, string> = {}
+  authUsers.users.forEach(user => {
+    emailMap[user.id] = user.email
+  })
+
+  // Merge profiles with emails
+  const usersWithEmail = data.map(profile => ({
+    ...profile,
+    email: emailMap[profile.id] || ""
+  }))
 
   return usersWithEmail
 }
