@@ -1,27 +1,47 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Pencil, Trash2, Plus, Upload, X } from 'lucide-react';
 import { createProduct, updateProduct, deleteProduct } from '@/lib/actions/adminActions';
+import { getProductOptions, getProductSKUs, type OptionType, type SKU } from '@/lib/actions/variantActions';
+import ProductVariants from './ProductVariants';
 
 export default function ProductGrid({ products, categories }: { products: any[], categories: any[] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [productOptions, setProductOptions] = useState<OptionType[]>([]);
+  const [productSKUs, setProductSKUs] = useState<SKU[]>([]);
+  const [loadingVariants, setLoadingVariants] = useState(false);
 
   const openNewModal = () => {
     setEditingProduct(null);
     setPreviewImage(null);
+    setProductOptions([]);
+    setProductSKUs([]);
     setModalOpen(true);
   };
 
-  const openEditModal = (product: any) => {
+  const openEditModal = async (product: any) => {
     setEditingProduct(product);
     setPreviewImage(product.image_url);
+    setLoadingVariants(true);
     setModalOpen(true);
+    
+    try {
+      const [options, skus] = await Promise.all([
+        getProductOptions(product.id),
+        getProductSKUs(product.id),
+      ]);
+      setProductOptions(options);
+      setProductSKUs(skus);
+    } catch (err) {
+      console.error("Error loading variants:", err);
+    } finally {
+      setLoadingVariants(false);
+    }
   };
 
   const closeModal = () => {
@@ -29,6 +49,8 @@ export default function ProductGrid({ products, categories }: { products: any[],
     setTimeout(() => {
       setEditingProduct(null);
       setPreviewImage(null);
+      setProductOptions([]);
+      setProductSKUs([]);
     }, 300);
   };
 
@@ -124,8 +146,8 @@ export default function ProductGrid({ products, categories }: { products: any[],
 
       {/* MODAL OVERLAY */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm transition-opacity">
-          <div className="bg-card rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto border" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-background/80 backdrop-blur-sm transition-opacity overflow-y-auto">
+          <div className="bg-card rounded-2xl shadow-xl w-full max-w-3xl my-8 border" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 bg-card border-b flex justify-between items-center p-6 z-10">
               <h2 className="text-xl font-extrabold text-card-foreground">
                 {editingProduct ? 'Editar Producto' : 'Añadir Nuevo Producto'}
@@ -135,7 +157,7 @@ export default function ProductGrid({ products, categories }: { products: any[],
               </button>
             </div>
             
-            <div className="p-6">
+            <div className="p-6 space-y-6">
               <form action={handleSubmit} className="space-y-5">
                 {editingProduct && <input type="hidden" name="id" value={editingProduct.id} />}
                 
@@ -151,11 +173,11 @@ export default function ProductGrid({ products, categories }: { products: any[],
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-card-foreground mb-1.5">Precio</label>
+                    <label className="block text-sm font-semibold text-card-foreground mb-1.5">Precio base</label>
                     <input type="number" name="price" defaultValue={editingProduct?.price} required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-card-foreground mb-1.5">Stock</label>
+                    <label className="block text-sm font-semibold text-card-foreground mb-1.5">Stock base</label>
                     <input type="number" name="stock" defaultValue={editingProduct?.stock} required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
                   </div>
                 </div>
@@ -169,7 +191,7 @@ export default function ProductGrid({ products, categories }: { products: any[],
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-card-foreground mb-1.5">Imágenes</label>
+                  <label className="block text-sm font-semibold text-card-foreground mb-1.5">Imagen</label>
                   <div className="relative border-2 border-dashed border-input rounded-xl p-8 flex flex-col items-center justify-center bg-muted hover:bg-accent transition group cursor-pointer overflow-hidden">
                     <input 
                       type="file" 
@@ -180,9 +202,9 @@ export default function ProductGrid({ products, categories }: { products: any[],
                     />
                     
                     <Upload className="w-10 h-10 text-muted-foreground group-hover:text-primary transition mb-3" />
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Sube imágenes del producto</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Sube una imagen del producto</p>
                     <button type="button" className="mt-2 px-4 py-2 border border-input rounded-md text-sm font-semibold text-foreground bg-card shadow-sm pointer-events-none">
-                      Seleccionar Imágenes
+                      Seleccionar Imagen
                     </button>
                   </div>
                 </div>
@@ -201,6 +223,23 @@ export default function ProductGrid({ products, categories }: { products: any[],
                   </button>
                 </div>
               </form>
+
+              {editingProduct && (
+                <div className="border-t border-border pt-6">
+                  {loadingVariants ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (
+                    <ProductVariants
+                      productId={editingProduct.id}
+                      productName={editingProduct.name}
+                      initialOptions={productOptions}
+                      initialSKUs={productSKUs}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -18,6 +18,7 @@ export type OptionValue = {
 
 export type SKU = {
   id: string
+  product_id: string
   sku_code: string
   price_override: number | null
   stock: number
@@ -83,6 +84,7 @@ export async function getProductSKUs(productId: string): Promise<SKU[]> {
 
       return {
         id: sku.id,
+        product_id: sku.product_id,
         sku_code: sku.sku_code,
         price_override: sku.price_override,
         stock: sku.stock,

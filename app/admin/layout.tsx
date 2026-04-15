@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Package, Tag, ShoppingBag, LayoutDashboard } from "lucide-react"
+import { Package, Tag, ShoppingBag, LayoutDashboard, Users } from "lucide-react"
 import { LicenseOverlay } from "@/components/license/LicenseOverlay"
 import type { MensajeResponse } from "@/lib/actions/licenseActions"
 import { Suspense } from "react"
@@ -32,6 +32,10 @@ function AdminContent({ children }: { children: React.ReactNode }) {
           <Link href="/admin" className="flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
             <LayoutDashboard className="w-5 h-5"/>
             Dashboard
+          </Link>
+          <Link href="/admin/users" className="flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
+            <Users className="w-5 h-5"/>
+            Usuarios
           </Link>
           <Link href="/admin/categories" className="flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
             <Tag className="w-5 h-5"/>
