@@ -1,10 +1,17 @@
--- Stock Reservations for checkout timeout handling
+-- Stock Reservations - Base Migration
+-- This migration creates the reservation system for temporary stock holds during checkout.
+-- Designed to be reusable across projects.
+
 begin;
+
+-- ============================================
+-- TABLES
+-- ============================================
 
 -- 1. Stock Reservations table
 CREATE TABLE IF NOT EXISTS public.stock_reservations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   cart_hash TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'cancelled', 'expired')),
   expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -21,11 +28,12 @@ CREATE POLICY "Users can update their own pending reservations." ON public.stock
   USING (auth.uid() = user_id AND status = 'pending');
 
 -- 2. Reservation Items table
+-- Generic structure: references product_id (customize table name as needed)
 CREATE TABLE IF NOT EXISTS public.stock_reservation_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   reservation_id UUID REFERENCES public.stock_reservations(id) ON DELETE CASCADE NOT NULL,
-  product_id UUID REFERENCES public.products(id) ON DELETE CASCADE NOT NULL,
-  variant_id UUID REFERENCES public.product_skus(id) ON DELETE SET NULL,
+  product_id UUID NOT NULL,
+  variant_id UUID,
   quantity INTEGER NOT NULL CHECK (quantity > 0),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -39,12 +47,23 @@ CREATE POLICY "Users can view items of their own reservations." ON public.stock_
     AND public.stock_reservations.user_id = auth.uid()
   ));
 
--- 3. Indexes for cleanup queries
+-- ============================================
+-- INDEXES
+-- ============================================
+
 CREATE INDEX IF NOT EXISTS idx_reservations_status ON public.stock_reservations(status);
 CREATE INDEX IF NOT EXISTS idx_reservations_expires_at ON public.stock_reservations(expires_at);
 CREATE INDEX IF NOT EXISTS idx_reservation_items_reservation ON public.stock_reservation_items(reservation_id);
 
--- 4. Function to reserve stock (updates available stock)
+-- ============================================
+-- FUNCTIONS
+-- ============================================
+
+-- 3. Create stock reservation
+-- Parameters:
+--   p_user_id: UUID of the user making the reservation
+--   p_items: JSONB array of items with product_id, variant_id (optional), quantity
+--   p_reservation_minutes: How long the reservation lasts (default 15)
 CREATE OR REPLACE FUNCTION public.create_stock_reservation(
   p_user_id UUID,
   p_items JSONB,
@@ -67,12 +86,10 @@ BEGIN
     AND status = 'pending' 
     AND expires_at > now()
   ) THEN
-    -- Return existing reservation
     SELECT id INTO v_reservation_id 
     FROM public.stock_reservations 
     WHERE user_id = p_user_id AND status = 'pending' AND expires_at > now()
     LIMIT 1;
-    
     RETURN v_reservation_id;
   END IF;
 
@@ -87,11 +104,13 @@ BEGIN
   RETURNING id INTO v_reservation_id;
 
   -- Process each item
+  -- IMPORTANT: Modify the UPDATE statements to match your products/products_variants table structure
   FOR v_item IN SELECT * FROM jsonb_array_elements(p_items)
   LOOP
+    -- Handle variant-specific reservation
+    -- Replace 'product_variants' with your variants table name
     IF (v_item->>'variant_id') IS NOT NULL THEN
-      -- Reserve from SKU
-      UPDATE public.product_skus
+      UPDATE public.product_variants
       SET stock = stock - (v_item->>'quantity')::INTEGER
       WHERE id = (v_item->>'variant_id')::UUID
       AND stock >= (v_item->>'quantity')::INTEGER
@@ -99,11 +118,11 @@ BEGIN
       
       GET DIAGNOSTICS v_reserved = ROW_COUNT;
       
-      -- Insert reservation item
       INSERT INTO public.stock_reservation_items (reservation_id, product_id, variant_id, quantity)
       VALUES (v_reservation_id, (v_item->>'product_id')::UUID, (v_item->>'variant_id')::UUID, (v_item->>'quantity')::INTEGER);
     ELSE
-      -- Reserve from product
+      -- Handle product-only reservation
+      -- Replace 'products' and 'has_active_reservation' with your actual column/table names
       UPDATE public.products
       SET stock = stock - (v_item->>'quantity')::INTEGER
       WHERE id = (v_item->>'product_id')::UUID
@@ -112,7 +131,6 @@ BEGIN
       
       GET DIAGNOSTICS v_reserved = ROW_COUNT;
       
-      -- Insert reservation item
       INSERT INTO public.stock_reservation_items (reservation_id, product_id, variant_id, quantity)
       VALUES (v_reservation_id, (v_item->>'product_id')::UUID, NULL, (v_item->>'quantity')::INTEGER);
     END IF;
@@ -122,7 +140,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 5. Function to confirm reservation (on successful payment)
+-- 4. Confirm reservation (on successful payment)
 CREATE OR REPLACE FUNCTION public.confirm_stock_reservation(p_reservation_id UUID)
 RETURNS BOOLEAN AS $$
 DECLARE
@@ -134,19 +152,18 @@ BEGIN
     RETURN FALSE;
   END IF;
 
-  -- Update reservation status
   UPDATE public.stock_reservations
   SET status = 'confirmed', confirmed_at = now()
   WHERE id = p_reservation_id;
 
-  -- Note: Stock was already decremented when reservation was created
-  -- So nothing else to do here - just mark as confirmed
+  -- Stock was already decremented when reservation was created
+  -- So nothing else to do here
 
   RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 6. Function to cancel reservation (on cancel/timeout)
+-- 5. Cancel reservation (on cancel/timeout/abandonment)
 CREATE OR REPLACE FUNCTION public.cancel_stock_reservation(p_reservation_id UUID)
 RETURNS BOOLEAN AS $$
 DECLARE
@@ -159,20 +176,16 @@ BEGIN
   END IF;
 
   -- Restore stock for each item
+  -- IMPORTANT: Modify the UPDATE statements to match your table structure
   FOR v_item IN SELECT * FROM public.stock_reservation_items WHERE reservation_id = p_reservation_id
   LOOP
     IF v_item.variant_id IS NOT NULL THEN
-      UPDATE public.product_skus
-      SET stock = stock + v_item.quantity
-      WHERE id = v_item.variant_id;
+      UPDATE public.product_variants SET stock = stock + v_item.quantity WHERE id = v_item.variant_id;
     ELSE
-      UPDATE public.products
-      SET stock = stock + v_item.quantity
-      WHERE id = v_item.product_id;
+      UPDATE public.products SET stock = stock + v_item.quantity WHERE id = v_item.product_id;
     END IF;
   END LOOP;
 
-  -- Update reservation status
   UPDATE public.stock_reservations
   SET status = 'cancelled', cancelled_at = now()
   WHERE id = p_reservation_id;
@@ -181,7 +194,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 7. Function to cleanup expired reservations (run by cron)
+-- 6. Cleanup expired reservations (call periodically with cron or on-demand)
 CREATE OR REPLACE FUNCTION public.cleanup_expired_reservations()
 RETURNS INTEGER AS $$
 DECLARE
@@ -191,12 +204,10 @@ DECLARE
   v_count INTEGER := 0;
   v_i INTEGER := 0;
 BEGIN
-  -- Find all expired pending reservations
   SELECT ARRAY_AGG(id) INTO v_expired_reservations
   FROM public.stock_reservations
   WHERE status = 'pending' AND expires_at <= now();
 
-  -- Process each expired reservation
   v_i := 1;
   WHILE v_i <= array_length(v_expired_reservations, 1) LOOP
     v_reservation_id := v_expired_reservations[v_i];
@@ -205,21 +216,13 @@ BEGIN
     FOR v_item IN SELECT * FROM public.stock_reservation_items WHERE reservation_id = v_reservation_id
     LOOP
       IF v_item.variant_id IS NOT NULL THEN
-        UPDATE public.product_skus
-        SET stock = stock + v_item.quantity
-        WHERE id = v_item.variant_id;
+        UPDATE public.product_variants SET stock = stock + v_item.quantity WHERE id = v_item.variant_id;
       ELSE
-        UPDATE public.products
-        SET stock = stock + v_item.quantity
-        WHERE id = v_item.product_id;
+        UPDATE public.products SET stock = stock + v_item.quantity WHERE id = v_item.product_id;
       END IF;
     END LOOP;
 
-    -- Mark as expired
-    UPDATE public.stock_reservations
-    SET status = 'expired'
-    WHERE id = v_reservation_id;
-
+    UPDATE public.stock_reservations SET status = 'expired' WHERE id = v_reservation_id;
     v_count := v_count + 1;
     v_i := v_i + 1;
   END LOOP;
