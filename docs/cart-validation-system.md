@@ -246,13 +246,6 @@ Limpia reservas expiradas. Puede llamarse desde un cron job externo.
 - `supabase/migrations/05_stock_reservations.sql` - tablas + funciones base
 - `supabase/migrations/06_add_reservation_flag.sql` - flag + cleanup por producto
 
-### Migraciones Reutilizables (para otros proyectos)
-En `docs/migrations/`:
-- `00_base_reservation_system.sql` - Sistema base de reservas (genérico)
-- `01_reservation_flag_cleanup.sql` - Flag has_active_reservation y cleanup
-
-Ver comentarios en las migraciones para adaptarlas a tu schema.
-
 ---
 
 ## Notas de Implementación
