@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: stockDecremented } = await adminClient.rpc("decrement_pos_stock", {
-      p_items: items,
+      p_items: itemsJson,
     })
 
     if (!stockDecremented) {

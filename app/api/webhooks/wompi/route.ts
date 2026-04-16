@@ -26,18 +26,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    if (newStatus === "APPROVED") {
+    if (newStatus === "DECLINED") {
       const { data: orderItems } = await supabase.from('order_items').select('*').eq('order_id', orderId);
 
       if (orderItems) {
         for (const item of orderItems) {
           if (item.variant_id) {
-            await supabase.rpc("decrement_sku_stock", {
+            await supabase.rpc("increment_sku_stock", {
               p_sku_id: item.variant_id,
               p_quantity: item.quantity,
             })
           } else {
-            await supabase.rpc("decrement_product_stock", {
+            await supabase.rpc("increment_product_stock", {
               p_product_id: item.product_id,
               p_quantity: item.quantity,
             })

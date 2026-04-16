@@ -141,7 +141,7 @@ export default function CartPOS({
                     <p className="font-bold text-card-foreground">
                       {formatPrice(item.subtotal)}
                     </p>
-                    {(item.bogo_applied || item.discount_pct > 0) && (
+                    {item.discount_pct > 0 && (
                       <p className="text-xs text-muted-foreground line-through">
                         {formatPrice(item.unit_price * item.quantity)}
                       </p>

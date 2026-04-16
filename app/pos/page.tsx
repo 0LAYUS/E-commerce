@@ -45,14 +45,6 @@ type SaleResponse = {
   created_at: string
 }
 
-type BogoOffer = {
-  id: string
-  name: string
-  product_id: string | null
-  variant_id: string | null
-  active: boolean
-}
-
 export default function POSPage() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
@@ -66,7 +58,6 @@ export default function POSPage() {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false)
   const [isReceiptOpen, setIsReceiptOpen] = useState(false)
   const [lastSale, setLastSale] = useState<SaleResponse | null>(null)
-  const [bogoOffers, setBogoOffers] = useState<BogoOffer[]>([])
 
   const loadProducts = useCallback(async (query: string = "", categoryId: string = "") => {
     setIsLoading(true)
@@ -95,54 +86,10 @@ export default function POSPage() {
     }
   }, [])
 
-  const loadBogoOffers = useCallback(async () => {
-    try {
-      const res = await fetch("/api/pos/bogo-offers")
-      const data = await res.json()
-      setBogoOffers(data.offers?.filter((o: BogoOffer) => o.active) || [])
-    } catch (err) {
-      console.error("Error loading BOGO offers:", err)
-    }
-  }, [])
-
-  const checkBogoOffer = useCallback((productId: string, variantId: string | null) => {
-    return bogoOffers.find((offer) => {
-      if (offer.variant_id && variantId) {
-        return offer.variant_id === variantId
-      }
-      if (offer.product_id) {
-        return offer.product_id === productId
-      }
-      return false
-    }) || null
-  }, [bogoOffers])
-
-  const applyBogoDiscount = useCallback((items: CartItem[]): CartItem[] => {
-    return items.map((item) => {
-      const offer = checkBogoOffer(item.product_id, item.variant_id)
-      if (offer && item.quantity >= 2) {
-        const discountedQty = Math.floor(item.quantity / 2)
-        const regularQty = item.quantity - discountedQty
-        const subtotal = (regularQty * item.unit_price) + (discountedQty * item.unit_price * 0.5)
-        return {
-          ...item,
-          subtotal,
-          has_bogo: true,
-          bogo_applied: true,
-        }
-      }
-      if (item.has_bogo && item.bogo_applied) {
-        return { ...item, has_bogo: false, bogo_applied: false }
-      }
-      return item
-    })
-  }, [checkBogoOffer])
-
   useEffect(() => {
     loadProducts()
     loadCategories()
-    loadBogoOffers()
-  }, [loadProducts, loadCategories, loadBogoOffers])
+  }, [loadProducts, loadCategories])
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query)
@@ -161,16 +108,17 @@ export default function POSPage() {
 
     if (existingItem) {
       if (existingItem.quantity < existingItem.stock) {
-        const updatedCart = cart.map((item) =>
-          item.id === existingItem.id
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-                subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
-              }
-            : item
+        setCart((prev) =>
+          prev.map((item) =>
+            item.id === existingItem.id
+              ? {
+                  ...item,
+                  quantity: item.quantity + 1,
+                  subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
+                }
+              : item
+          )
         )
-        setCart(applyBogoDiscount(updatedCart))
       }
     } else {
       const newItem: CartItem = {
@@ -185,25 +133,26 @@ export default function POSPage() {
         subtotal: product.price,
         stock: product.stock,
       }
-      setCart((prev) => applyBogoDiscount([...prev, newItem]))
+      setCart((prev) => [...prev, newItem])
     }
-  }, [cart, applyBogoDiscount])
+  }, [cart])
 
   const handleSelectVariant = useCallback((product: Product, variant: Product["variants"][0]) => {
     const existingItem = cart.find((item) => item.variant_id === variant.id)
 
     if (existingItem) {
       if (existingItem.quantity < variant.stock) {
-        const updatedCart = cart.map((item) =>
-          item.id === existingItem.id
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-                subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
-              }
-            : item
+        setCart((prev) =>
+          prev.map((item) =>
+            item.id === existingItem.id
+              ? {
+                  ...item,
+                  quantity: item.quantity + 1,
+                  subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
+                }
+              : item
+          )
         )
-        setCart(applyBogoDiscount(updatedCart))
       }
     } else {
       const price = variant.price_override || product.price
@@ -219,22 +168,23 @@ export default function POSPage() {
         subtotal: price,
         stock: variant.stock,
       }
-      setCart((prev) => applyBogoDiscount([...prev, newItem]))
+      setCart((prev) => [...prev, newItem])
     }
-  }, [cart, applyBogoDiscount])
+  }, [cart])
 
   const handleUpdateQuantity = useCallback((id: string, quantity: number) => {
-    const updatedCart = cart.map((item) =>
-      item.id === id
-        ? {
-            ...item,
-            quantity,
-            subtotal: quantity * item.unit_price * (1 - item.discount_pct / 100),
-          }
-        : item
+    setCart((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              quantity,
+              subtotal: quantity * item.unit_price * (1 - item.discount_pct / 100),
+            }
+          : item
+      )
     )
-    setCart(applyBogoDiscount(updatedCart))
-  }, [cart, applyBogoDiscount])
+  }, [])
 
   const handleRemoveItem = useCallback((id: string) => {
     setCart((prev) => prev.filter((item) => item.id !== id))
@@ -242,6 +192,13 @@ export default function POSPage() {
 
   const handleApplyDiscount = useCallback((discount: number) => {
     setDiscountPct(discount)
+    setCart((prev) =>
+      prev.map((item) => ({
+        ...item,
+        discount_pct: discount,
+        subtotal: item.quantity * item.unit_price * (1 - discount / 100),
+      }))
+    )
   }, [])
 
   const handleClearCart = useCallback(() => {
@@ -250,7 +207,7 @@ export default function POSPage() {
     setDiscountPct(0)
   }, [])
 
-  const subtotal = cart.reduce((sum, item) => sum + item.subtotal, 0)
+  const subtotal = cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0)
   const discountAmount = subtotal * (discountPct / 100)
   const total = subtotal - discountAmount
 
