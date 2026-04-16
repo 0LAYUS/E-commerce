@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useRef, useEffect } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Plus, X, ChevronDown, ChevronUp } from "lucide-react"
 import { updateVariant } from "@/lib/actions/productActions"
 
@@ -225,14 +225,6 @@ export default function ProductVariantsEditor({
       active: variantData[v.id]?.active ?? true,
     }))
   )
-
-  // Keep hidden input in sync with variantData changes
-  useEffect(() => {
-    const hiddenInput = document.querySelector('input[name="variant_data"]') as HTMLInputElement
-    if (hiddenInput) {
-      hiddenInput.value = serializedVariants
-    }
-  }, [variantData, variants, serializedVariants])
 
   return (
     <div className="space-y-6">

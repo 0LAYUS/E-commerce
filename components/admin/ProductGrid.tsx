@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, Pencil, Trash2, Plus, Upload, X } from "lucide-react"
 import { createProduct, updateProduct, deleteProduct, getProductOptions, getProductVariants, toggleProductActive } from "@/lib/actions/productActions"
 import ProductVariantsEditor from "./ProductVariantsEditor"
+import ToggleSwitch from "@/components/ui/ToggleSwitch"
 
 type Product = {
   id: string
@@ -78,6 +79,9 @@ export default function ProductGrid({ products, categories }: { products: Produc
   }
 
   const closeModal = () => {
+    if (previewImage) {
+      URL.revokeObjectURL(previewImage)
+    }
     setModalOpen(false)
     setTimeout(() => {
       setEditingProduct(null)
@@ -91,6 +95,9 @@ export default function ProductGrid({ products, categories }: { products: Produc
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      if (previewImage) {
+        URL.revokeObjectURL(previewImage)
+      }
       setPreviewImage(URL.createObjectURL(file))
     }
   }
@@ -111,11 +118,9 @@ export default function ProductGrid({ products, categories }: { products: Produc
 
       const hasVariantsVal = formData.get("has_variants") === "true"
       const variantOptions = formData.get("variant_options") as string
-      const variantData = formData.get("variant_data") as string
 
       if (hasVariantsVal) {
         const options = JSON.parse(variantOptions || "[]")
-        const variants = JSON.parse(variantData || "[]")
         if (options.length === 0 || options.some((o: any) => o.values.length === 0)) {
           alert("Las variantes requieren al menos una opción con valores")
           setIsSubmitting(false)
@@ -276,17 +281,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
                       {productActive ? "Producto visible en la tienda" : "Producto oculto de la tienda"}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setProductActive(!productActive)}
-                    className={`w-12 h-6 rounded-full transition-colors relative ${
-                      productActive ? "bg-green-500" : "bg-muted"
-                    }`}
-                  >
-                    <div className={`w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-transform ${
-                      productActive ? "translate-x-6" : "translate-x-0.5"
-                    }`} />
-                  </button>
+                  <ToggleSwitch checked={productActive} onChange={setProductActive} />
                 </div>
               )}
 

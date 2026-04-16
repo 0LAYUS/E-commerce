@@ -280,7 +280,7 @@ export async function updateProduct(formData: FormData) {
   const active = formData.get("active") === "true"
   const imageFile = formData.get("image") as File
 
-  let updates: Record<string, unknown> = {
+  const updates: Record<string, unknown> = {
     name,
     description,
     price,
