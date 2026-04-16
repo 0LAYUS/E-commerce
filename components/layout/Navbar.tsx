@@ -24,6 +24,9 @@ export default async function Navbar() {
             </Link>
           </div>
           <div className="flex items-center gap-4">
+            <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-blue-600">
+              Sobre Nosotros
+            </Link>
             <CartIcon />
             
             {user ? (
