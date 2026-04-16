@@ -1,6 +1,20 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
+type Category = {
+  id: number
+  name: string
+}
+
+type Variant = {
+  id: number
+  product_id: number
+  sku_code: string
+  price_override: number | null
+  stock: number
+  active: boolean
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -33,13 +47,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ products: [] })
     }
 
-    const productIds = products.map((p: any) => p.id)
+    const productIds = products.map((p) => p.id)
 
     const { data: categories } = await supabase
       .from("categories")
       .select("id, name")
 
-    const categoryMap = new Map(categories?.map((c: any) => [c.id, c]) || [])
+    const categoryMap = new Map<Category, Category>(categories?.map((c) => [c.id, c]) || [])
 
     const { data: allVariants } = await supabase
       .from("product_skus")
@@ -47,15 +61,15 @@ export async function GET(request: NextRequest) {
       .in("product_id", productIds)
       .eq("active", true)
 
-    const variantsMap = new Map<string, any[]>()
-    allVariants?.forEach((v: any) => {
+    const variantsMap = new Map<number, Variant[]>()
+    allVariants?.forEach((v) => {
       if (!variantsMap.has(v.product_id)) {
         variantsMap.set(v.product_id, [])
       }
       variantsMap.get(v.product_id)!.push(v)
     })
 
-    const productsWithData = products.map((p: any) => ({
+    const productsWithData = products.map((p) => ({
       id: p.id,
       name: p.name,
       description: p.description,
