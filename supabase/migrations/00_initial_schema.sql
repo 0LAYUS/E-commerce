@@ -18,10 +18,15 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON public.profiles;
 CREATE POLICY "Public profiles are viewable by everyone." 
   ON public.profiles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Authenticated users can insert own profile" ON public.profiles;
 CREATE POLICY "Authenticated users can insert own profile"
   ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles;
 CREATE POLICY "Users can update own profile." 
   ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
@@ -62,7 +67,10 @@ CREATE TABLE IF NOT EXISTS public.categories (
 );
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Categories are viewable by everyone." ON public.categories;
 CREATE POLICY "Categories are viewable by everyone." ON public.categories FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Administrators can manage categories." ON public.categories;
 CREATE POLICY "Administrators can manage categories." ON public.categories FOR ALL 
   USING ( (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador' );
 
@@ -80,9 +88,14 @@ CREATE TABLE IF NOT EXISTS public.products (
 );
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Active products are viewable by everyone." ON public.products;
 CREATE POLICY "Active products are viewable by everyone." ON public.products FOR SELECT USING (active = true);
+
+DROP POLICY IF EXISTS "All products are viewable by admins." ON public.products;
 CREATE POLICY "All products are viewable by admins." ON public.products FOR SELECT 
   USING ( (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador' );
+
+DROP POLICY IF EXISTS "Administrators can manage products." ON public.products;
 CREATE POLICY "Administrators can manage products." ON public.products FOR ALL 
   USING ( (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador' );
 
@@ -100,10 +113,15 @@ CREATE TABLE IF NOT EXISTS public.orders (
 );
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own orders." ON public.orders;
 CREATE POLICY "Users can view their own orders." ON public.orders FOR SELECT 
   USING (auth.uid() = user_id OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador');
+
+DROP POLICY IF EXISTS "Users can create their own orders." ON public.orders;
 CREATE POLICY "Users can create their own orders." ON public.orders FOR INSERT 
   WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Administrators can manage orders." ON public.orders;
 CREATE POLICY "Administrators can manage orders." ON public.orders FOR UPDATE
   USING ( (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador' );
 
@@ -114,7 +132,6 @@ CREATE TABLE IF NOT EXISTS public.order_items (
   product_id UUID REFERENCES public.products(id) ON DELETE RESTRICT NOT NULL,
   quantity INTEGER NOT NULL DEFAULT 1,
   price_at_purchase INTEGER NOT NULL,
-  variant_id UUID REFERENCES public.product_skus(id) ON DELETE SET NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;

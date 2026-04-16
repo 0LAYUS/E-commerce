@@ -54,18 +54,32 @@ ALTER TABLE public.product_skus ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sku_option_values ENABLE ROW LEVEL SECURITY;
 
 -- Everyone can see option types and values (needed for product page)
+DROP POLICY IF EXISTS "Option types are viewable by everyone." ON public.product_option_types;
 CREATE POLICY "Option types are viewable by everyone." ON public.product_option_types FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Option values are viewable by everyone." ON public.product_option_values;
 CREATE POLICY "Option values are viewable by everyone." ON public.product_option_values FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "SKUs are viewable by everyone." ON public.product_skus;
 CREATE POLICY "SKUs are viewable by everyone." ON public.product_skus FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "SKU option values are viewable by everyone." ON public.sku_option_values;
 CREATE POLICY "SKU option values are viewable by everyone." ON public.sku_option_values FOR SELECT USING (true);
 
 -- Only admins can manage option types
+DROP POLICY IF EXISTS "Admins can manage option types." ON public.product_option_types;
 CREATE POLICY "Admins can manage option types." ON public.product_option_types FOR ALL
   USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador');
+
+DROP POLICY IF EXISTS "Admins can manage option values." ON public.product_option_values;
 CREATE POLICY "Admins can manage option values." ON public.product_option_values FOR ALL
   USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador');
+
+DROP POLICY IF EXISTS "Admins can manage SKUs." ON public.product_skus;
 CREATE POLICY "Admins can manage SKUs." ON public.product_skus FOR ALL
   USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador');
+
+DROP POLICY IF EXISTS "Admins can manage SKU option values." ON public.sku_option_values;
 CREATE POLICY "Admins can manage SKU option values." ON public.sku_option_values FOR ALL
   USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador');
 
