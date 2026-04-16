@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useCart } from "@/components/providers/CartProvider"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 type OptionDef = { name: string; values: string[] }
 
@@ -35,18 +36,19 @@ export default function ProductVariantSelector({
   const [currentPrice, setCurrentPrice] = useState(basePrice)
   const [currentStock, setCurrentStock] = useState(0)
   const { addItem } = useCart()
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const activeSkus = useMemo(() => skus.filter(sku => sku.active), [skus])
-  const availableOptions = useMemo(() => 
+  const availableOptions = useMemo(() =>
     options.map(opt => ({
       ...opt,
-      values: opt.values.filter(val => 
+      values: opt.values.filter(val =>
         activeSkus.some(sku => sku.option_values.includes(val))
       )
     })).filter(opt => opt.values.length > 0),
   [options, activeSkus])
 
-  // Initialize with first value of each option (from available options)
   useEffect(() => {
     if (availableOptions.length === 0) return
 
@@ -59,7 +61,6 @@ export default function ProductVariantSelector({
     setSelectedOptions(initial)
   }, [availableOptions])
 
-  // Find matching SKU when selection changes (only active SKUs)
   useEffect(() => {
     if (activeSkus.length === 0 || Object.keys(selectedOptions).length === 0) return
 
@@ -86,17 +87,27 @@ export default function ProductVariantSelector({
     }))
   }
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (currentStock === 0 || !selectedSku) return
 
-    addItem({
-      id: productId,
-      product_id: productId,
-      variant_id: selectedSku.id,
-      name: productName,
-      price: currentPrice,
-      sku_code: selectedSku.sku_code,
-    })
+    setError(null)
+    setLoading(true)
+    try {
+      const result = await addItem({
+        id: productId,
+        product_id: productId,
+        variant_id: selectedSku.id,
+        name: productName,
+        price: currentPrice,
+        sku_code: selectedSku.sku_code,
+      })
+      if (!result.success && result.error) {
+        setError(result.error)
+        setTimeout(() => setError(null), 4000)
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (availableOptions.length === 0) {
@@ -110,6 +121,12 @@ export default function ProductVariantSelector({
 
   return (
     <div className="space-y-6">
+      {error && (
+        <Alert variant="destructive" className="py-2">
+          <AlertDescription className="text-sm">{error}</AlertDescription>
+        </Alert>
+      )}
+
       {availableOptions.map((option) => (
         <div key={option.name}>
           <label className="block text-sm font-medium text-foreground mb-3">
@@ -165,10 +182,10 @@ export default function ProductVariantSelector({
 
         <button
           onClick={handleAddToCart}
-          disabled={currentStock === 0}
+          disabled={currentStock === 0 || loading}
           className="w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground py-4 rounded-xl font-bold text-lg transition shadow-sm"
         >
-          {currentStock === 0 ? "Agotado" : "Añadir al carrito"}
+          {loading ? "Agregando..." : currentStock === 0 ? "Agotado" : "Añadir al carrito"}
         </button>
       </div>
     </div>
