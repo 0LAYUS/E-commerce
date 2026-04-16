@@ -18,28 +18,36 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
--- Expose profiles policies
 CREATE POLICY "Public profiles are viewable by everyone." 
   ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can insert own profile"
+  ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile." 
   ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
 -- Trigger to create profile automatically
 CREATE OR REPLACE FUNCTION public.handle_new_user() 
 RETURNS trigger AS $$
+DECLARE
+  is_first_user BOOLEAN;
 BEGIN
+  SELECT NOT EXISTS (SELECT 1 FROM public.profiles) INTO is_first_user;
+
   INSERT INTO public.profiles (id, email, role)
   VALUES (
-    new.id, 
-    new.email, 
-    -- Make the first user an admin, or default to cliente
-    (CASE WHEN (SELECT count(*) FROM public.profiles) = 0 THEN 'administrador'::user_role ELSE 'cliente'::user_role END)
+    NEW.id, 
+    COALESCE(NEW.email, 'sin-correo@ecommerce.com'), 
+    CASE WHEN is_first_user THEN 'administrador'::public.user_role ELSE 'cliente'::public.user_role END
   );
-  RETURN new;
+  
+  RETURN NEW;
+EXCEPTION 
+  WHEN OTHERS THEN
+    RAISE LOG 'Error on profile creation trigger: %', SQLERRM;
+    RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
--- Need to prevent duplicate triggers
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
@@ -64,14 +72,17 @@ CREATE TABLE IF NOT EXISTS public.products (
   category_id UUID REFERENCES public.categories(id) ON DELETE SET NULL,
   name TEXT NOT NULL,
   description TEXT NOT NULL,
-  price INTEGER NOT NULL DEFAULT 0, -- price in cents
+  price INTEGER NOT NULL DEFAULT 0,
   stock INTEGER NOT NULL DEFAULT 0,
   image_url TEXT,
+  active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Products are viewable by everyone." ON public.products FOR SELECT USING (true);
+CREATE POLICY "Active products are viewable by everyone." ON public.products FOR SELECT USING (active = true);
+CREATE POLICY "All products are viewable by admins." ON public.products FOR SELECT 
+  USING ( (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador' );
 CREATE POLICY "Administrators can manage products." ON public.products FOR ALL 
   USING ( (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador' );
 
@@ -79,9 +90,12 @@ CREATE POLICY "Administrators can manage products." ON public.products FOR ALL
 CREATE TABLE IF NOT EXISTS public.orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
-  total_amount INTEGER NOT NULL, -- in cents
+  total_amount INTEGER NOT NULL,
   status order_status DEFAULT 'PENDING'::order_status NOT NULL,
   wompi_transaction_id TEXT,
+  customer_name VARCHAR(255),
+  customer_email VARCHAR(255),
+  shipping_address TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
@@ -90,7 +104,6 @@ CREATE POLICY "Users can view their own orders." ON public.orders FOR SELECT
   USING (auth.uid() = user_id OR (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador');
 CREATE POLICY "Users can create their own orders." ON public.orders FOR INSERT 
   WITH CHECK (auth.uid() = user_id);
--- Update orders is strictly for admins or secure webhook (which bypasses RLS using service_role)
 CREATE POLICY "Administrators can manage orders." ON public.orders FOR UPDATE
   USING ( (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'administrador' );
 
@@ -100,7 +113,8 @@ CREATE TABLE IF NOT EXISTS public.order_items (
   order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE NOT NULL,
   product_id UUID REFERENCES public.products(id) ON DELETE RESTRICT NOT NULL,
   quantity INTEGER NOT NULL DEFAULT 1,
-  price_at_purchase INTEGER NOT NULL, -- price at the time of purchase
+  price_at_purchase INTEGER NOT NULL,
+  variant_id UUID REFERENCES public.product_skus(id) ON DELETE SET NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
