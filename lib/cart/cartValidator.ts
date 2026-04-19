@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin"
-import { CartValidationResult, ValidatedCartItem } from "@/lib/types/cart"
+import { CartValidationResult, ValidatedCartItem } from "@/types/cart.types"
 
 export type CartValidationItem = {
   id: string
