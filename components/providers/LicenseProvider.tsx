@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { LicenseOverlay } from "@/components/license/LicenseOverlay"
-import type { MensajeResponse } from "@/lib/actions/licenseActions"
+import type { MensajeResponse } from "@/types/license.types"
 
 type LicenseState = {
   blocked: boolean

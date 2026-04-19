@@ -1,26 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
-
-export type CartItem = {
-  id: string
-  product_id: string
-  variant_id?: string
-  name: string
-  price: number
-  quantity: number
-  imageUrl?: string
-  sku_code?: string
-}
-
-type CartContextType = {
-  items: CartItem[]
-  addItem: (item: Omit<CartItem, "quantity">) => void
-  removeFromCart: (id: string) => void
-  updateQuantity: (id: string, quantity: number) => void
-  clearCart: () => void
-  total: number
-}
+import type { CartItem, CartContextType } from "@/types/cart.types"
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 

@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { UserRole } from "@/types/user.types";
 
 export async function login(formData: FormData) {
   const email = formData.get("email") as string;
@@ -75,7 +76,7 @@ export async function getAllUsers() {
   // Create email lookup map
   const emailMap: Record<string, string> = {}
   authUsers.users.forEach(user => {
-    emailMap[user.id] = user.email
+    emailMap[user.id] = user.email || ""
   })
 
   // Merge profiles with emails
@@ -87,7 +88,7 @@ export async function getAllUsers() {
   return usersWithEmail
 }
 
-export async function updateUserRole(userId: string, role: "cliente" | "administrador") {
+export async function updateUserRole(userId: string, role: UserRole) {
   const supabase = await createClient()
   const { error } = await supabase
     .from("profiles")

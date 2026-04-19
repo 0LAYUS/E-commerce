@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useCart } from "@/components/providers/CartProvider"
-
-type OptionDef = { name: string; values: string[] }
+import type { OptionDef } from "@/types/product.types"
 
 type SKU = {
   id: string
@@ -90,7 +89,7 @@ export default function ProductVariantSelector({
     if (currentStock === 0 || !selectedSku) return
 
     addItem({
-      id: productId,
+      id: selectedSku.id, // Using SKU ID specifically here
       product_id: productId,
       variant_id: selectedSku.id,
       name: productName,

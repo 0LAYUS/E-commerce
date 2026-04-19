@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Package, Tag, ShoppingBag, LayoutDashboard, Users } from "lucide-react"
 import { LicenseOverlay } from "@/components/license/LicenseOverlay"
-import type { MensajeResponse } from "@/lib/actions/licenseActions"
+import type { MensajeResponse } from "@/types/license.types"
 import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 

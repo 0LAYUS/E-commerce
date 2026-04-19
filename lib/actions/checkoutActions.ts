@@ -1,15 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-
-type OrderItem = {
-  id: string
-  product_id: string
-  variant_id?: string
-  quantity: number
-  price: number
-  name?: string
-}
+import type { OrderItem } from "@/types/order.types"
 
 export async function validateStock(items: OrderItem[]): Promise<{ valid: boolean; insufficient: string[] }> {
   const supabase = await createClient()

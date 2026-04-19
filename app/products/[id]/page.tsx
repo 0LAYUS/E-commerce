@@ -3,8 +3,8 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { getProductOptions, getProductVariants } from "@/lib/actions/productActions"
-import ProductVariantSelector from "@/components/product/ProductVariantSelector"
-import AddToCartSimple from "@/components/product/AddToCartSimple"
+import ProductVariantSelector from "@/components/products/ProductVariantSelector"
+import AddToCartButton from "@/components/products/AddToCartButton"
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -107,7 +107,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
             <div className="mb-8">
               <div className="text-sm text-muted-foreground mb-2">Stock disponible</div>
               <div className="text-2xl font-bold text-foreground mb-4">{product.stock} unidades</div>
-              <AddToCartSimple
+              <AddToCartButton
                 productId={product.id}
                 productName={product.name}
                 price={product.price}

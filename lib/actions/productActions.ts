@@ -2,26 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
-
-// Types
-export type OptionDef = { name: string; values: string[] }
-export type VariantStock = { sku_code: string; stock: number }
-
-export type ProductInput = {
-  name: string
-  description: string
-  price: number
-  stock: number
-  category_id: string
-  image_url?: string
-}
-
-export type VariantInput = {
-  sku_code: string
-  price_override: number | null
-  stock: number
-  option_value_ids: string[]
-}
+import type { OptionDef, VariantStock, ProductInput, VariantInput } from "@/types/product.types"
 
 // ============================================
 // GET FUNCTIONS

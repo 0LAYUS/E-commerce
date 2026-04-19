@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import type { MensajeResponse } from "@/lib/actions/licenseActions"
+import type { MensajeResponse } from "@/types/license.types"
 
 type LicenseOverlayProps = {
   mensaje: MensajeResponse

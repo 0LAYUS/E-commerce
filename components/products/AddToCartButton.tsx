@@ -1,6 +1,7 @@
 "use client"
 
 import { useCart } from "@/components/providers/CartProvider"
+import type { CartItem } from "@/types/cart.types"
 
 type Props = {
   productId: string
@@ -8,18 +9,30 @@ type Props = {
   price: number
   imageUrl?: string
   stock: number
+  variantId?: string
+  skuCode?: string
 }
 
-export default function AddToCartSimple({ productId, productName, price, imageUrl, stock }: Props) {
+export default function AddToCartButton({
+  productId,
+  productName,
+  price,
+  imageUrl,
+  stock,
+  variantId,
+  skuCode,
+}: Props) {
   const { addItem } = useCart()
 
   const handleAddToCart = () => {
     addItem({
-      id: productId,
+      id: variantId || productId,
       product_id: productId,
+      variant_id: variantId,
       name: productName,
       price,
       imageUrl,
+      sku_code: skuCode,
     })
   }
 

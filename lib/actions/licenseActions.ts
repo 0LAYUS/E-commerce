@@ -1,28 +1,11 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { signLicenseRequest } from "@/lib/license/sign-request"
+import type { LicenseStatus, VerifyResponse, MensajeResponse } from "@/types/license.types"
 
 const PRIGMA_URL = process.env.PRIGMA_URL || "https://prigma.onrender.com"
 const LICENSE_KEY = process.env.LICENSE_KEY || ""
-
-function signRequest(licenseKey: string, timestamp: number): string {
-  const canonical = `v1:${timestamp}:${licenseKey}:GET:/api/license/verify`
-  const crypto = require("crypto")
-  return crypto.createHmac("sha256", licenseKey).update(canonical).digest("hex")
-}
-
-export type LicenseStatus = "trial" | "active" | "grace_period" | "suspended" | "cancelled"
-
-export type VerifyResponse = {
-  status: LicenseStatus
-  blocked: boolean
-}
-
-export type MensajeResponse = {
-  title: string
-  description: string
-  status: LicenseStatus
-}
 
 async function verificarLicenciaStatus(): Promise<VerifyResponse> {
   if (!LICENSE_KEY) {
@@ -31,7 +14,7 @@ async function verificarLicenciaStatus(): Promise<VerifyResponse> {
 
   try {
     const timestamp = Math.floor(Date.now() / 1000)
-    const signature = signRequest(LICENSE_KEY, timestamp)
+    const signature = await signLicenseRequest(LICENSE_KEY, timestamp)
 
     const res = await fetch(`${PRIGMA_URL}/api/license/verify`, {
       headers: {
