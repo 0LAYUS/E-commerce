@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Package, Tag, ShoppingBag, LayoutDashboard, Users } from "lucide-react"
+import { Package, Tag, ShoppingBag, LayoutDashboard, Users, ShoppingCart } from "lucide-react"
 import { LicenseOverlay } from "@/components/license/LicenseOverlay"
 import type { MensajeResponse } from "@/types/license.types"
 import { Suspense } from "react"
@@ -49,6 +49,14 @@ function AdminContent({ children }: { children: React.ReactNode }) {
             <ShoppingBag className="w-5 h-5"/>
             Ventas
           </Link>
+          <Link href="/pos" className="flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
+            <ShoppingCart className="w-5 h-5"/>
+            POS
+          </Link>
+          <Link href="/admin/pos" className="flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
+            <ShoppingBag className="w-5 h-5"/>
+            Ventas POS
+          </Link>
         </nav>
       </div>
 
@@ -83,6 +91,14 @@ function AdminContentFallback() {
           <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground">
             <ShoppingBag className="w-5 h-5"/>
             Ventas
+          </div>
+          <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground">
+            <ShoppingCart className="w-5 h-5"/>
+            POS
+          </div>
+          <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground">
+            <ShoppingBag className="w-5 h-5"/>
+            Ventas POS
           </div>
         </nav>
       </div>

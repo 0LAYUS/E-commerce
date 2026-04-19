@@ -76,7 +76,7 @@ export async function getAllUsers() {
   // Create email lookup map
   const emailMap: Record<string, string> = {}
   authUsers.users.forEach(user => {
-    emailMap[user.id] = user.email || ""
+    emailMap[user.id] = user.email ?? ""
   })
 
   // Merge profiles with emails

@@ -33,7 +33,7 @@ export default function UserManagement({ users, updateUserRole }: UserManagement
 
   return (
     <div className="bg-card rounded-xl border overflow-hidden">
-      <div className="overflow-x-auto">
+      <div>
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-muted/50 border-b border-border">
