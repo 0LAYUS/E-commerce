@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Tag, Pencil, Trash2, Plus, X } from 'lucide-react';
 import { createCategory, updateCategory, deleteCategory } from '@/lib/actions/adminActions';
 
 export default function CategoryGrid({ categories }: { categories: any[] }) {
+  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,12 +44,19 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (confirm(`¿Estás seguro que deseas eliminar la categoría "${name}"? Esto podría afectar a los productos asociados.`)) {
-      try {
-        await deleteCategory(id);
-      } catch (err) {
-        alert("Error al eliminar: " + String(err));
+    if (!confirm(`¿Estás seguro que deseas eliminar la categoría "${name}"?`)) {
+      return;
+    }
+
+    try {
+      const result = await deleteCategory(id);
+      if (!result.success && result.error) {
+        alert(result.error);
+        return;
       }
+      // Success — revalidatePath in the action handles the refresh
+    } catch (err) {
+      alert("Error al eliminar: " + String(err));
     }
   };
 

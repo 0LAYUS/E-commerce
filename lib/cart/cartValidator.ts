@@ -53,6 +53,20 @@ export async function validateCartItems(items: CartValidationItem[]): Promise<Ca
         continue
       }
 
+      // Also check if parent product is archived
+      const { data: parentProduct } = await supabase
+        .from("products")
+        .select("archived")
+        .eq("id", sku.product_id)
+        .single()
+
+      if (parentProduct?.archived) {
+        validated.status = "variant_inactive"
+        blockedItems.push(item.id)
+        validatedItems.push(validated)
+        continue
+      }
+
       validated.current_price = sku.price_override
       validated.current_stock = sku.stock
 
@@ -69,7 +83,7 @@ export async function validateCartItems(items: CartValidationItem[]): Promise<Ca
     } else {
       const { data: product, error: productError } = await supabase
         .from("products")
-        .select("id, name, price, stock, active, has_active_reservation")
+        .select("id, name, price, stock, active, archived, has_active_reservation")
         .eq("id", item.product_id)
         .single()
 
@@ -80,7 +94,7 @@ export async function validateCartItems(items: CartValidationItem[]): Promise<Ca
         continue
       }
 
-      if (!product.active) {
+      if (!product.active || product.archived) {
         validated.status = "product_inactive"
         blockedItems.push(item.id)
         validatedItems.push(validated)

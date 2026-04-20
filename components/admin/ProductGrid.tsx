@@ -3,8 +3,8 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Pencil, Trash2, Plus, Upload, X } from "lucide-react"
-import { createProduct, updateProduct, deleteProduct, getProductOptions, getProductVariants, toggleProductActive } from "@/lib/actions/productActions"
+import { ArrowLeft, Pencil, Trash2, Plus, Upload, X, Archive } from "lucide-react"
+import { createProduct, updateProduct, deleteProduct, getProductOptions, getProductVariants, toggleProductActive, hasSales } from "@/lib/actions/productActions"
 import ProductVariantsEditor from "./ProductVariantsEditor"
 import ToggleSwitch from "@/components/ui/ToggleSwitch"
 
@@ -143,12 +143,33 @@ export default function ProductGrid({ products, categories }: { products: Produc
   }
 
   const handleDelete = async (id: string, name: string) => {
-    if (confirm(`¿Eliminar "${name}"?`)) {
-      try {
+    try {
+      // Check if product has associated sales
+      const salesCount = await hasSales(id)
+
+      if (salesCount > 0) {
+        // Product has sales — show archive confirmation
+        const confirmed = confirm(
+          `Este producto tiene ${salesCount} venta${salesCount > 1 ? "s" : ""} asociada${salesCount > 1 ? "s" : ""}.\n\n` +
+          `Se archivará en lugar de eliminar para preservar los datos de las órdenes.\n\n` +
+          `¿Deseas continuar?`
+        )
+        if (!confirmed) return
+
+        // Pass forceArchive=true to skip re-checking sales count
+        const result = await deleteProduct(id, true)
+        if (result.success) {
+          router.refresh()
+        }
+      } else {
+        // No sales — regular delete confirmation
+        if (!confirm(`¿Estás seguro que deseas eliminar el producto "${name}"?`)) {
+          return
+        }
         await deleteProduct(id)
-      } catch (err) {
-        alert("Error: " + String(err))
       }
+    } catch (err) {
+      alert("Error: " + String(err))
     }
   }
 
@@ -171,12 +192,20 @@ export default function ProductGrid({ products, categories }: { products: Produc
           </Link>
           Gestionar Productos
         </h1>
-        <button
-          onClick={openNewModal}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm transition"
-        >
-          <Plus className="w-4 h-4" /> Nuevo Producto
-        </button>
+        <div className="flex gap-3">
+          <Link
+            href="/admin/products/archived"
+            className="border border-input hover:bg-accent px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition"
+          >
+            <Archive className="w-4 h-4" /> Ver Archivados
+          </Link>
+          <button
+            onClick={openNewModal}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm transition"
+          >
+            <Plus className="w-4 h-4" /> Nuevo Producto
+          </button>
+        </div>
       </div>
 
       {/* Product Grid */}

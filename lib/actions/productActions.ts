@@ -447,12 +447,242 @@ export async function toggleProductActive(productId: string, active: boolean) {
 }
 
 // ============================================
+// CHECK FUNCTIONS
+// ============================================
+
+/**
+ * Count order_items for a product (online orders)
+ */
+export async function hasOnlineSales(productId: string): Promise<number> {
+  const supabase = await createClient()
+  const { count, error } = await supabase
+    .from("order_items")
+    .select("*", { count: "exact", head: true })
+    .eq("product_id", productId)
+
+  if (error) throw new Error(error.message)
+  return count ?? 0
+}
+
+/**
+ * Count POS sales for a product (checks items JSONB column)
+ * Direct query on pos_sales items JSONB - more reliable than RPC
+ */
+export async function hasPOSSales(productId: string): Promise<number> {
+  const supabase = await createClient()
+
+  // Fetch all pos_sales (with items) and count those containing this product
+  // items is JSONB: [{product_id: "uuid", variant_id: "uuid", quantity: N}, ...]
+  const { data: sales, error } = await supabase
+    .from("pos_sales")
+    .select("items")
+
+  if (error) {
+    console.error("Error checking POS sales:", error.message)
+    return 0
+  }
+
+  let count = 0
+  for (const sale of sales || []) {
+    // items can be JSON string or JSON object depending on how it was stored
+    let items: Array<{ product_id?: string; variant_id?: string }> = []
+    if (sale.items) {
+      if (typeof sale.items === "string") {
+        items = JSON.parse(sale.items)
+      } else {
+        items = sale.items as Array<{ product_id?: string; variant_id?: string }>
+      }
+    }
+    if (items.some(item => item.product_id === productId)) {
+      count++
+    }
+  }
+  return count
+}
+
+/**
+ * Count total sales for a product (online + POS)
+ */
+export async function hasSales(productId: string): Promise<number> {
+  const [online, pos] = await Promise.all([
+    hasOnlineSales(productId),
+    hasPOSSales(productId),
+  ])
+  return online + pos
+}
+
+/**
+ * Count order_items for a specific variant (online orders)
+ */
+export async function hasVariantOnlineSales(variantId: string): Promise<number> {
+  const supabase = await createClient()
+  const { count, error } = await supabase
+    .from("order_items")
+    .select("*", { count: "exact", head: true })
+    .eq("variant_id", variantId)
+
+  if (error) throw new Error(error.message)
+  return count ?? 0
+}
+
+/**
+ * Count POS sales for a specific variant (checks items JSONB)
+ */
+export async function hasVariantPOSSales(variantId: string): Promise<number> {
+  const supabase = await createClient()
+
+  const { data: sales, error } = await supabase
+    .from("pos_sales")
+    .select("items")
+
+  if (error) {
+    console.error("Error checking POS variant sales:", error.message)
+    return 0
+  }
+
+  let count = 0
+  for (const sale of sales || []) {
+    // items can be JSON string or JSON object depending on how it was stored
+    let items: Array<{ product_id?: string; variant_id?: string }> = []
+    if (sale.items) {
+      if (typeof sale.items === "string") {
+        items = JSON.parse(sale.items)
+      } else {
+        items = sale.items as Array<{ product_id?: string; variant_id?: string }>
+      }
+    }
+    if (items.some(item => item.variant_id === variantId)) {
+      count++
+    }
+  }
+  return count
+}
+
+/**
+ * Count total sales for a variant (online + POS)
+ */
+export async function hasVariantSales(variantId: string): Promise<number> {
+  const [online, pos] = await Promise.all([
+    hasVariantOnlineSales(variantId),
+    hasVariantPOSSales(variantId),
+  ])
+  return online + pos
+}
+
+// ============================================
+// ARCHIVE / UNARCHIVE
+// ============================================
+
+export async function archiveProduct(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from("products")
+    .update({ archived: true })
+    .eq("id", id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath("/admin/products")
+  revalidatePath("/")
+}
+
+export async function unarchiveProduct(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from("products")
+    .update({ archived: false })
+    .eq("id", id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath("/admin/products")
+  revalidatePath("/admin/products/archived")
+  revalidatePath("/")
+}
+
+export async function archiveVariant(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from("product_skus")
+    .update({ archived: true })
+    .eq("id", id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath("/admin/products")
+}
+
+export async function unarchiveVariant(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from("product_skus")
+    .update({ archived: false })
+    .eq("id", id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath("/admin/products")
+}
+
+// ============================================
 // DELETE PRODUCT
 // ============================================
 
-export async function deleteProduct(id: string) {
+/**
+ * Delete product — if it has sales, archive instead.
+ * Returns { success: true } for hard delete, { success: true, archived: true } for archive.
+ */
+export async function deleteProduct(id: string, forceArchive?: boolean): Promise<{ success: boolean; archived?: boolean }> {
   const supabase = await createClient()
+
+  // If forceArchive is true (pre-checked by client), archive directly without re-checking
+  if (forceArchive) {
+    const { error } = await supabase
+      .from("products")
+      .update({ archived: true })
+      .eq("id", id)
+    if (error) throw new Error(error.message)
+    revalidatePath("/admin/products")
+    revalidatePath("/")
+    return { success: true, archived: true }
+  }
+
+  const salesCount = await hasSales(id)
+  if (salesCount > 0) {
+    // Archive instead of delete to preserve order data
+    const { error } = await supabase
+      .from("products")
+      .update({ archived: true })
+      .eq("id", id)
+    if (error) throw new Error(error.message)
+    revalidatePath("/admin/products")
+    revalidatePath("/")
+    return { success: true, archived: true }
+  }
+
+  // No sales — hard delete
   await supabase.from("products").delete().eq("id", id)
   revalidatePath("/admin/products")
   revalidatePath("/")
+  return { success: true }
+}
+
+// ============================================
+// DELETE VARIANT
+// ============================================
+
+/**
+ * Delete variant — if it has sales, archive instead.
+ * Returns { success: true } for hard delete, { success: true, archived: true } for archive.
+ */
+export async function deleteVariant(id: string): Promise<{ success: boolean; archived?: boolean }> {
+  const supabase = await createClient()
+
+  const salesCount = await hasVariantSales(id)
+  if (salesCount > 0) {
+    // Archive instead of delete to preserve order data
+    await archiveVariant(id)
+    return { success: true, archived: true }
+  }
+
+  // No sales — hard delete
+  await supabase.from("product_skus").delete().eq("id", id)
+  revalidatePath("/admin/products")
+  return { success: true }
 }

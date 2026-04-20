@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { Plus, X, ChevronDown, ChevronUp } from "lucide-react"
-import { updateVariant } from "@/lib/actions/productActions"
+import { Plus, X, ChevronDown, ChevronUp, MoreVertical, Archive, Trash2 } from "lucide-react"
+import { updateVariant, hasVariantSales, archiveVariant, deleteVariant } from "@/lib/actions/productActions"
 
 type OptionDef = {
   name: string
@@ -53,6 +53,33 @@ export default function ProductVariantsEditor({
     })
     return initial
   })
+
+  // Track which variant action menu is open
+  const [openVariantMenu, setOpenVariantMenu] = useState<string | null>(null)
+
+  // Track which variants have associated sales (for showing delete vs archive option)
+  const [variantsWithSales, setVariantsWithSales] = useState<Set<string>>(new Set())
+
+  // Pre-fetch sales counts for all variants when loading
+  useEffect(() => {
+    async function fetchVariantSales() {
+      const realVariants = initialVariants.filter(v => !v.id.startsWith('temp-'))
+      if (realVariants.length === 0) return
+
+      const salesMap = new Set<string>()
+      await Promise.all(
+        realVariants.map(async (v) => {
+          const count = await hasVariantSales(v.id)
+          if (count > 0) {
+            salesMap.add(v.id)
+          }
+        })
+      )
+      setVariantsWithSales(salesMap)
+    }
+
+    fetchVariantSales()
+  }, [initialVariants])
 
   // Sync variantData when initialVariants changes (e.g., when opening edit modal)
   useEffect(() => {
@@ -189,6 +216,41 @@ export default function ProductVariantsEditor({
       })
     } catch (err) {
       console.error("Error saving variant:", err)
+    }
+  }
+
+  // Handle variant delete/archive action
+  const handleVariantAction = async (variantId: string, skuCode: string) => {
+    setOpenVariantMenu(null) // Close menu
+
+    if (variantId.startsWith('temp-')) {
+      // Temp variant — just remove from local state (not saved yet)
+      return
+    }
+
+    try {
+      const salesCount = await hasVariantSales(variantId)
+
+      if (salesCount > 0) {
+        // Has sales — archive instead of delete
+        const confirmed = confirm(
+          `Esta variante (${skuCode}) tiene ${salesCount} venta${salesCount > 1 ? "s" : ""} asociada${salesCount > 1 ? "s" : ""}.\n\n` +
+          `Se archivará en lugar de eliminar para preservar los datos.\n\n` +
+          `¿Deseas continuar?`
+        )
+        if (!confirmed) return
+
+        await archiveVariant(variantId)
+      } else {
+        // No sales — regular delete
+        if (!confirm(`¿Estás seguro que deseas eliminar la variante "${skuCode}"?`)) {
+          return
+        }
+        await deleteVariant(variantId)
+      }
+    } catch (err) {
+      console.error("Error handling variant action:", err)
+      alert("Error: " + String(err))
     }
   }
 
@@ -356,6 +418,7 @@ export default function ProductVariantsEditor({
                         ))}
                         <th className="text-left p-3 font-medium text-muted-foreground w-24">Precio</th>
                         <th className="text-left p-3 font-medium text-muted-foreground w-24">Stock</th>
+                        <th className="text-left p-3 font-medium text-muted-foreground w-12">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -427,6 +490,40 @@ export default function ProductVariantsEditor({
                               }}
                               className="w-20 h-8 px-2 rounded border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                             />
+                          </td>
+                          <td className="p-3">
+                            <div className="relative">
+                              <button
+                                type="button"
+                                onClick={() => setOpenVariantMenu(openVariantMenu === v.id ? null : v.id)}
+                                className="p-1.5 hover:bg-accent rounded transition text-muted-foreground hover:text-foreground"
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </button>
+                              {openVariantMenu === v.id && (
+                                <div className="absolute right-0 top-full mt-1 bg-card border rounded-lg shadow-lg z-10 py-1 min-w-[120px]">
+                                  {v.id.startsWith('temp-') ? (
+                                    <span className="px-3 py-2 text-xs text-muted-foreground">Sin acciones</span>
+                                  ) : variantsWithSales.has(v.id) ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleVariantAction(v.id, v.sku_code)}
+                                      className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 text-destructive"
+                                    >
+                                      <Archive className="w-4 h-4" /> Archivar
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleVariantAction(v.id, v.sku_code)}
+                                      className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 text-destructive"
+                                    >
+                                      <Trash2 className="w-4 h-4" /> Eliminar
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
