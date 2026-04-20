@@ -7,6 +7,7 @@ import { Trash2, Minus, Plus, AlertTriangle, Info, TrendingUp, TrendingDown } fr
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ui/modal"
 
 export default function CartPage() {
   const {
@@ -21,6 +22,7 @@ export default function CartPage() {
   } = useCart()
 
   const [priceChangedItems, setPriceChangedItems] = useState<Array<{ name: string; oldPrice: number; newPrice: number; increased: boolean }>>([])
+  const [itemToRemove, setItemToRemove] = useState<{ id: string; name: string } | null>(null)
 
   useEffect(() => {
     revalidateCart()
@@ -258,7 +260,7 @@ export default function CartPage() {
 
                 <div className="flex flex-col items-end justify-between self-stretch">
                   <button
-                    onClick={() => removeFromCart(item.id)}
+                    onClick={() => setItemToRemove({ id: item.id, name: item.name })}
                     className="text-destructive hover:text-destructive/80 p-1 mb-auto transition"
                     title="Eliminar producto"
                   >
@@ -356,6 +358,25 @@ export default function CartPage() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={itemToRemove !== null}
+        onClose={() => setItemToRemove(null)}
+        onConfirm={() => {
+          if (itemToRemove) {
+            removeFromCart(itemToRemove.id)
+          }
+        }}
+        title="Eliminar del carrito"
+        description={
+          itemToRemove
+            ? `¿Estás seguro de que quieres eliminar "${itemToRemove.name}" del carrito?`
+            : undefined
+        }
+        confirmText="Eliminar"
+        cancelText="Conservar"
+        destructive
+      />
     </div>
   )
 }
