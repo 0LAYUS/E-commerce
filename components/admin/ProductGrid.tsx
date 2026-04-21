@@ -7,6 +7,7 @@ import { ArrowLeft, Pencil, Trash2, Plus, Upload, X, Archive } from "lucide-reac
 import { createProduct, updateProduct, deleteProduct, getProductOptions, getProductVariants, toggleProductActive, hasSales } from "@/lib/actions/productActions"
 import ProductVariantsEditor from "./ProductVariantsEditor"
 import ToggleSwitch from "@/components/ui/ToggleSwitch"
+import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 
 type Product = {
   id: string
@@ -37,6 +38,14 @@ export default function ProductGrid({ products, categories }: { products: Produc
 
   // Total stock from variants (only active ones)
   const totalVariantStock = variantStocks.reduce((sum, v) => sum + (v.active ? v.stock : 0), 0)
+
+  // Dialog states
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertConfig, setAlertConfig] = useState({ title: "", description: "" })
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
 
   const openNewModal = () => {
     setEditingProduct(null)
@@ -122,7 +131,8 @@ export default function ProductGrid({ products, categories }: { products: Produc
       if (hasVariantsVal) {
         const options = JSON.parse(variantOptions || "[]")
         if (options.length === 0 || options.some((o: any) => o.values.length === 0)) {
-          alert("Las variantes requieren al menos una opción con valores")
+          setAlertConfig({ title: "Variantes requeridas", description: "Las variantes requieren al menos una opción con valores" })
+          setAlertOpen(true)
           setIsSubmitting(false)
           return
         }
@@ -136,40 +146,66 @@ export default function ProductGrid({ products, categories }: { products: Produc
       closeModal()
       router.refresh()
     } catch (err) {
-      alert("Error: " + String(err))
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleDelete = async (id: string, name: string) => {
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+
     try {
-      // Check if product has associated sales
-      const salesCount = await hasSales(id)
+      const salesCount = await hasSales(deleteTarget.id)
 
       if (salesCount > 0) {
-        // Product has sales — show archive confirmation
-        const confirmed = confirm(
-          `Este producto tiene ${salesCount} venta${salesCount > 1 ? "s" : ""} asociada${salesCount > 1 ? "s" : ""}.\n\n` +
-          `Se archivará en lugar de eliminar para preservar los datos de las órdenes.\n\n` +
-          `¿Deseas continuar?`
-        )
-        if (!confirmed) return
-
-        // Pass forceArchive=true to skip re-checking sales count
-        const result = await deleteProduct(id, true)
+        const result = await deleteProduct(deleteTarget.id, true)
         if (result.success) {
           router.refresh()
         }
       } else {
-        // No sales — regular delete confirmation
-        if (!confirm(`¿Estás seguro que deseas eliminar el producto "${name}"?`)) {
-          return
-        }
-        await deleteProduct(id)
+        await deleteProduct(deleteTarget.id)
+        router.refresh()
       }
     } catch (err) {
-      alert("Error: " + String(err))
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
+    } finally {
+      setDeleteTarget(null)
+    }
+  }
+
+  const openDeleteConfirm = async (id: string, name: string) => {
+    try {
+      const salesCount = await hasSales(id)
+      setDeleteTarget({ id, name })
+
+      if (salesCount > 0) {
+        setAlertConfig({
+          title: "Archivar producto",
+          description: `Este producto tiene ${salesCount} venta${salesCount > 1 ? "s" : ""} asociada${salesCount > 1 ? "s" : ""}.\n\nSe archivará en lugar de eliminar para preservar los datos de las órdenes.\n\n¿Deseas continuar?`,
+        })
+        setArchiveConfirmOpen(true)
+      } else {
+        setDeleteConfirmOpen(true)
+      }
+    } catch (err) {
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
+    }
+  }
+
+  const handleArchiveConfirm = async () => {
+    if (!deleteTarget) return
+    try {
+      await deleteProduct(deleteTarget.id, true)
+      router.refresh()
+    } catch (err) {
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
+    } finally {
+      setDeleteTarget(null)
     }
   }
 
@@ -178,7 +214,8 @@ export default function ProductGrid({ products, categories }: { products: Produc
       await toggleProductActive(id, active)
       router.refresh()
     } catch (err) {
-      alert("Error: " + String(err))
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
     }
   }
 
@@ -253,7 +290,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
                   <Pencil className="w-4 h-4" /> Editar
                 </button>
                 <button
-                  onClick={() => handleDelete(p.id, p.name)}
+                  onClick={() => openDeleteConfirm(p.id, p.name)}
                   className="w-12 flex justify-center items-center border border-input text-destructive rounded-lg hover:bg-destructive/10 hover:border-destructive/20 transition"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -457,6 +494,44 @@ export default function ProductGrid({ products, categories }: { products: Produc
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false)
+          setDeleteTarget(null)
+        }}
+        onConfirm={handleDelete}
+        title="¿Eliminar producto?"
+        description={deleteTarget ? `¿Estás seguro que deseas eliminar el producto "${deleteTarget.name}"?` : ""}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        destructive
+      />
+
+      <ConfirmDialog
+        open={archiveConfirmOpen}
+        onClose={() => {
+          setArchiveConfirmOpen(false)
+          setDeleteTarget(null)
+        }}
+        onConfirm={() => {
+          handleArchiveConfirm()
+          setArchiveConfirmOpen(false)
+        }}
+        title="Archivar producto"
+        description={alertConfig.description}
+        confirmText="Archivar"
+        cancelText="Cancelar"
+        destructive
+      />
+
+      <AlertDialog
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        title={alertConfig.title}
+        description={alertConfig.description}
+      />
     </div>
   )
 }

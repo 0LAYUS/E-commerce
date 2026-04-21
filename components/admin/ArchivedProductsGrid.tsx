@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, RotateCcw, X } from "lucide-react"
 import { unarchiveProduct } from "@/lib/actions/productActions"
+import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 
 type ArchivedProduct = {
   id: string
@@ -19,20 +20,30 @@ export default function ArchivedProductsGrid({ products }: { products: ArchivedP
   const router = useRouter()
   const [unarchivingId, setUnarchivingId] = useState<string | null>(null)
 
-  const handleUnarchive = async (id: string, name: string) => {
-    if (!confirm(`¿Deseas restaurar el producto "${name}"? Volverá a estar activo en la tienda.`)) {
-      return
-    }
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertConfig, setAlertConfig] = useState({ title: "", description: "" })
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmTarget, setConfirmTarget] = useState<{ id: string; name: string } | null>(null)
 
-    setUnarchivingId(id)
+  const handleUnarchive = async () => {
+    if (!confirmTarget) return
+
+    setUnarchivingId(confirmTarget.id)
     try {
-      await unarchiveProduct(id)
+      await unarchiveProduct(confirmTarget.id)
       router.refresh()
     } catch (err) {
-      alert("Error al restaurar: " + String(err))
+      setAlertConfig({ title: "Error al restaurar", description: String(err) })
+      setAlertOpen(true)
     } finally {
       setUnarchivingId(null)
+      setConfirmTarget(null)
     }
+  }
+
+  const openUnarchiveConfirm = (id: string, name: string) => {
+    setConfirmTarget({ id, name })
+    setConfirmOpen(true)
   }
 
   return (
@@ -88,7 +99,7 @@ export default function ArchivedProductsGrid({ products }: { products: ArchivedP
               </div>
 
               <button
-                onClick={() => handleUnarchive(p.id, p.name)}
+                onClick={() => openUnarchiveConfirm(p.id, p.name)}
                 disabled={unarchivingId === p.id}
                 className="w-full flex justify-center items-center gap-2 py-2 border border-input rounded-lg text-sm font-bold hover:bg-accent transition disabled:opacity-50"
               >
@@ -105,6 +116,26 @@ export default function ArchivedProductsGrid({ products }: { products: ArchivedP
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => {
+          setConfirmOpen(false)
+          setConfirmTarget(null)
+        }}
+        onConfirm={handleUnarchive}
+        title="¿Restaurar producto?"
+        description={confirmTarget ? `¿Deseas restaurar el producto "${confirmTarget.name}"? Volverá a estar activo en la tienda.` : ""}
+        confirmText="Restaurar"
+        cancelText="Cancelar"
+      />
+
+      <AlertDialog
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        title={alertConfig.title}
+        description={alertConfig.description}
+      />
     </div>
   )
 }

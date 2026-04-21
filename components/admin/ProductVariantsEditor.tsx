@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { Plus, X, ChevronDown, ChevronUp, MoreVertical, Archive, Trash2 } from "lucide-react"
 import { updateVariant, hasVariantSales, archiveVariant, deleteVariant } from "@/lib/actions/productActions"
+import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 
 type OptionDef = {
   name: string
@@ -59,6 +60,18 @@ export default function ProductVariantsEditor({
 
   // Track which variants have associated sales (for showing delete vs archive option)
   const [variantsWithSales, setVariantsWithSales] = useState<Set<string>>(new Set())
+
+  // Dialog states
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertConfig, setAlertConfig] = useState({ title: "", description: "" })
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmConfig, setConfirmConfig] = useState<{
+    title: string
+    description: string
+    onConfirm: () => void
+    confirmText: string
+    destructive?: boolean
+  }>({ title: "", description: "", onConfirm: () => {}, confirmText: "Confirmar" })
 
   // Pre-fetch sales counts for all variants when loading
   useEffect(() => {
@@ -224,7 +237,6 @@ export default function ProductVariantsEditor({
     setOpenVariantMenu(null) // Close menu
 
     if (variantId.startsWith('temp-')) {
-      // Temp variant — just remove from local state (not saved yet)
       return
     }
 
@@ -232,25 +244,32 @@ export default function ProductVariantsEditor({
       const salesCount = await hasVariantSales(variantId)
 
       if (salesCount > 0) {
-        // Has sales — archive instead of delete
-        const confirmed = confirm(
-          `Esta variante (${skuCode}) tiene ${salesCount} venta${salesCount > 1 ? "s" : ""} asociada${salesCount > 1 ? "s" : ""}.\n\n` +
-          `Se archivará en lugar de eliminar para preservar los datos.\n\n` +
-          `¿Deseas continuar?`
-        )
-        if (!confirmed) return
-
-        await archiveVariant(variantId)
+        setConfirmConfig({
+          title: "Archivar variante",
+          description: `Esta variante (${skuCode}) tiene ${salesCount} venta${salesCount > 1 ? "s" : ""} asociada${salesCount > 1 ? "s" : ""}.\n\nSe archivará en lugar de eliminar para preservar los datos.\n\n¿Deseas continuar?`,
+          onConfirm: async () => {
+            await archiveVariant(variantId)
+          },
+          confirmText: "Archivar",
+          destructive: true,
+        })
+        setConfirmOpen(true)
       } else {
-        // No sales — regular delete
-        if (!confirm(`¿Estás seguro que deseas eliminar la variante "${skuCode}"?`)) {
-          return
-        }
-        await deleteVariant(variantId)
+        setConfirmConfig({
+          title: "Eliminar variante",
+          description: `¿Estás seguro que deseas eliminar la variante "${skuCode}"?`,
+          onConfirm: async () => {
+            await deleteVariant(variantId)
+          },
+          confirmText: "Eliminar",
+          destructive: true,
+        })
+        setConfirmOpen(true)
       }
     } catch (err) {
       console.error("Error handling variant action:", err)
-      alert("Error: " + String(err))
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
     }
   }
 
@@ -540,6 +559,24 @@ export default function ProductVariantsEditor({
       <input type="hidden" name="has_variants" value={hasVariants ? "true" : "false"} />
       <input type="hidden" name="variant_options" value={serializedOptions} />
       <input type="hidden" name="variant_data" value={serializedVariants} />
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        description={confirmConfig.description}
+        confirmText={confirmConfig.confirmText}
+        cancelText="Cancelar"
+        destructive={confirmConfig.destructive}
+      />
+
+      <AlertDialog
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        title={alertConfig.title}
+        description={alertConfig.description}
+      />
     </div>
   )
 }
