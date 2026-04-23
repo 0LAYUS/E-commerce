@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/components/providers/CartProvider"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, Variants } from "framer-motion"
 import { MagnifyingGlass, ShoppingBag, Star, Plus, Check } from "@phosphor-icons/react"
 
 type Product = {
@@ -79,7 +79,7 @@ export default function ProductList({ initialProducts, categories }: { initialPr
     setToastMessage(`"${product.name}" agregado al carrito`)
   }
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -89,7 +89,7 @@ export default function ProductList({ initialProducts, categories }: { initialPr
     },
   }
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
