@@ -360,3 +360,70 @@ export async function getRevenueByDay(
 
   return { online: allDays, pos: posDays }
 }
+
+// ============================================
+// ORDERS BY STATUS (Phase 4)
+// ============================================
+
+export interface OrderStatusCount {
+  status: string
+  count: number
+}
+
+/**
+ * Get online orders count grouped by payment status.
+ */
+export async function getOrdersByStatus(
+  start: Date,
+  end: Date
+): Promise<OrderStatusCount[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select("status")
+    .gte("created_at", start.toISOString())
+    .lte("created_at", end.toISOString())
+
+  if (error) throw new Error(error.message)
+
+  // Aggregate by status
+  const statusMap = new Map<string, number>()
+  for (const order of data ?? []) {
+    statusMap.set(order.status, (statusMap.get(order.status) ?? 0) + 1)
+  }
+
+  // Return ordered by status name for consistency
+  return Array.from(statusMap.entries())
+    .map(([status, count]) => ({ status, count }))
+    .sort((a, b) => a.status.localeCompare(b.status))
+}
+
+/**
+ * Get POS sales count grouped by payment status.
+ */
+export async function getPOSSalesByStatus(
+  start: Date,
+  end: Date
+): Promise<OrderStatusCount[]> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from("pos_sales")
+    .select("payment_status")
+    .gte("created_at", start.toISOString())
+    .lte("created_at", end.toISOString())
+
+  if (error) throw new Error(error.message)
+
+  // Aggregate by status
+  const statusMap = new Map<string, number>()
+  for (const sale of data ?? []) {
+    statusMap.set(sale.payment_status, (statusMap.get(sale.payment_status) ?? 0) + 1)
+  }
+
+  // Return ordered by status name for consistency
+  return Array.from(statusMap.entries())
+    .map(([status, count]) => ({ status, count }))
+    .sort((a, b) => a.status.localeCompare(b.status))
+}

@@ -12,6 +12,8 @@ import { MetricCard } from "./MetricCard"
 import { BestSellerCard } from "./BestSellerCard"
 import { DashboardFilter } from "./DashboardFilter"
 import { RevenueChart } from "./RevenueChart"
+import { OnlineOrdersStatusChart } from "./OnlineOrdersStatusChart"
+import { POSSalesStatusChart } from "./POSSalesStatusChart"
 
 export function DashboardClient() {
   const [filter, setFilter] = useState<FilterPeriod>("week")
@@ -102,6 +104,21 @@ export function DashboardClient() {
           end={dateRange.end}
           filter={filter}
         />
+      )}
+
+      {dateRange && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <OnlineOrdersStatusChart
+            start={dateRange.start}
+            end={dateRange.end}
+            filter={filter}
+          />
+          <POSSalesStatusChart
+            start={dateRange.start}
+            end={dateRange.end}
+            filter={filter}
+          />
+        </div>
       )}
     </div>
   )
