@@ -271,39 +271,39 @@ export default function POSPage() {
   }
 
   return (
-    <div className="flex h-screen bg-secondary overflow-hidden">
+    <div className="flex min-h-[calc(100vh-8rem)] bg-secondary rounded-lg overflow-hidden border">
       {/* Sidebar */}
-      <div className="w-56 bg-card shadow-sm border-r border-border flex flex-col">
-        <div className="p-4 border-b border-border">
-          <h2 className="text-lg font-bold text-card-foreground">Panel Admin</h2>
+      <div className="w-64 bg-card shadow-sm border-r border-border">
+        <div className="p-6 border-b border-border">
+          <h2 className="text-xl font-bold text-card-foreground">Panel Admin</h2>
         </div>
-        <nav className="p-3 space-y-1 flex-1">
-          <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md text-sm transition-colors">
-            <LayoutDashboard className="w-4 h-4"/>
+        <nav className="p-4 space-y-2">
+          <Link href="/admin" className="flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
+            <LayoutDashboard className="w-5 h-5"/>
             Dashboard
           </Link>
-          <Link href="/admin/users" className="flex items-center gap-2 px-3 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md text-sm transition-colors">
-            <Users className="w-4 h-4"/>
+          <Link href="/admin/users" className="flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
+            <Users className="w-5 h-5"/>
             Usuarios
           </Link>
-          <Link href="/admin/categories" className="flex items-center gap-2 px-3 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md text-sm transition-colors">
-            <Tag className="w-4 h-4"/>
+          <Link href="/admin/categories" className="flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
+            <Tag className="w-5 h-5"/>
             Categorías
           </Link>
-          <Link href="/admin/products" className="flex items-center gap-2 px-3 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md text-sm transition-colors">
-            <Package className="w-4 h-4"/>
+          <Link href="/admin/products" className="flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
+            <Package className="w-5 h-5"/>
             Productos
           </Link>
-          <Link href="/admin/sales" className="flex items-center gap-2 px-3 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md text-sm transition-colors">
-            <ShoppingBag className="w-4 h-4"/>
+          <Link href="/admin/sales" className="flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
+            <ShoppingBag className="w-5 h-5"/>
             Ventas
           </Link>
-          <Link href="/pos" className="flex items-center gap-2 px-3 py-2 bg-primary/10 text-primary rounded-md text-sm font-medium">
-            <ShoppingCart className="w-4 h-4"/>
+          <Link href="/pos" className="flex items-center gap-3 px-4 py-2 bg-primary/10 text-primary rounded-md transition-colors font-medium">
+            <ShoppingCart className="w-5 h-5"/>
             POS
           </Link>
-          <Link href="/admin/pos" className="flex items-center gap-2 px-3 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md text-sm transition-colors">
-            <ShoppingBag className="w-4 h-4"/>
+          <Link href="/admin/pos" className="flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors">
+            <ShoppingBag className="w-5 h-5"/>
             Ventas POS
           </Link>
         </nav>
@@ -312,8 +312,8 @@ export default function POSPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-card border-b border-border shrink-0">
-          <div className="px-4">
-            <div className="flex items-center justify-between h-14">
+          <div className="px-6">
+            <div className="flex items-center justify-between h-16">
               <div className="flex items-center gap-3">
                 <Link
                   href="/admin"
@@ -321,8 +321,8 @@ export default function POSPage() {
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </Link>
-                <h1 className="text-lg font-extrabold text-card-foreground flex items-center gap-2">
-                  <ShoppingCart className="w-5 h-5" />
+                <h1 className="text-xl font-extrabold text-card-foreground flex items-center gap-2">
+                  <ShoppingCart className="w-6 h-6" />
                   Punto de Venta
                 </h1>
               </div>
@@ -336,8 +336,8 @@ export default function POSPage() {
           </div>
         </header>
 
-        <main className="flex-1 min-h-0 flex overflow-hidden">
-          <div className="flex-1 flex flex-col overflow-hidden px-4 py-4">
+        <main className="flex-1 min-h-0 flex overflow-hidden p-6">
+          <div className="flex-1 flex flex-col overflow-hidden">
             <div className="mb-4 shrink-0">
               <ProductSearchBar onSearch={handleSearch} />
             </div>
