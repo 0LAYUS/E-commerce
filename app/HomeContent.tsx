@@ -1,6 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
+import HeroCarousel from "@/components/layout/HeroCarousel"
 import ProductList from "@/components/products/ProductList"
 
 type Category = {
@@ -19,12 +20,21 @@ type Product = {
 }
 
 export default function HomeContent({ categories, products }: { categories: Category[], products: Product[] }) {
+  const carouselItems = products.slice(0, 5).map((p) => ({
+    id: p.id,
+    title: p.name,
+    subtitle: p.description.slice(0, 80) + (p.description.length > 80 ? "..." : ""),
+    image_url: p.image_url || "",
+    link: `/products/${p.id}`,
+  }))
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      <HeroCarousel items={carouselItems} />
       <ProductList initialProducts={products} categories={categories} />
     </motion.div>
   )
