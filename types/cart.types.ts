@@ -64,7 +64,7 @@ export type ItemStatus = {
 
 export type CartContextType = {
   items: CartItem[]
-  addItem: (item: Omit<CartItem, "quantity">) => Promise<{ success: boolean; error?: string }>
+  addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => Promise<{ success: boolean; error?: string }>
   removeFromCart: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void

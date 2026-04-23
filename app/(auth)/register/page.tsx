@@ -12,6 +12,7 @@ function RegisterForm() {
   const searchParams = useSearchParams()
   const error = searchParams.get("error")
   const [showPassword, setShowPassword] = useState(false)
+  const [clientError, setClientError] = useState<string | null>(null)
 
   return (
     <motion.div
@@ -34,18 +35,60 @@ function RegisterForm() {
         <p className="mt-2 text-sm text-muted-foreground">Únete a nuestra tienda hoy</p>
       </div>
 
-      {error && (
+      {(clientError || error) && (
         <motion.div
           className="rounded-xl border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
         >
-          {error}
+          {clientError || error}
         </motion.div>
       )}
 
-      <form action={signup} className="mt-8 space-y-6">
+      <form 
+        action={signup} 
+        className="mt-8 space-y-6"
+        onSubmit={(e) => {
+          const password = (e.currentTarget.elements.namedItem("password") as HTMLInputElement).value;
+          const confirmPassword = (e.currentTarget.elements.namedItem("confirm_password") as HTMLInputElement).value;
+          
+          if (password !== confirmPassword) {
+            e.preventDefault();
+            setClientError("Las contraseñas no coinciden");
+          } else {
+            setClientError(null);
+          }
+        }}
+      >
         <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="first_name" className="block text-sm font-medium text-card-foreground mb-2">
+                Nombre
+              </label>
+              <input
+                id="first_name"
+                name="first_name"
+                type="text"
+                required
+                className="w-full rounded-xl border border-input bg-background px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600 transition-colors"
+                placeholder="Tu nombre"
+              />
+            </div>
+            <div>
+              <label htmlFor="last_name" className="block text-sm font-medium text-card-foreground mb-2">
+                Apellido
+              </label>
+              <input
+                id="last_name"
+                name="last_name"
+                type="text"
+                required
+                className="w-full rounded-xl border border-input bg-background px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600 transition-colors"
+                placeholder="Tu apellido"
+              />
+            </div>
+          </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-card-foreground mb-2">
               Correo electrónico
@@ -83,6 +126,19 @@ function RegisterForm() {
                 <Eye className="w-5 h-5" weight="bold" />
               )}
             </button>
+          </div>
+          <div className="relative">
+            <label htmlFor="confirm_password" className="block text-sm font-medium text-card-foreground mb-2">
+              Confirmar Contraseña
+            </label>
+            <input
+              id="confirm_password"
+              name="confirm_password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              required
+              className="w-full rounded-xl border border-input bg-background px-4 py-3 pr-12 text-card-foreground placeholder:text-muted-foreground focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600 transition-colors"
+            />
           </div>
         </div>
 
