@@ -23,7 +23,8 @@ export default async function UsersPage() {
     redirect("/")
   }
 
-  const users = await getAllUsers()
+  // Fetch initial users (first 50)
+  const initialData = await getAllUsers({ limit: 50, offset: 0 })
 
   return (
     <div className="flex flex-col h-screen px-4 py-4 overflow-hidden">
@@ -37,9 +38,11 @@ export default async function UsersPage() {
         </h1>
       </div>
 
-      <div className="flex-1 min-h-0">
-        <UserManagement users={users || []} updateUserRole={updateUserRole} />
-      </div>
+      <UserManagement
+        initialUsers={initialData.users || []}
+        totalUsers={initialData.total || 0}
+        updateUserRole={updateUserRole}
+      />
     </div>
   )
 }

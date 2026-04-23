@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
       .from("products")
       .select("id, name, description, price, stock, image_url, active, category_id")
       .eq("active", true)
+      .eq("archived", false)
 
     if (search) {
       query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`)

@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       if (item.variant_id) {
         const { data: sku, error: skuError } = await supabase
           .from("product_skus")
-          .select("*, product:products(name, active)")
+          .select("*, product:products(name, active, archived)")
           .eq("id", item.variant_id)
           .single()
 
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         }
 
         const product = sku.product as any
-        if (!product || !product.active) {
+        if (!product || !product.active || product.archived) {
           validated.status = "inactive"
           allValid = false
           validatedItems.push(validated)
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       } else {
         const { data: product, error: productError } = await supabase
           .from("products")
-          .select("id, name, price, stock, active")
+          .select("id, name, price, stock, active, archived")
           .eq("id", item.product_id)
           .single()
 
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        if (!product.active) {
+        if (!product.active || product.archived) {
           validated.status = "inactive"
           allValid = false
           validatedItems.push(validated)

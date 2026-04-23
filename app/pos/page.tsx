@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, ShoppingCart, Package, Tag, LayoutDashboard, Users, ShoppingBag } from "lucide-react"
 import ProductSearchBar from "./components/ProductSearchBar"
@@ -46,14 +45,6 @@ type SaleResponse = {
 }
 
 export default function POSPage() {
-  const router = useRouter()
-  const pathname = usePathname()
-
-  const isActive = (href: string) => {
-    if (href === "/admin") return pathname === "/admin"
-    return pathname.startsWith(href)
-  }
-
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>("")
@@ -266,8 +257,8 @@ export default function POSPage() {
       })
       setIsPaymentOpen(false)
       setIsReceiptOpen(true)
-    } catch (err: any) {
-      alert(err.message || "Error al procesar la venta")
+    } catch (err) {
+      alert((err as Error).message || "Error al procesar la venta")
     }
   }
 
