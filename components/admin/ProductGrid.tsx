@@ -234,7 +234,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
             No hay productos registrados.
           </div>
         )}
-        </div>
+      </div>
       </div>
 
       {/* Modal */}
