@@ -4,62 +4,27 @@ import { useEffect, useState, useCallback } from "react"
 import { DollarSign, CreditCard, Package } from "lucide-react"
 import {
   calculatePeriodDates,
-  getTotalRevenue,
-  getPOSSalesCount,
-  getReservedStockCount,
-  getBestSellingProduct,
-  getOnlineRevenue,
-  getPOSSalesTotal,
+  getDashboardMetrics,
   type FilterPeriod,
+  type DashboardMetrics,
 } from "@/lib/actions/adminActions"
 import { MetricCard } from "./MetricCard"
 import { BestSellerCard } from "./BestSellerCard"
 import { DashboardFilter } from "./DashboardFilter"
 
-interface DashboardData {
-  totalRevenue: number
-  onlineRevenue: number
-  posRevenue: number
-  posSalesCount: number
-  reservedStock: number
-  bestSeller: {
-    id: string
-    name: string
-    image_url: string | null
-    total_sold: number
-  } | null
-}
-
 export function DashboardClient() {
   const [filter, setFilter] = useState<FilterPeriod>("week")
   const [customStart, setCustomStart] = useState<Date | undefined>()
   const [customEnd, setCustomEnd] = useState<Date | undefined>()
-  const [data, setData] = useState<DashboardData | null>(null)
+  const [data, setData] = useState<DashboardMetrics | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
       const { start, end } = await calculatePeriodDates(filter, customStart, customEnd)
-
-      const [totalRevenue, onlineRevenue, posRevenue, posSalesCount, reservedStock, bestSeller] =
-        await Promise.all([
-          getTotalRevenue(start, end),
-          getOnlineRevenue(start, end),
-          getPOSSalesTotal(start, end),
-          getPOSSalesCount(start, end),
-          getReservedStockCount(), // NOT filtered - always current
-          getBestSellingProduct(start, end),
-        ])
-
-      setData({
-        totalRevenue,
-        onlineRevenue,
-        posRevenue,
-        posSalesCount,
-        reservedStock,
-        bestSeller,
-      })
+      const metrics = await getDashboardMetrics(start, end)
+      setData(metrics)
     } catch (error) {
       console.error("Error fetching dashboard data:", error)
     } finally {

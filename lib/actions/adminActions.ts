@@ -158,129 +158,91 @@ export async function deleteCategory(id: string): Promise<{ success: boolean; er
 }
 
 // ============================================
-// DASHBOARD METRICS (Phase 2)
+// DASHBOARD METRICS (Phase 2) — Consolidated
 // ============================================
 
-/**
- * Get total revenue from online orders (APPROVED) + POS sales combined
- */
-export async function getTotalRevenue(start: Date, end: Date): Promise<number> {
-  const supabase = await createClient()
-
-  // Online orders revenue (APPROVED only)
-  const { data: onlineRevenue, error: onlineError } = await supabase
-    .from("orders")
-    .select("total_amount")
-    .eq("status", "APPROVED")
-    .gte("created_at", start.toISOString())
-    .lte("created_at", end.toISOString())
-
-  if (onlineError) throw new Error(onlineError.message)
-
-  // POS sales revenue
-  const { data: posRevenue, error: posError } = await supabase
-    .from("pos_sales")
-    .select("total")
-    .gte("created_at", start.toISOString())
-    .lte("created_at", end.toISOString())
-
-  if (posError) throw new Error(posError.message)
-
-  const onlineTotal = (onlineRevenue ?? []).reduce((sum, o) => sum + (o.total_amount ?? 0), 0)
-  const posTotal = (posRevenue ?? []).reduce((sum, p) => sum + Number(p.total ?? 0), 0)
-
-  return onlineTotal + posTotal
+export interface DashboardMetrics {
+  totalRevenue: number
+  onlineRevenue: number
+  posRevenue: number
+  posSalesCount: number
+  reservedStock: number
+  bestSeller: {
+    id: string
+    name: string
+    image_url: string | null
+    total_sold: number
+  } | null
 }
 
 /**
- * Get POS sales count within period
+ * Get all dashboard metrics in a single server action.
+ * Executes 4 DB queries in parallel (orders, pos_sales, stock_reservations, order_items).
+ * Reduces network calls from 6 to 1.
  */
-export async function getPOSSalesCount(start: Date, end: Date): Promise<number> {
+export async function getDashboardMetrics(start: Date, end: Date): Promise<DashboardMetrics> {
   const supabase = await createClient()
-  const { count, error } = await supabase
-    .from("pos_sales")
-    .select("*", { count: "exact", head: true })
-    .gte("created_at", start.toISOString())
-    .lte("created_at", end.toISOString())
 
-  if (error) throw new Error(error.message)
-  return count ?? 0
-}
+  const [
+    ordersResult,
+    posSalesResult,
+    stockResult,
+    bestSellerResult,
+  ] = await Promise.all([
+    // 1. Online orders revenue (APPROVED only)
+    supabase
+      .from("orders")
+      .select("total_amount")
+      .eq("status", "APPROVED")
+      .gte("created_at", start.toISOString())
+      .lte("created_at", end.toISOString()),
 
-/**
- * Get POS sales total amount within period (for breakdown display)
- */
-export async function getPOSSalesTotal(start: Date, end: Date): Promise<number> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from("pos_sales")
-    .select("total")
-    .gte("created_at", start.toISOString())
-    .lte("created_at", end.toISOString())
+    // 2. POS sales count + total
+    supabase
+      .from("pos_sales")
+      .select("total")
+      .gte("created_at", start.toISOString())
+      .lte("created_at", end.toISOString()),
 
-  if (error) throw new Error(error.message)
-  return (data ?? []).reduce((sum, p) => sum + Number(p.total ?? 0), 0)
-}
+    // 3. Reserved stock count (always current, not filtered)
+    supabase
+      .from("stock_reservations")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending"),
 
-/**
- * Get online orders total revenue within period (for breakdown display)
- */
-export async function getOnlineRevenue(start: Date, end: Date): Promise<number> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from("orders")
-    .select("total_amount")
-    .eq("status", "APPROVED")
-    .gte("created_at", start.toISOString())
-    .lte("created_at", end.toISOString())
+    // 4. Best selling product
+    supabase
+      .from("order_items")
+      .select("quantity, products(id, name, image_url)")
+      .gte("created_at", start.toISOString())
+      .lte("created_at", end.toISOString()),
+  ])
 
-  if (error) throw new Error(error.message)
-  return (data ?? []).reduce((sum, o) => sum + (o.total_amount ?? 0), 0)
-}
+  if (ordersResult.error) throw new Error(ordersResult.error.message)
+  if (posSalesResult.error) throw new Error(posSalesResult.error.message)
+  if (stockResult.error) throw new Error(stockResult.error.message)
+  if (bestSellerResult.error) throw new Error(bestSellerResult.error.message)
 
-/**
- * Get current pending stock reservations count (NOT filterable - always current)
- */
-export async function getReservedStockCount(): Promise<number> {
-  const supabase = await createClient()
-  const { count, error } = await supabase
-    .from("stock_reservations")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "pending")
+  // Calculate online revenue
+  const onlineRevenue = (ordersResult.data ?? []).reduce(
+    (sum, o) => sum + (o.total_amount ?? 0),
+    0
+  )
 
-  if (error) throw new Error(error.message)
-  return count ?? 0
-}
+  // Calculate POS revenue + count
+  const posRevenue = (posSalesResult.data ?? []).reduce(
+    (sum, p) => sum + Number(p.total ?? 0),
+    0
+  )
+  const posSalesCount = posSalesResult.data?.length ?? 0
 
-/**
- * Get best selling product within period
- */
-export async function getBestSellingProduct(start: Date, end: Date): Promise<{
-  id: string
-  name: string
-  image_url: string | null
-  total_sold: number
-} | null> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from("order_items")
-    .select(`
-      quantity,
-      products (
-        id,
-        name,
-        image_url
-      )
-    `)
-    .gte("created_at", start.toISOString())
-    .lte("created_at", end.toISOString())
+  // Reserved stock (always current)
+  const reservedStock = stockResult.count ?? 0
 
-  if (error) throw new Error(error.message)
-
-  // Aggregate by product
+  // Best seller aggregation
   const productMap = new Map<string, { id: string; name: string; image_url: string | null; total_sold: number }>()
 
-  for (const item of data ?? []) {
+  for (const item of bestSellerResult.data ?? []) {
     const product = item.products as unknown as { id: string; name: string; image_url: string | null } | null
     if (!product) continue
 
@@ -297,8 +259,15 @@ export async function getBestSellingProduct(start: Date, end: Date): Promise<{
     }
   }
 
-  // Sort by total_sold descending
-  const sorted = Array.from(productMap.values()).sort((a, b) => b.total_sold - a.total_sold)
+  const sortedProducts = Array.from(productMap.values()).sort((a, b) => b.total_sold - a.total_sold)
+  const bestSeller = sortedProducts[0] ?? null
 
-  return sorted[0] ?? null
+  return {
+    totalRevenue: onlineRevenue + posRevenue,
+    onlineRevenue,
+    posRevenue,
+    posSalesCount,
+    reservedStock,
+    bestSeller,
+  }
 }
