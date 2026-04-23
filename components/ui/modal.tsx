@@ -4,7 +4,10 @@ import * as React from "react"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { Button, ButtonProps } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { type VariantProps } from "class-variance-authority"
+
+type ButtonVariant = VariantProps<typeof buttonVariants>["variant"]
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Modal — Shell genérico
@@ -98,7 +101,7 @@ interface AlertDialogProps {
   description?: string
   acceptText?: string
   onAccept?: () => void
-  acceptVariant?: ButtonProps["variant"]
+  acceptVariant?: ButtonVariant
 }
 
 export function AlertDialog({
@@ -157,7 +160,7 @@ interface ConfirmDialogProps {
   confirmText?: string
   cancelText?: string
   showCancel?: boolean
-  confirmVariant?: ButtonProps["variant"]
+  confirmVariant?: ButtonVariant
   destructive?: boolean
 }
 

@@ -1,14 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { DollarSign, CreditCard, Smartphone, Filter, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+
+type SaleItem = {
+  product_id: string
+  variant_id?: string
+  quantity: number
+}
 
 type Sale = {
   id: string
   seller: { id: string; email: string }
   customer_name: string | null
-  items: any[]
+  items: SaleItem[]
   subtotal: number
   discount_amount: number
   total: number
@@ -24,11 +30,7 @@ export default function AdminPOSSalesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [filter, setFilter] = useState({ from: "", to: "", payment_method: "" })
 
-  useEffect(() => {
-    loadSales()
-  }, [filter])
-
-  const loadSales = async () => {
+  const loadSales = useCallback(async () => {
     setIsLoading(true)
     try {
       const params = new URLSearchParams()
@@ -44,7 +46,11 @@ export default function AdminPOSSalesPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [filter])
+
+  useEffect(() => {
+    loadSales()
+  }, [loadSales])
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(price)
