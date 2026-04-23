@@ -32,29 +32,29 @@ export default function UserManagement({ users, updateUserRole }: UserManagement
   }
 
   return (
-    <div className="bg-card rounded-xl border overflow-hidden">
-      <div>
+    <div className="bg-card rounded-xl border overflow-hidden flex flex-col h-full">
+      <div className="overflow-auto flex-1 min-h-0">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-muted/50 border-b border-border">
-              <th className="text-left p-4 font-medium text-muted-foreground">Usuario</th>
-              <th className="text-left p-4 font-medium text-muted-foreground">Rol</th>
-              <th className="text-left p-4 font-medium text-muted-foreground">Fecha de registro</th>
-              <th className="text-left p-4 font-medium text-muted-foreground w-12"></th>
+          <thead className="sticky top-0 z-10 bg-card">
+            <tr className="border-b border-border">
+              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Usuario</th>
+              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Rol</th>
+              <th className="text-left py-3 px-4 font-medium text-muted-foreground">Fecha de registro</th>
+              <th className="py-3 px-4 w-12"></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border">
             {users.map((user) => (
-              <tr key={user.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition">
-                <td className="p-4">
+              <tr key={user.id} className="hover:bg-muted/30 transition">
+                <td className="py-3 px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5" />
+                    <div className="w-9 h-9 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4" />
                     </div>
                     <span className="font-medium text-foreground">{user.email}</span>
                   </div>
                 </td>
-                <td className="p-4">
+                <td className="py-3 px-4">
                   <span
                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
                       user.role === "administrador"
@@ -68,14 +68,14 @@ export default function UserManagement({ users, updateUserRole }: UserManagement
                     {user.role === "administrador" ? "Administrador" : "Cliente"}
                   </span>
                 </td>
-                <td className="p-4 text-muted-foreground">
+                <td className="py-3 px-4 text-muted-foreground">
                   {new Date(user.created_at).toLocaleDateString("es-CO", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                   })}
                 </td>
-                <td className="p-4">
+                <td className="py-3 px-4">
                   <div className="relative">
                     <button
                       onClick={() => setOpenMenu(openMenu === user.id ? null : user.id)}
@@ -117,7 +117,7 @@ export default function UserManagement({ users, updateUserRole }: UserManagement
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={4} className="p-8 text-center text-muted-foreground">
+                <td colSpan={4} className="py-8 text-center text-muted-foreground">
                   No hay usuarios registrados.
                 </td>
               </tr>
