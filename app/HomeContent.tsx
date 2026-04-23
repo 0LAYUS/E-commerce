@@ -20,7 +20,9 @@ type Product = {
 }
 
 export default function HomeContent({ categories, products }: { categories: Category[], products: Product[] }) {
-  const carouselItems = products.slice(0, 5).map((p) => ({
+  const inStockProducts = products.filter((p) => (p.stock > 0 || p.effective_stock > 0) && p.image_url)
+  const randomProducts = inStockProducts.sort(() => Math.random() - 0.5).slice(0, 5)
+  const carouselItems = randomProducts.map((p) => ({
     id: p.id,
     title: p.name,
     subtitle: p.description.slice(0, 80) + (p.description.length > 80 ? "..." : ""),
