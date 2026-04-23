@@ -22,7 +22,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
     .select("*, categories(name)")
     .eq("id", id)
     .eq("active", true)
-    .eq("archived", false)
     .single()
 
   // If not found, check if it exists and is archived (for showing grayed page)

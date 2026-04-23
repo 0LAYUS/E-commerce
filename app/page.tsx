@@ -4,8 +4,8 @@ import HomeContent from "./HomeContent"
 
 async function getProductsData() {
   const supabase = await createClient()
-  const { data: categories } = await supabase.from('categories').select('*').eq('archived', false)
-  const { data: products } = await supabase.from('products').select('*').eq('active', true).eq('archived', false).order('created_at', { ascending: false })
+  const { data: categories } = await supabase.from('categories').select('*')
+  const { data: products } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending: false })
   const { data: optionTypes } = await supabase
     .from('product_option_types')
     .select('product_id')

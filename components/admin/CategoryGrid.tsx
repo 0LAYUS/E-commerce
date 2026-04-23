@@ -104,33 +104,19 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-              <h3 className="text-sm font-bold text-card-foreground mb-1 line-clamp-1">{c.name}</h3>
-              <p className="text-xs text-muted-foreground mb-3 flex-grow line-clamp-2">
-                {c.description || 'Sin descripción.'}
-              </p>
-              <span className="text-xs font-semibold text-primary">{c.products?.length || 0} productos</span>
             </div>
-          ))}
-          {(!categories || categories.length === 0) && (
-            <div className="col-span-full py-16 text-center text-muted-foreground bg-card border rounded-xl shadow-sm">
-              Aún no hay categorías registradas.
-            </div>
-          )}
-        </div>
-      </div>
-              <h3 className="text-sm font-bold text-card-foreground mb-1 line-clamp-1">{c.name}</h3>
-              <p className="text-xs text-muted-foreground mb-3 flex-grow line-clamp-2">
-                {c.description || 'Sin descripción.'}
-              </p>
-              <span className="text-xs font-semibold text-primary">{c.products?.length || 0} productos</span>
-            </div>
-          ))}
-          {(!categories || categories.length === 0) && (
-            <div className="col-span-full py-16 text-center text-muted-foreground bg-card border rounded-xl shadow-sm">
-              Aún no hay categorías registradas.
-            </div>
-          )}
-        </div>
+            <h3 className="text-sm font-bold text-card-foreground mb-1 line-clamp-1">{c.name}</h3>
+            <p className="text-xs text-muted-foreground mb-3 flex-grow line-clamp-2">
+              {c.description || 'Sin descripción.'}
+            </p>
+            <span className="text-xs font-semibold text-primary">{c.products?.length || 0} productos</span>
+          </div>
+        ))}
+        {(!categories || categories.length === 0) && (
+          <div className="col-span-full py-16 text-center text-muted-foreground bg-card border rounded-xl shadow-sm">
+            Aún no hay categorías registradas.
+          </div>
+        )}
       </div>
 
       {/* MODAL OVERLAY */}
@@ -145,37 +131,37 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="p-6">
               <form action={handleSubmit} className="space-y-5">
                 {editingCategory && <input type="hidden" name="id" value={editingCategory.id} />}
-                
+
                 <div>
                   <label className="block text-sm font-semibold text-card-foreground mb-1.5">Nombre de la Categoría</label>
-                  <input 
-                    name="name" 
-                    defaultValue={editingCategory?.name} 
-                    required 
+                  <input
+                    name="name"
+                    defaultValue={editingCategory?.name}
+                    required
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="Ej: Electrónica, Ropa, Hogar..."
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-semibold text-card-foreground mb-1.5">Descripción (Opcional)</label>
-                  <textarea 
-                    name="description" 
-                    defaultValue={editingCategory?.description} 
-                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
+                  <textarea
+                    name="description"
+                    defaultValue={editingCategory?.description}
+                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     rows={4}
                     placeholder="Escribe una breve descripción de lo que incluye esta categoría..."
                   ></textarea>
                 </div>
 
                 <div className="pt-4 border-t border-border mt-2">
-                  <button 
-                    type="submit" 
-                    disabled={isSubmitting} 
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3.5 rounded-lg font-bold transition shadow-sm disabled:opacity-50"
                   >
                     {isSubmitting ? "Guardando..." : "Guardar Categoría"}

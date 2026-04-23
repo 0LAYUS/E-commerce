@@ -17,6 +17,7 @@ type Product = {
   price: number
   category_id: string
   image_url: string
+  stock: number
   hasVariants?: boolean
 }
 
@@ -30,7 +31,7 @@ export default function HomeContent({ categories, products }: { categories: Cate
   }>>([])
 
   useEffect(() => {
-    const inStockProducts = products.filter((p) => (p.stock > 0 || p.effective_stock > 0) && p.image_url)
+    const inStockProducts = products.filter((p) => p.stock > 0 && p.image_url)
     const randomProducts = inStockProducts.sort(() => Math.random() - 0.5)
     setCarouselItems(randomProducts.map((p) => ({
       id: p.id,

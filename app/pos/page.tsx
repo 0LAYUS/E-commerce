@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, ShoppingCart, Package, Tag, LayoutDashboard, Users, ShoppingBag } from "lucide-react"
 import ProductSearchBar from "./components/ProductSearchBar"
@@ -45,6 +46,9 @@ type SaleResponse = {
 }
 
 export default function POSPage() {
+  const pathname = usePathname()
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/")
+
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>("")
