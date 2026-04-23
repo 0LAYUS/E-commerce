@@ -202,7 +202,7 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
       <Card className={cn("overflow-hidden", className)}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Revenue Overview
+            Resumen de Ingresos
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -218,12 +218,12 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
       <Card className={cn("overflow-hidden", className)}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Revenue Overview
+            Resumen de Ingresos
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-72 flex items-center justify-center text-muted-foreground text-sm">
-            No revenue data available
+            Sin datos de ingresos disponibles
           </div>
         </CardContent>
       </Card>
@@ -234,7 +234,7 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
     <Card className={cn("overflow-hidden", className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
-          Revenue Overview
+          Resumen de Ingresos
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -243,11 +243,11 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
           <div className="flex gap-4 mb-4 justify-end">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.online }} />
-              <span className="text-xs text-muted-foreground">Online Orders</span>
+              <span className="text-xs text-muted-foreground">Órdenes Online</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.pos }} />
-              <span className="text-xs text-muted-foreground">POS Sales</span>
+              <span className="text-xs text-muted-foreground">Ventas POS</span>
             </div>
           </div>
 
@@ -317,7 +317,7 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
             })}
 
             {/* Hover line */}
-            {hoveredIndex !== null && (
+            {hoveredIndex !== null && data.online[hoveredIndex] && (
               <line
                 x1={xScale(data.online[hoveredIndex].day, hoveredIndex)}
                 y1={PADDING.top}

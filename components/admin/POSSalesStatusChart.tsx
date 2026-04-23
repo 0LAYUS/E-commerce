@@ -20,10 +20,10 @@ interface POSSalesStatusChartProps {
 
 // Status display names and colors
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  paid: { label: "Paid", color: "hsl(var(--chart-2))" },
-  pending: { label: "Pending", color: "hsl(var(--chart-3))" },
-  failed: { label: "Failed", color: "hsl(var(--destructive))" },
-  refunded: { label: "Refunded", color: "hsl(var(--chart-5))" },
+  paid: { label: "Pagado", color: "hsl(var(--chart-2))" },
+  pending: { label: "Pendiente", color: "hsl(var(--chart-3))" },
+  failed: { label: "Fallido", color: "hsl(var(--destructive))" },
+  refunded: { label: "Reembolsado", color: "hsl(var(--chart-5))" },
 }
 
 // Default color for unknown statuses
@@ -75,7 +75,7 @@ export function POSSalesStatusChart({
       <Card className={cn("overflow-hidden", className)}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            POS Sales
+            Ventas POS
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -96,11 +96,11 @@ export function POSSalesStatusChart({
       <Card className={cn("overflow-hidden", className)}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            POS Sales
+            Ventas POS
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No data available</p>
+          <p className="text-sm text-muted-foreground">Sin datos disponibles</p>
         </CardContent>
       </Card>
     )
@@ -110,7 +110,7 @@ export function POSSalesStatusChart({
     <Card className={cn("overflow-hidden", className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
-          POS Sales
+          Ventas POS
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">

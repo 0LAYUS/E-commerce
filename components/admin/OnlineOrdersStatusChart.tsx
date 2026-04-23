@@ -20,9 +20,9 @@ interface OnlineOrdersStatusChartProps {
 
 // Status display names and colors
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  PENDING: { label: "Pending", color: "hsl(var(--chart-3))" },
-  APPROVED: { label: "Approved", color: "hsl(var(--chart-2))" },
-  DECLINED: { label: "Declined", color: "hsl(var(--destructive))" },
+  PENDING: { label: "Pendiente", color: "hsl(var(--chart-3))" },
+  APPROVED: { label: "Aprobado", color: "hsl(var(--chart-2))" },
+  DECLINED: { label: "Rechazado", color: "hsl(var(--destructive))" },
   ERROR: { label: "Error", color: "hsl(var(--chart-5))" },
 }
 
@@ -75,7 +75,7 @@ export function OnlineOrdersStatusChart({
       <Card className={cn("overflow-hidden", className)}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Online Orders
+            Órdenes Online
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -96,11 +96,11 @@ export function OnlineOrdersStatusChart({
       <Card className={cn("overflow-hidden", className)}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Online Orders
+            Órdenes Online
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No data available</p>
+          <p className="text-sm text-muted-foreground">Sin datos disponibles</p>
         </CardContent>
       </Card>
     )
@@ -110,7 +110,7 @@ export function OnlineOrdersStatusChart({
     <Card className={cn("overflow-hidden", className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
-          Online Orders
+          Órdenes Online
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">

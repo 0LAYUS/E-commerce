@@ -35,14 +35,14 @@ export function BestSellerCard({
   className,
 }: BestSellerCardProps) {
   const formatSold = (count: number): string => {
-    return `${count} sold${count !== 1 ? "s" : ""}`
+    return `${count} vendido${count !== 1 ? "s" : ""}`
   }
 
   return (
     <Card className={cn("overflow-hidden", className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
-          Best Product
+          Mejor Producto
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -62,7 +62,7 @@ export function BestSellerCard({
               </div>
             ) : (
               <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center">
-                <span className="text-muted-foreground text-xs">No image</span>
+                <span className="text-muted-foreground text-xs">Sin imagen</span>
               </div>
             )}
             <div className="min-w-0 flex-1">
@@ -78,7 +78,7 @@ export function BestSellerCard({
             </div>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">No sales</p>
+          <p className="text-sm text-muted-foreground">Sin ventas</p>
         )}
       </CardContent>
     </Card>

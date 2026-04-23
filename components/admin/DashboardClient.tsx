@@ -66,7 +66,7 @@ export function DashboardClient() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
-          title="Revenue Total"
+          title="Ingresos Totales"
           value={loading ? 0 : formatCurrency(data?.totalRevenue ?? 0)}
           subtitle={
             loading
@@ -80,9 +80,15 @@ export function DashboardClient() {
         />
 
         <MetricCard
-          title="Ventas POS"
-          value={loading ? 0 : data?.posSalesCount ?? 0}
-          subtitle={loading ? undefined : "Transacciones en el periodo"}
+          title="Total Transacciones"
+          value={loading ? 0 : ((data?.onlineOrdersCount ?? 0) + (data?.posSalesCount ?? 0))}
+          subtitle={
+            loading
+              ? undefined
+              : data
+              ? `Online: ${data.onlineOrdersCount} | POS: ${data.posSalesCount}`
+              : undefined
+          }
           icon={<CreditCard className="h-4 w-4" />}
           loading={loading}
         />

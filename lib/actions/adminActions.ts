@@ -166,6 +166,7 @@ export interface DashboardMetrics {
   onlineRevenue: number
   posRevenue: number
   posSalesCount: number
+  onlineOrdersCount: number
   reservedStock: number
   bestSeller: {
     id: string
@@ -188,6 +189,7 @@ export async function getDashboardMetrics(start: Date, end: Date): Promise<Dashb
     posSalesResult,
     stockResult,
     bestSellerResult,
+    onlineOrdersCountResult,
   ] = await Promise.all([
     // 1. Online orders revenue (APPROVED only)
     supabase
@@ -216,12 +218,20 @@ export async function getDashboardMetrics(start: Date, end: Date): Promise<Dashb
       .select("quantity, products(id, name, image_url)")
       .gte("created_at", start.toISOString())
       .lte("created_at", end.toISOString()),
+
+    // 5. Online orders count (all statuses)
+    supabase
+      .from("orders")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", start.toISOString())
+      .lte("created_at", end.toISOString()),
   ])
 
   if (ordersResult.error) throw new Error(ordersResult.error.message)
   if (posSalesResult.error) throw new Error(posSalesResult.error.message)
   if (stockResult.error) throw new Error(stockResult.error.message)
   if (bestSellerResult.error) throw new Error(bestSellerResult.error.message)
+  if (onlineOrdersCountResult.error) throw new Error(onlineOrdersCountResult.error.message)
 
   // Calculate online revenue
   const onlineRevenue = (ordersResult.data ?? []).reduce(
@@ -235,6 +245,7 @@ export async function getDashboardMetrics(start: Date, end: Date): Promise<Dashb
     0
   )
   const posSalesCount = posSalesResult.data?.length ?? 0
+  const onlineOrdersCount = onlineOrdersCountResult.count ?? 0
 
   // Reserved stock (always current)
   const reservedStock = stockResult.count ?? 0
@@ -267,6 +278,7 @@ export async function getDashboardMetrics(start: Date, end: Date): Promise<Dashb
     onlineRevenue,
     posRevenue,
     posSalesCount,
+    onlineOrdersCount,
     reservedStock,
     bestSeller,
   }
