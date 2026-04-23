@@ -11,6 +11,7 @@ import {
 import { MetricCard } from "./MetricCard"
 import { BestSellerCard } from "./BestSellerCard"
 import { DashboardFilter } from "./DashboardFilter"
+import { RevenueChart } from "./RevenueChart"
 
 export function DashboardClient() {
   const [filter, setFilter] = useState<FilterPeriod>("week")
@@ -18,6 +19,7 @@ export function DashboardClient() {
   const [customEnd, setCustomEnd] = useState<Date | undefined>()
   const [data, setData] = useState<DashboardMetrics | null>(null)
   const [loading, setLoading] = useState(true)
+  const [dateRange, setDateRange] = useState<{ start: Date; end: Date } | null>(null)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -25,6 +27,7 @@ export function DashboardClient() {
       const { start, end } = await calculatePeriodDates(filter, customStart, customEnd)
       const metrics = await getDashboardMetrics(start, end)
       setData(metrics)
+      setDateRange({ start, end })
     } catch (error) {
       console.error("Error fetching dashboard data:", error)
     } finally {
@@ -92,6 +95,14 @@ export function DashboardClient() {
 
         <BestSellerCard product={data?.bestSeller ?? null} loading={loading} />
       </div>
+
+      {dateRange && (
+        <RevenueChart
+          start={dateRange.start}
+          end={dateRange.end}
+          filter={filter}
+        />
+      )}
     </div>
   )
 }

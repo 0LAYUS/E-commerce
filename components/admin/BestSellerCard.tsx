@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
@@ -33,11 +34,15 @@ export function BestSellerCard({
   loading = false,
   className,
 }: BestSellerCardProps) {
+  const formatSold = (count: number): string => {
+    return `${count} sold${count !== 1 ? "s" : ""}`
+  }
+
   return (
     <Card className={cn("overflow-hidden", className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
-          Mejor Producto
+          Best Product
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -46,27 +51,34 @@ export function BestSellerCard({
         ) : product ? (
           <div className="flex items-center gap-3">
             {product.image_url ? (
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="w-12 h-12 object-contain rounded-md bg-muted"
-              />
+              <div className="relative w-12 h-12 rounded-md bg-muted overflow-hidden">
+                <Image
+                  src={product.image_url}
+                  alt={product.name}
+                  fill
+                  className="object-contain"
+                  sizes="48px"
+                />
+              </div>
             ) : (
               <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center">
-                <span className="text-muted-foreground text-xs">Sin imagen</span>
+                <span className="text-muted-foreground text-xs">No image</span>
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <p className="font-medium text-sm text-foreground truncate" title={product.name}>
+              <p
+                className="font-medium text-sm text-foreground truncate"
+                title={product.name}
+              >
                 {product.name}
               </p>
               <p className="text-xs text-muted-foreground">
-                {product.total_sold} vendido{product.total_sold !== 1 ? "s" : ""}
+                {formatSold(product.total_sold)}
               </p>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Sin ventas</p>
+          <p className="text-sm text-muted-foreground">No sales</p>
         )}
       </CardContent>
     </Card>

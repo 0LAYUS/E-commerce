@@ -271,3 +271,92 @@ export async function getDashboardMetrics(start: Date, end: Date): Promise<Dashb
     bestSeller,
   }
 }
+
+// ============================================
+// REVENUE BY DAY (Phase 3)
+// ============================================
+
+export interface RevenueDayData {
+  day: string
+  revenue: number
+}
+
+export interface RevenueByDayResult {
+  online: RevenueDayData[]
+  pos: RevenueDayData[]
+}
+
+/**
+ * Get daily revenue breakdown for online orders and POS sales.
+ * Fills in missing days with 0 revenue.
+ */
+export async function getRevenueByDay(
+  start: Date,
+  end: Date
+): Promise<RevenueByDayResult> {
+  const supabase = await createClient()
+
+  const [ordersResult, posResult] = await Promise.all([
+    // Online orders revenue by day (APPROVED only)
+    supabase
+      .from("orders")
+      .select("created_at, total_amount")
+      .eq("status", "APPROVED")
+      .gte("created_at", start.toISOString())
+      .lte("created_at", end.toISOString()),
+
+    // POS sales revenue by day
+    supabase
+      .from("pos_sales")
+      .select("created_at, total")
+      .gte("created_at", start.toISOString())
+      .lte("created_at", end.toISOString()),
+  ])
+
+  if (ordersResult.error) throw new Error(ordersResult.error.message)
+  if (posResult.error) throw new Error(posResult.error.message)
+
+  // Aggregate online revenue by day
+  const onlineMap = new Map<string, number>()
+  for (const order of ordersResult.data ?? []) {
+    const day = new Date(order.created_at).toISOString().split("T")[0]
+    onlineMap.set(day, (onlineMap.get(day) ?? 0) + (order.total_amount ?? 0))
+  }
+
+  // Aggregate POS revenue by day
+  const posMap = new Map<string, number>()
+  for (const sale of posResult.data ?? []) {
+    const day = new Date(sale.created_at).toISOString().split("T")[0]
+    posMap.set(day, (posMap.get(day) ?? 0) + Number(sale.total ?? 0))
+  }
+
+  // Generate all days in range with 0 for missing
+  const allDays: RevenueDayData[] = []
+  const current = new Date(start)
+  current.setHours(0, 0, 0, 0)
+
+  while (current <= end) {
+    const dayStr = current.toISOString().split("T")[0]
+    allDays.push({
+      day: dayStr,
+      revenue: onlineMap.get(dayStr) ?? 0,
+    })
+    current.setDate(current.getDate() + 1)
+  }
+
+  // Generate POS days
+  const posDays: RevenueDayData[] = []
+  const posCurrent = new Date(start)
+  posCurrent.setHours(0, 0, 0, 0)
+
+  while (posCurrent <= end) {
+    const dayStr = posCurrent.toISOString().split("T")[0]
+    posDays.push({
+      day: dayStr,
+      revenue: posMap.get(dayStr) ?? 0,
+    })
+    posCurrent.setDate(posCurrent.getDate() + 1)
+  }
+
+  return { online: allDays, pos: posDays }
+}
