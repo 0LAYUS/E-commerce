@@ -271,19 +271,19 @@ export default function POSPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      <header className="bg-card border-b border-border shrink-0">
+        <div className="px-4">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center gap-3">
               <Link
                 href="/admin"
                 className="p-2 hover:bg-accent rounded-lg transition"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Link>
-              <h1 className="text-xl font-extrabold text-card-foreground flex items-center gap-2">
-                <ShoppingCart className="w-6 h-6" />
+              <h1 className="text-lg font-extrabold text-card-foreground flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5" />
                 Punto de Venta
               </h1>
             </div>
@@ -297,70 +297,68 @@ export default function POSPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-card rounded-xl shadow-sm border p-4">
+      <main className="flex-1 min-h-0 flex overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden px-4 py-4">
+          <div className="mb-4 shrink-0">
               <ProductSearchBar onSearch={handleSearch} />
             </div>
 
-            <div className="bg-card rounded-xl shadow-sm border p-4">
-              <div className="flex gap-2 mb-4 flex-wrap">
-                <button
-                  onClick={() => handleCategoryChange("")}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                    selectedCategory === ""
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary hover:bg-accent"
-                  }`}
-                >
-                  Todas
-                </button>
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleCategoryChange(cat.id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                      selectedCategory === cat.id
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary hover:bg-accent"
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-              </div>
-
-              {isLoading ? (
-                <div className="flex items-center justify-center py-16">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                </div>
-              ) : (
-                <ProductGridPOS
-                  products={products}
-                  onSelectProduct={handleSelectProduct}
-                  onSelectVariant={handleSelectVariant}
-                />
-              )}
-            </div>
+          <div className="flex gap-2 mb-4 flex-wrap shrink-0">
+            <button
+              onClick={() => handleCategoryChange("")}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                selectedCategory === ""
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary hover:bg-accent"
+              }`}
+            >
+              Todas
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => handleCategoryChange(cat.id)}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                  selectedCategory === cat.id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary hover:bg-accent"
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
           </div>
 
-          <div className="lg:col-span-1">
-            <div className="sticky top-24">
-              <CartPOS
-                items={cart}
-                onUpdateQuantity={handleUpdateQuantity}
-                onRemoveItem={handleRemoveItem}
-                onApplyDiscount={handleApplyDiscount}
-                onClearCart={handleClearCart}
-                subtotal={subtotal}
-                discount_amount={discountAmount}
-                total={total}
-                onOpenPayment={() => setIsPaymentOpen(true)}
-                customerName={customerName}
-                onCustomerNameChange={setCustomerName}
+          <div className="flex-1 min-h-0 overflow-auto">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              </div>
+            ) : (
+              <ProductGridPOS
+                products={products}
+                onSelectProduct={handleSelectProduct}
+                onSelectVariant={handleSelectVariant}
               />
-            </div>
+            )}
+          </div>
+        </div>
+
+        <div className="w-80 xl:w-96 shrink-0 border-l border-border overflow-auto">
+          <div className="p-4">
+            <CartPOS
+              items={cart}
+              onUpdateQuantity={handleUpdateQuantity}
+              onRemoveItem={handleRemoveItem}
+              onApplyDiscount={handleApplyDiscount}
+              onClearCart={handleClearCart}
+              subtotal={subtotal}
+              discount_amount={discountAmount}
+              total={total}
+              onOpenPayment={() => setIsPaymentOpen(true)}
+              customerName={customerName}
+              onCustomerNameChange={setCustomerName}
+            />
           </div>
         </div>
       </main>

@@ -46,14 +46,14 @@ export default function ProductGrid({ products, onSelectProduct, onSelectVariant
   }
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
       {products.map((product) => {
         const hasVariants = product.variants && product.variants.length > 0
 
 if (hasVariants) {
           return (
-            <div key={product.id} className="bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col h-full">
-              <div className="aspect-square bg-muted flex items-center justify-center p-4 border-b border-border relative h-48">
+            <div key={product.id} className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col">
+              <div className="aspect-square bg-muted flex items-center justify-center p-2 border-b border-border relative">
                 {product.image_url ? (
                   <img
                     src={product.image_url}
@@ -64,17 +64,14 @@ if (hasVariants) {
                   <span className="text-xs text-muted-foreground font-mono">IMG</span>
                 )}
               </div>
-              <div className="p-4 flex flex-col flex-grow">
-                <h3 className="font-bold text-card-foreground text-sm mb-1 line-clamp-2">
+              <div className="p-2 flex flex-col flex-grow">
+                <h3 className="font-bold text-card-foreground text-xs mb-0.5 line-clamp-1">
                   {product.name}
                 </h3>
-                <p className="text-xs text-muted-foreground mb-2">
-                  {product.category?.name || "Sin categoría"}
-                </p>
-                <div className="font-extrabold text-primary text-lg mb-1">
+                <div className="font-extrabold text-primary text-sm mb-1">
                   {formatPrice(product.price)}
                 </div>
-                <p className="text-xs text-muted-foreground mb-3">
+                <p className="text-xs text-muted-foreground mb-2">
                   {product.variants.length} variante(s)
                 </p>
                 <div className="mt-auto space-y-1">
@@ -82,18 +79,18 @@ if (hasVariants) {
                     <button
                       key={variant.id}
                       onClick={() => onSelectVariant(product, variant)}
-                      className="w-full text-left px-3 py-2 text-xs bg-secondary rounded-lg hover:bg-accent transition flex justify-between items-center"
+                      className="w-full text-left px-2 py-1.5 text-xs bg-secondary rounded-md hover:bg-accent transition flex justify-between items-center"
                     >
                       <span className="font-mono truncate">
                         {variant.sku_code || variant.id.slice(0, 8)}
                       </span>
-                      <span className="text-muted-foreground ml-2">
-                        Stock: {variant.stock}
+                      <span className="text-muted-foreground ml-1">
+                        {variant.stock}
                       </span>
                     </button>
                   ))}
                   {product.variants.length > 2 && (
-                    <p className="text-xs text-center text-muted-foreground pt-1">
+                    <p className="text-xs text-center text-muted-foreground pt-0.5">
                       +{product.variants.length - 2} más
                     </p>
                   )}
@@ -104,8 +101,8 @@ if (hasVariants) {
         }
 
         return (
-          <div key={product.id} className="bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
-            <div className="aspect-square bg-muted flex items-center justify-center p-4 border-b border-border relative">
+          <div key={product.id} className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col">
+            <div className="aspect-square bg-muted flex items-center justify-center p-2 border-b border-border relative">
               {product.image_url ? (
                 <img
                   src={product.image_url}
@@ -123,25 +120,22 @@ if (hasVariants) {
                 </div>
               )}
             </div>
-            <div className="p-4 flex flex-col flex-grow">
-              <h3 className="font-bold text-card-foreground text-sm mb-1 line-clamp-2">
+            <div className="p-2 flex flex-col flex-grow">
+              <h3 className="font-bold text-card-foreground text-xs mb-0.5 line-clamp-1">
                 {product.name}
               </h3>
-              <p className="text-xs text-muted-foreground mb-2">
-                {product.category?.name || "Sin categoría"}
-              </p>
-              <div className="font-extrabold text-primary text-lg mb-1">
+              <div className="font-extrabold text-primary text-sm mb-1">
                 {formatPrice(product.price)}
               </div>
-              <p className="text-xs text-muted-foreground mb-3">
+              <p className="text-xs text-muted-foreground mb-2">
                 Stock: {product.stock}
               </p>
               <button
                 onClick={() => onSelectProduct(product)}
                 disabled={product.stock === 0}
-                className="mt-auto w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition"
+                className="mt-auto w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed py-2 rounded-md font-semibold text-xs flex items-center justify-center gap-1 transition"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
                 Agregar
               </button>
             </div>
