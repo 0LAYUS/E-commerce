@@ -195,10 +195,11 @@ export default function ProductList({ initialProducts, categories }: { initialPr
               if (el) productRefs.current.set(product.id, el)
             }}
             data-product-id={product.id}
-            className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col hover:shadow-2xl hover:border-gray-600 transition-all duration-300"
+            className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col hover:shadow-2xl hover:border-gray-600 transition-all duration-300 cursor-pointer"
             variants={itemVariants}
             whileHover={{ y: -8 }}
             layout
+            onClick={() => router.push(`/products/${product.id}`)}
           >
             <motion.div
               className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden"
@@ -249,7 +250,7 @@ export default function ProductList({ initialProducts, categories }: { initialPr
             </motion.div>
 
             <div className="p-4 flex flex-col flex-grow">
-              <Link href={`/products/${product.id}`} className="flex-grow">
+              <div className="flex-grow">
                 <motion.h3
                   className="font-bold text-card-foreground group-hover:text-foreground transition-colors duration-200 line-clamp-2 text-sm leading-tight mb-2"
                   whileHover={{ x: 5 }}
@@ -257,7 +258,7 @@ export default function ProductList({ initialProducts, categories }: { initialPr
                   {product.name}
                 </motion.h3>
                 <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{product.description}</p>
-              </Link>
+              </div>
 
               <motion.div
                 className="flex items-center gap-1 mb-3"
@@ -284,6 +285,7 @@ export default function ProductList({ initialProducts, categories }: { initialPr
                 <motion.button
                   onClick={(e) => {
                     e.preventDefault()
+                    e.stopPropagation()
                     handleAddToCart(product)
                   }}
                   className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
