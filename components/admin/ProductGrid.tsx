@@ -182,8 +182,8 @@ export default function ProductGrid({ products, categories }: { products: Produc
       {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
         {products?.map((p) => (
-          <div key={p.id} className={`bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition ${(p as any).active === false ? 'opacity-50' : ''}`}>
-            <div className="aspect-[4/3] bg-muted flex items-center justify-center p-6 border-b border-border relative">
+          <div key={p.id} className={`bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition h-full ${(p as any).active === false ? 'opacity-50' : ''}`}>
+            <div className="aspect-[4/3] bg-muted flex items-center justify-center p-6 border-b border-border relative h-48">
               {p.image_url ? (
                 <img src={p.image_url} alt={p.name} className="w-full h-full object-contain mix-blend-multiply" />
               ) : (

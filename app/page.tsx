@@ -1,42 +1,59 @@
-import { Suspense } from "react";
-import { createClient } from "@/lib/supabase/server";
-import ProductList from "@/components/products/ProductList";
+import { Suspense } from "react"
+import { createClient } from "@/lib/supabase/server"
+import HomeContent from "./HomeContent"
 
-async function ProductsDataLoader() {
-  const supabase = await createClient();
-
-  const { data: categories } = await supabase.from('categories').select('*');
-  const { data: products } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending: false });
-
-  // Get which products have variants
-  const { data: optionTypes } = await supabase
-    .from('product_option_types')
-    .select('product_id')
-
-  const productsWithVariants = new Set(optionTypes?.map(o => o.product_id) || []);
-
-  // Add hasVariants flag to each product
+async function getProductsData() {
+  const supabase = await createClient()
+  const { data: categories } = await supabase.from('categories').select('*')
+  const { data: products } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending: false })
+  const { data: optionTypes } = await supabase.from('product_option_types').select('product_id')
+  const productsWithVariants = new Set(optionTypes?.map(o => o.product_id) || [])
   const productsWithVariantInfo = products?.map(p => ({
     ...p,
     hasVariants: productsWithVariants.has(p.id)
-  })) || [];
-
-  return <ProductList initialProducts={productsWithVariantInfo} categories={categories || []} />;
+  })) || []
+  return { categories: categories || [], products: productsWithVariantInfo }
 }
 
-export default function Index() {
+function LoadingSkeleton() {
   return (
-    <div className="flex flex-col space-y-8">
-      <div className="text-center py-10 bg-white rounded-xl shadow-sm border mt-4 border-gray-100">
-        <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-700">Bienvenido a WompiStore</h1>
-        <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-          Descubre nuestros increíbles productos y compra de forma segura con Wompi.
-        </p>
+    <div className="flex flex-col">
+      <div className="w-full bg-gray-900 px-6 py-4">
+        <div className="flex items-center gap-4 max-w-screen-2xl mx-auto">
+          <div className="flex-1 h-12 bg-white/20 rounded-full animate-pulse" />
+        </div>
       </div>
+      <div className="w-full bg-white border-b px-6 py-4">
+        <div className="flex gap-2 max-w-screen-2xl mx-auto">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-10 w-24 bg-gray-100 rounded-full animate-pulse" />
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 p-6 max-w-screen-2xl mx-auto w-full bg-gray-50">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+          <div key={i} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            <div className="aspect-square bg-gray-100" />
+            <div className="p-4 space-y-3">
+              <div className="h-4 bg-gray-100 rounded animate-pulse" />
+              <div className="h-3 bg-gray-100 rounded w-2/3 animate-pulse" />
+              <div className="h-6 bg-gray-100 rounded w-1/3 animate-pulse" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
-      <Suspense fallback={<div className="text-center py-20 text-gray-400 font-medium">Cargando catálogo...</div>}>
-        <ProductsDataLoader />
+export default async function Index() {
+  const { categories, products } = await getProductsData()
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Suspense fallback={<LoadingSkeleton />}>
+        <HomeContent categories={categories} products={products} />
       </Suspense>
     </div>
-  );
+  )
 }

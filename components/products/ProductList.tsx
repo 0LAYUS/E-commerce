@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/components/providers/CartProvider"
-import { CheckCircle } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { MagnifyingGlass, ShoppingBag, Star, Plus, Check } from "@phosphor-icons/react"
 
 type Product = {
   id: string
@@ -26,11 +27,12 @@ export default function ProductList({ initialProducts, categories }: { initialPr
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL")
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const productRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const { addItem } = useCart()
 
   const filteredProducts = initialProducts.filter((p) => {
     const matchesCategory = selectedCategory === "ALL" || p.category_id === selectedCategory
-    const matchesSearch = searchQuery === "" || 
+    const matchesSearch = searchQuery === "" ||
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.description.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
@@ -42,6 +44,25 @@ export default function ProductList({ initialProducts, categories }: { initialPr
       return () => clearTimeout(timer)
     }
   }, [toastMessage])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("animate-fade-in")
+          }
+        })
+      },
+      { threshold: 0.1 }
+    )
+
+    productRefs.current.forEach((element) => {
+      observer.observe(element)
+    })
+
+    return () => observer.disconnect()
+  }, [filteredProducts])
 
   const handleAddToCart = (product: Product) => {
     if (product.hasVariants) {
@@ -55,89 +76,254 @@ export default function ProductList({ initialProducts, categories }: { initialPr
       price: product.price,
       imageUrl: product.image_url,
     })
-    setToastMessage(`Agregaste "${product.name}" al carrito`)
+    setToastMessage(`"${product.name}" agregado al carrito`)
+  }
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 25,
+      },
+    },
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex gap-4 items-center">
-        <input
-          type="text"
-          placeholder="Buscar productos..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 h-10 px-4 rounded-lg border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </div>
-
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 bg-green-600 text-white px-5 py-3 rounded-lg shadow-xl z-50 flex items-center space-x-3 transition-opacity duration-300">
-          <CheckCircle className="w-5 h-5 text-white" />
-          <span className="font-medium text-sm">{toastMessage}</span>
-        </div>
-      )}
-
-      <div className="flex space-x-2 overflow-x-auto pb-2">
-        <button
-          onClick={() => setSelectedCategory("ALL")}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            selectedCategory === "ALL" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent"
-          }`}
-        >
-          Todos
-        </button>
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setSelectedCategory(cat.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              selectedCategory === cat.id ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent"
-            }`}
+    <div className="flex flex-col">
+      <motion.div
+        className="w-full bg-gray-900 px-6 py-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="flex items-center gap-4 max-w-screen-2xl mx-auto">
+          <motion.div
+            className="flex-1 relative"
+            whileFocus={{ scale: 1.02 }}
           >
-            {cat.name}
-          </button>
-        ))}
-      </div>
+            <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" weight="bold" />
+            <input
+              type="text"
+              placeholder="Buscar productos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-12 pl-12 pr-4 rounded-full bg-white/20 backdrop-blur-sm text-white placeholder:text-white/60 border border-white/30 focus:bg-white/30 focus:border-white/50 focus:outline-none transition-all"
+            />
+          </motion.div>
+          <motion.div
+            className="hidden md:flex items-center gap-2 text-white/90 text-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <span>¿Necesitas ayuda?</span>
+            <span className="font-semibold">Llámanos</span>
+          </motion.div>
+        </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <motion.div
+        className="w-full bg-card border-b"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.4 }}
+      >
+        <div className="flex gap-2 overflow-x-auto px-6 py-4 max-w-screen-2xl mx-auto">
+          {categories.map((cat) => (
+            <motion.button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
+                selectedCategory === cat.id
+                  ? "bg-gray-800 text-white shadow-lg shadow-gray-900/30 border border-gray-700"
+                  : "bg-secondary text-secondary-foreground hover:bg-accent"
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {cat.name}
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -50, scale: 0.8 }}
+            className="fixed top-24 right-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3"
+          >
+            <motion.div
+              className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500 }}
+            >
+              <Check className="w-5 h-5" weight="bold" />
+            </motion.div>
+            <span className="font-medium">{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 p-6 max-w-screen-2xl mx-auto w-full"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {filteredProducts.map((product) => (
-          <div key={product.id} className="bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-            <Link href={`/products/${product.id}`} className="aspect-square bg-muted flex items-center justify-center border-b p-4 group">
+          <motion.div
+            key={product.id}
+            ref={(el) => {
+              if (el) productRefs.current.set(product.id, el)
+            }}
+            data-product-id={product.id}
+            className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col hover:shadow-2xl hover:border-gray-600 transition-all duration-300"
+            variants={itemVariants}
+            whileHover={{ y: -8 }}
+            layout
+          >
+            <motion.div
+              className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
               {product.image_url ? (
-                <img src={product.image_url} alt={product.name} className="object-cover h-full w-full rounded group-hover:scale-105 transition" />
+                <motion.img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="object-cover w-full h-full"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.5 }}
+                />
               ) : (
-                <span className="text-muted-foreground">Sin imagen</span>
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center">
+                    <ShoppingBag className="w-8 h-8" weight="duotone" />
+                  </div>
+                  <span className="text-xs">Sin imagen</span>
+                </div>
               )}
-            </Link>
-            <div className="p-4 flex flex-col flex-grow">
-              <Link href={`/products/${product.id}`}>
-                <h3 className="font-semibold text-lg text-card-foreground hover:text-primary transition">{product.name}</h3>
-              </Link>
-              <p className="text-sm text-muted-foreground mt-1 flex-grow line-clamp-2">{product.description}</p>
-              <div className="mt-4 flex items-center justify-between">
-                <span className="font-bold text-lg text-primary">
-                  {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(product.price)}
-                </span>
-                <button
-                  onClick={() => handleAddToCart(product)}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    product.hasVariants
-                      ? "bg-secondary text-secondary-foreground hover:bg-accent"
-                      : "bg-primary text-primary-foreground hover:bg-primary/90"
-                  }`}
+
+              {product.hasVariants && (
+                <motion.div
+                  className="absolute top-3 left-3 bg-gray-800 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md border border-gray-700"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  whileHover={{ scale: 1.1 }}
                 >
-                  {product.hasVariants ? "Ver opciones" : "Agregar"}
-                </button>
+                  Variantes
+                </motion.div>
+              )}
+
+              <motion.div
+                className="absolute bottom-3 right-3"
+                initial={{ opacity: 0, scale: 0 }}
+                whileHover={{ opacity: 1, scale: 1 }}
+              >
+                <div className="w-11 h-11 bg-gray-800 rounded-full flex items-center justify-center shadow-xl border border-gray-700">
+                  <MagnifyingGlass className="w-5 h-5 text-white" weight="bold" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              />
+            </motion.div>
+
+            <div className="p-4 flex flex-col flex-grow">
+              <Link href={`/products/${product.id}`} className="flex-grow">
+                <motion.h3
+                  className="font-bold text-card-foreground group-hover:text-foreground transition-colors duration-200 line-clamp-2 text-sm leading-tight mb-2"
+                  whileHover={{ x: 5 }}
+                >
+                  {product.name}
+                </motion.h3>
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{product.description}</p>
+              </Link>
+
+              <motion.div
+                className="flex items-center gap-1 mb-3"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              >
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" weight="fill" />
+                ))}
+                <span className="text-xs text-muted-foreground ml-1">(128)</span>
+              </motion.div>
+
+              <div className="flex items-end justify-between">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  <span className="text-xl font-bold text-foreground">
+                    {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(product.price)}
+                  </span>
+                </motion.div>
+
+                <motion.button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    handleAddToCart(product)
+                  }}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                    product.hasVariants
+                      ? "bg-secondary text-secondary-foreground hover:bg-gray-800 hover:text-white hover:border-gray-700"
+                      : "bg-gray-800 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 border border-gray-700"
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="flex items-center gap-1">
+                    {product.hasVariants ? (
+                      "Ver"
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4" weight="bold" />
+                        Agregar
+                      </>
+                    )}
+                  </span>
+                </motion.button>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
-        {filteredProducts.length === 0 && (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            No se encontraron productos en esta categoría o el catálogo está vacío.
+      </motion.div>
+
+      {filteredProducts.length === 0 && (
+        <motion.div
+          className="text-center py-20"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+        >
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-card flex items-center justify-center">
+            <MagnifyingGlass className="w-10 h-10 text-muted-foreground" weight="duotone" />
           </div>
-        )}
-      </div>
+          <h3 className="text-xl font-bold text-card-foreground mb-2">No se encontraron productos</h3>
+          <p className="text-muted-foreground">Intenta con otros términos de búsqueda o cambia de categoría.</p>
+        </motion.div>
+      )}
     </div>
   )
 }
