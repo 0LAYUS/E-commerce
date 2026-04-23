@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useCart } from "@/components/providers/CartProvider"
 import type { OptionDef } from "@/types/product.types"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Input } from "@/components/ui/input"
 
 type SKU = {
   id: string
@@ -34,6 +35,7 @@ export default function ProductVariantSelector({
   const [selectedSku, setSelectedSku] = useState<SKU | null>(null)
   const [currentPrice, setCurrentPrice] = useState(basePrice)
   const [currentStock, setCurrentStock] = useState(0)
+  const [quantity, setQuantity] = useState(1)
   const { addItem } = useCart()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -48,9 +50,7 @@ export default function ProductVariantSelector({
     })).filter(opt => opt.values.length > 0),
   [options, activeSkus])
 
-  useEffect(() => {
-    if (availableOptions.length === 0) return
-
+  const setInitialOptions = useCallback(() => {
     const initial: Record<string, string> = {}
     availableOptions.forEach((opt) => {
       if (opt.values.length > 0) {
@@ -61,6 +61,11 @@ export default function ProductVariantSelector({
   }, [availableOptions])
 
   useEffect(() => {
+    if (availableOptions.length === 0) return
+    setInitialOptions()
+  }, [availableOptions, setInitialOptions])
+
+  const updateMatchedSku = useCallback(() => {
     if (activeSkus.length === 0 || Object.keys(selectedOptions).length === 0) return
 
     const matchedSku = activeSkus.find((sku) => {
@@ -79,14 +84,22 @@ export default function ProductVariantSelector({
     }
   }, [selectedOptions, activeSkus, basePrice])
 
-  const handleOptionChange = (optionName: string, value: string) => {
+  useEffect(() => {
+    updateMatchedSku()
+  }, [updateMatchedSku])
+
+  const handleOptionChange = useCallback((optionName: string, value: string) => {
     setSelectedOptions((prev) => ({
       ...prev,
       [optionName]: value,
     }))
-  }
+  }, [])
 
-  const handleAddToCart = async () => {
+  const handleQuantityChange = useCallback((value: number) => {
+    setQuantity(Math.max(1, Math.min(value, currentStock)))
+  }, [currentStock])
+
+  const handleAddToCart = useCallback(async () => {
     if (currentStock === 0 || !selectedSku) return
 
     setError(null)
@@ -99,15 +112,18 @@ export default function ProductVariantSelector({
         name: productName,
         price: currentPrice,
         sku_code: selectedSku.sku_code,
+        quantity,
       })
       if (!result.success && result.error) {
         setError(result.error)
         setTimeout(() => setError(null), 4000)
+      } else {
+        setQuantity(1)
       }
     } finally {
       setLoading(false)
     }
-  }
+  }, [addItem, currentStock, selectedSku, productId, currentPrice, quantity, productName])
 
   if (availableOptions.length === 0) {
     return (
@@ -120,11 +136,11 @@ export default function ProductVariantSelector({
 
   return (
     <div className="space-y-6">
-      {error && (
+      {error ? (
         <Alert variant="destructive" className="py-2">
           <AlertDescription className="text-sm">{error}</AlertDescription>
         </Alert>
-      )}
+      ) : null}
 
       {availableOptions.map((option) => (
         <div key={option.name}>
@@ -173,11 +189,26 @@ export default function ProductVariantSelector({
           </div>
         </div>
 
-        {selectedSku && (
+        {selectedSku ? (
           <div className="text-sm text-muted-foreground mb-4 font-mono">
             SKU: {selectedSku.sku_code}
           </div>
-        )}
+        ) : null}
+
+        {currentStock > 0 ? (
+          <div className="flex items-center gap-3 mb-4">
+            <label className="text-sm font-medium text-foreground">Cantidad:</label>
+            <Input
+              type="number"
+              min={1}
+              max={currentStock}
+              value={quantity}
+              onChange={(e) => handleQuantityChange(parseInt(e.target.value, 10) || 1)}
+              className="w-20 text-center"
+            />
+            <span className="text-sm text-muted-foreground">de {currentStock} disponibles</span>
+          </div>
+        ) : null}
 
         <button
           onClick={handleAddToCart}
