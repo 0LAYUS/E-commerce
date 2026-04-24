@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, ShoppingCart, Package, Tag, LayoutDashboard, Users, ShoppingBag } from "lucide-react"
 import ProductSearchBar from "./components/ProductSearchBar"
@@ -45,6 +46,14 @@ type SaleResponse = {
 }
 
 export default function POSPage() {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const isActive = (href: string) => {
+    if (href === "/admin") return pathname === "/admin"
+    return pathname.startsWith(href)
+  }
+
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>("")
@@ -344,8 +353,8 @@ export default function POSPage() {
               <button
                 onClick={() => handleCategoryChange("")}
                 className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${selectedCategory === ""
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary hover:bg-accent"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary hover:bg-accent"
                   }`}
               >
                 Todas
@@ -355,8 +364,8 @@ export default function POSPage() {
                   key={cat.id}
                   onClick={() => handleCategoryChange(cat.id)}
                   className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${selectedCategory === cat.id
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary hover:bg-accent"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary hover:bg-accent"
                     }`}
                 >
                   {cat.name}
