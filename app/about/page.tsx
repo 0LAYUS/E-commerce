@@ -18,7 +18,7 @@ export default function AboutPage() {
           Sobre Nosotros
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Conoce la historia detrás de Store, tu tienda online de confianza en Colombia.
+          Conoce la historia detrás de Store, tu tienda online de confianza en Colombia prigma.
         </p>
       </motion.div>
 
