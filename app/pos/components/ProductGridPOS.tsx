@@ -50,10 +50,10 @@ export default function ProductGrid({ products, onSelectProduct, onSelectVariant
       {products.map((product) => {
         const hasVariants = product.variants && product.variants.length > 0
 
-        if (hasVariants) {
+if (hasVariants) {
           return (
-            <div key={product.id} className="bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
-              <div className="aspect-square bg-muted flex items-center justify-center p-4 border-b border-border relative">
+            <div key={product.id} className="bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col h-full">
+              <div className="aspect-square bg-muted flex items-center justify-center p-4 border-b border-border relative h-48">
                 {product.image_url ? (
                   <img
                     src={product.image_url}

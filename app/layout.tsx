@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Suspense } from "react";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import { CartProvider } from "@/components/providers/CartProvider";
 import "./globals.css";
 
@@ -39,9 +40,10 @@ export default function RootLayout({
           <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-white" />}>
             <CartProvider>
               <Navbar />
-              <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <main className="flex-grow px-0">
                 {children}
               </main>
+              <Footer />
             </CartProvider>
           </Suspense>
         </ThemeProvider>

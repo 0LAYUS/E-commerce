@@ -194,7 +194,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto mt-8 mb-20 px-4">
+    <div className="mt-8 mb-20 px-4 sm:px-6 lg:px-12">
       <h1 className="text-3xl font-extrabold mb-8 text-foreground">Checkout</h1>
 
       {reservationExpiresAt && (

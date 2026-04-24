@@ -128,7 +128,7 @@ export default function CartPage() {
   }).length
 
   return (
-    <div className="mt-4 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="mt-4 px-4 sm:px-6 lg:px-12">
       <h1 className="text-3xl font-extrabold text-foreground mb-8">Mi Carrito</h1>
 
       {isValidating && (

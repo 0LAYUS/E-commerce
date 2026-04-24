@@ -1,9 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useCart } from "@/components/providers/CartProvider"
 import { motion, AnimatePresence } from "framer-motion"
 import { MagnifyingGlass, ShoppingBag, Star, Plus, Check } from "@phosphor-icons/react"
 
@@ -22,13 +20,15 @@ type Category = {
   name: string
 }
 
-export default function ProductList({ initialProducts, categories }: { initialProducts: Product[], categories: Category[] }) {
-  const router = useRouter()
+type ProductGridProps = {
+  initialProducts: Product[]
+  categories: Category[]
+}
+
+export default function ProductGrid({ initialProducts, categories }: ProductGridProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL")
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [toastMessage, setToastMessage] = useState<string | null>(null)
-  const productRefs = useRef<Map<string, HTMLDivElement>>(new Map())
-  const { addItem } = useCart()
 
   const filteredProducts = initialProducts.filter((p) => {
     const matchesCategory = selectedCategory === "ALL" || p.category_id === selectedCategory
@@ -44,40 +44,6 @@ export default function ProductList({ initialProducts, categories }: { initialPr
       return () => clearTimeout(timer)
     }
   }, [toastMessage])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("animate-fade-in")
-          }
-        })
-      },
-      { threshold: 0.1 }
-    )
-
-    productRefs.current.forEach((element) => {
-      observer.observe(element)
-    })
-
-    return () => observer.disconnect()
-  }, [filteredProducts])
-
-  const handleAddToCart = (product: Product) => {
-    if (product.hasVariants) {
-      router.push(`/products/${product.id}`)
-      return
-    }
-    addItem({
-      id: product.id,
-      product_id: product.id,
-      name: product.name,
-      price: product.price,
-      imageUrl: product.image_url,
-    })
-    setToastMessage(`"${product.name}" agregado al carrito`)
-  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -103,7 +69,7 @@ export default function ProductList({ initialProducts, categories }: { initialPr
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-h-screen">
       <motion.div
         className="w-full bg-gray-900 px-6 py-4"
         initial={{ opacity: 0, y: -20 }}
@@ -115,42 +81,54 @@ export default function ProductList({ initialProducts, categories }: { initialPr
             className="flex-1 relative"
             whileFocus={{ scale: 1.02 }}
           >
-            <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" weight="bold" />
+            <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" weight="bold" />
             <input
               type="text"
               placeholder="Buscar productos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-12 pr-4 rounded-full bg-white/20 backdrop-blur-sm text-white placeholder:text-white/60 border border-white/30 focus:bg-white/30 focus:border-white/50 focus:outline-none transition-all"
+              className="w-full h-12 pl-12 pr-4 rounded-full bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-gray-600 focus:outline-none transition-all"
             />
           </motion.div>
           <motion.div
-            className="hidden md:flex items-center gap-2 text-white/90 text-sm"
+            className="hidden md:flex items-center gap-2 text-gray-400 text-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
             <span>¿Necesitas ayuda?</span>
-            <span className="font-semibold">Llámanos</span>
+            <span className="font-semibold text-foreground">Llámanos</span>
           </motion.div>
         </div>
       </motion.div>
 
       <motion.div
-        className="w-full bg-card border-b"
+        className="w-full bg-card border-b border-border"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.4 }}
       >
         <div className="flex gap-2 overflow-x-auto px-6 py-4 max-w-screen-2xl mx-auto">
+          <motion.button
+            onClick={() => setSelectedCategory("ALL")}
+            className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
+              selectedCategory === "ALL"
+                ? "bg-gray-800 text-white shadow-lg border border-gray-700"
+                : "bg-secondary text-secondary-foreground hover:bg-gray-700 hover:text-foreground border border-border"
+            }`}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Todos
+          </motion.button>
           {categories.map((cat) => (
             <motion.button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
                 selectedCategory === cat.id
-                  ? "bg-gray-800 text-white shadow-lg shadow-gray-900/30 border border-gray-700"
-                  : "bg-secondary text-secondary-foreground hover:bg-accent"
+                  ? "bg-gray-800 text-white shadow-lg border border-gray-700"
+                  : "bg-secondary text-secondary-foreground hover:bg-gray-700 hover:text-foreground border border-border"
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -167,10 +145,10 @@ export default function ProductList({ initialProducts, categories }: { initialPr
             initial={{ opacity: 0, y: -50, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -50, scale: 0.8 }}
-            className="fixed top-24 right-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3"
+            className="fixed top-24 right-6 bg-gray-800 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3 border border-gray-700"
           >
             <motion.div
-              className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
+              className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 500 }}
@@ -191,9 +169,6 @@ export default function ProductList({ initialProducts, categories }: { initialPr
         {filteredProducts.map((product) => (
           <motion.div
             key={product.id}
-            ref={(el) => {
-              if (el) productRefs.current.set(product.id, el)
-            }}
             data-product-id={product.id}
             className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col hover:shadow-2xl hover:border-gray-600 transition-all duration-300"
             variants={itemVariants}
@@ -266,7 +241,7 @@ export default function ProductList({ initialProducts, categories }: { initialPr
                 transition={{ delay: 0.1 }}
               >
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" weight="fill" />
+                  <Star key={star} className="w-3 h-3 fill-gray-500 text-gray-500" weight="fill" />
                 ))}
                 <span className="text-xs text-muted-foreground ml-1">(128)</span>
               </motion.div>
@@ -281,30 +256,26 @@ export default function ProductList({ initialProducts, categories }: { initialPr
                   </span>
                 </motion.div>
 
-                <motion.button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    handleAddToCart(product)
-                  }}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                    product.hasVariants
-                      ? "bg-secondary text-secondary-foreground hover:bg-gray-800 hover:text-white hover:border-gray-700"
-                      : "bg-gray-800 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 border border-gray-700"
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="flex items-center gap-1">
-                    {product.hasVariants ? (
-                      "Ver"
-                    ) : (
-                      <>
-                        <Plus className="w-4 h-4" weight="bold" />
-                        Agregar
-                      </>
-                    )}
-                  </span>
-                </motion.button>
+                <Link href={`/products/${product.id}`}>
+                  <motion.button
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                      product.hasVariants
+                        ? "bg-secondary text-secondary-foreground hover:bg-gray-800 hover:text-white hover:border-gray-700 border border-border"
+                        : "bg-gray-800 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 border border-gray-700"
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="flex items-center gap-1">
+                      {product.hasVariants ? "Ver" : (
+                        <>
+                          <Plus className="w-4 h-4" weight="bold" />
+                          Agregar
+                        </>
+                      )}
+                    </span>
+                  </motion.button>
+                </Link>
               </div>
             </div>
           </motion.div>
@@ -317,7 +288,7 @@ export default function ProductList({ initialProducts, categories }: { initialPr
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
         >
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-card flex items-center justify-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-card flex items-center justify-center border border-border">
             <MagnifyingGlass className="w-10 h-10 text-muted-foreground" weight="duotone" />
           </div>
           <h3 className="text-xl font-bold text-card-foreground mb-2">No se encontraron productos</h3>
