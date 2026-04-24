@@ -2,13 +2,21 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Tag, Pencil, Trash2, Plus, X } from 'lucide-react';
 import { createCategory, updateCategory, deleteCategory } from '@/lib/actions/adminActions';
+import { AlertDialog, ConfirmDialog } from '@/components/ui/modal';
 
 export default function CategoryGrid({ categories }: { categories: any[] }) {
+  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{ title: string; description: string }>({ title: '', description: '' });
 
   const openNewModal = () => {
     setEditingCategory(null);
@@ -35,20 +43,34 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
       }
       closeModal();
     } catch (err) {
-      alert("Error al guardar: " + String(err));
+      setAlertConfig({ title: "Error al guardar", description: String(err) });
+      setAlertOpen(true);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (confirm(`¿Estás seguro que deseas eliminar la categoría "${name}"? Esto podría afectar a los productos asociados.`)) {
-      try {
-        await deleteCategory(id);
-      } catch (err) {
-        alert("Error al eliminar: " + String(err));
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      const result = await deleteCategory(deleteTarget.id);
+      if (!result.success && result.error) {
+        setAlertConfig({ title: "No se puede eliminar", description: result.error });
+        setAlertOpen(true);
+        return;
       }
+    } catch (err) {
+      setAlertConfig({ title: "Error al eliminar", description: String(err) });
+      setAlertOpen(true);
+    } finally {
+      setDeleteTarget(null);
     }
+  };
+
+  const openDeleteConfirm = (id: string, name: string) => {
+    setDeleteTarget({ id, name });
+    setDeleteConfirmOpen(true);
   };
 
   return (
@@ -79,7 +101,7 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
                   <button onClick={() => openEditModal(c)} className="hover:text-foreground transition p-1" title="Editar">
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
-                  <button onClick={() => handleDelete(c.id, c.name)} className="hover:text-destructive transition p-1" title="Eliminar">
+                  <button onClick={() => openDeleteConfirm(c.id, c.name)} className="hover:text-destructive transition p-1" title="Eliminar">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -111,37 +133,37 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="p-6">
               <form action={handleSubmit} className="space-y-5">
                 {editingCategory && <input type="hidden" name="id" value={editingCategory.id} />}
-                
+
                 <div>
                   <label className="block text-sm font-semibold text-card-foreground mb-1.5">Nombre de la Categoría</label>
-                  <input 
-                    name="name" 
-                    defaultValue={editingCategory?.name} 
-                    required 
+                  <input
+                    name="name"
+                    defaultValue={editingCategory?.name}
+                    required
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="Ej: Electrónica, Ropa, Hogar..."
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-semibold text-card-foreground mb-1.5">Descripción (Opcional)</label>
-                  <textarea 
-                    name="description" 
-                    defaultValue={editingCategory?.description} 
-                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
+                  <textarea
+                    name="description"
+                    defaultValue={editingCategory?.description}
+                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     rows={4}
                     placeholder="Escribe una breve descripción de lo que incluye esta categoría..."
                   ></textarea>
                 </div>
 
                 <div className="pt-4 border-t border-border mt-2">
-                  <button 
-                    type="submit" 
-                    disabled={isSubmitting} 
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3.5 rounded-lg font-bold transition shadow-sm disabled:opacity-50"
                   >
                     {isSubmitting ? "Guardando..." : "Guardar Categoría"}
@@ -152,6 +174,27 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setDeleteTarget(null);
+        }}
+        onConfirm={handleDelete}
+        title="¿Eliminar categoría?"
+        description={deleteTarget ? `¿Estás seguro que deseas eliminar la categoría "${deleteTarget.name}"?` : ''}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        destructive
+      />
+
+      <AlertDialog
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        title={alertConfig.title}
+        description={alertConfig.description}
+      />
     </div>
   );
 }

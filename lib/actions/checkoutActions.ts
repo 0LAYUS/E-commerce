@@ -13,23 +13,41 @@ export async function validateStock(items: OrderItem[]): Promise<{ valid: boolea
     if (item.variant_id) {
       const { data: sku } = await supabase
         .from("product_skus")
-        .select("stock, product_id")
+        .select("stock, active, product_id")
         .eq("id", item.variant_id)
         .single()
 
-      if (sku) {
-        availableStock = sku.stock
+      if (!sku || !sku.active) {
+        insufficient.push(item.id)
+        continue
       }
+
+      // Check if parent product is archived
+      const { data: parentProduct } = await supabase
+        .from("products")
+        .select("archived")
+        .eq("id", sku.product_id)
+        .single()
+
+      if (parentProduct?.archived) {
+        insufficient.push(item.id)
+        continue
+      }
+
+      availableStock = sku.stock
     } else {
       const { data: product } = await supabase
         .from("products")
-        .select("stock")
+        .select("stock, active, archived")
         .eq("id", item.product_id)
         .single()
 
-      if (product) {
-        availableStock = product.stock
+      if (!product || !product.active || product.archived) {
+        insufficient.push(item.id)
+        continue
       }
+
+      availableStock = product.stock
     }
 
     if (availableStock < item.quantity) {
@@ -54,6 +72,39 @@ export async function createOrder(
 
   // Reserve stock atomically (check + decrement in one operation to avoid race conditions)
   for (const item of items) {
+    // First check if product/variant is archived
+    if (item.variant_id) {
+      const { data: sku } = await supabase
+        .from("product_skus")
+        .select("active, product_id")
+        .eq("id", item.variant_id)
+        .single()
+
+      if (!sku || !sku.active) {
+        throw new Error("Variante no disponible: " + item.name)
+      }
+
+      const { data: parentProduct } = await supabase
+        .from("products")
+        .select("archived")
+        .eq("id", sku.product_id)
+        .single()
+
+      if (parentProduct?.archived) {
+        throw new Error("Producto archivado: " + item.name)
+      }
+    } else {
+      const { data: product } = await supabase
+        .from("products")
+        .select("active, archived")
+        .eq("id", item.product_id)
+        .single()
+
+      if (!product || !product.active || product.archived) {
+        throw new Error("Producto no disponible: " + item.name)
+      }
+    }
+
     const { data: reserved } = await supabase.rpc("reserve_stock", {
       p_sku_id: item.variant_id || null,
       p_product_id: item.product_id,

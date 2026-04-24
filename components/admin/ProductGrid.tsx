@@ -3,10 +3,11 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Pencil, Trash2, Plus, Upload, X } from "lucide-react"
-import { createProduct, updateProduct, deleteProduct, getProductOptions, getProductVariants, toggleProductActive } from "@/lib/actions/productActions"
+import { ArrowLeft, Pencil, Trash2, Plus, Upload, X, Archive } from "lucide-react"
+import { createProduct, updateProduct, deleteProduct, getProductOptions, getProductVariants, toggleProductActive, hasSales } from "@/lib/actions/productActions"
 import ProductVariantsEditor from "./ProductVariantsEditor"
 import ToggleSwitch from "@/components/ui/ToggleSwitch"
+import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 
 type Product = {
   id: string
@@ -38,6 +39,14 @@ export default function ProductGrid({ products, categories }: { products: Produc
   // Total stock from variants (only active ones)
   const totalVariantStock = variantStocks.reduce((sum, v) => sum + (v.active ? v.stock : 0), 0)
 
+  // Dialog states
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertConfig, setAlertConfig] = useState({ title: "", description: "" })
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false)
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+
   const openNewModal = () => {
     setEditingProduct(null)
     setPreviewImage(null)
@@ -63,8 +72,8 @@ export default function ProductGrid({ products, categories }: { products: Produc
       ])
       setHasVariants(options.length > 0)
       setVariantOptions(options)
-      setVariantStocks(variants.map((v: any) => ({ 
-        id: v.id, 
+      setVariantStocks(variants.map((v: any) => ({
+        id: v.id,
         sku_code: v.sku_code || "",
         stock: v.stock,
         active: v.active ?? true,
@@ -122,7 +131,8 @@ export default function ProductGrid({ products, categories }: { products: Produc
       if (hasVariantsVal) {
         const options = JSON.parse(variantOptions || "[]")
         if (options.length === 0 || options.some((o: any) => o.values.length === 0)) {
-          alert("Las variantes requieren al menos una opción con valores")
+          setAlertConfig({ title: "Variantes requeridas", description: "Las variantes requieren al menos una opción con valores" })
+          setAlertOpen(true)
           setIsSubmitting(false)
           return
         }
@@ -136,19 +146,66 @@ export default function ProductGrid({ products, categories }: { products: Produc
       closeModal()
       router.refresh()
     } catch (err) {
-      alert("Error: " + String(err))
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleDelete = async (id: string, name: string) => {
-    if (confirm(`¿Eliminar "${name}"?`)) {
-      try {
-        await deleteProduct(id)
-      } catch (err) {
-        alert("Error: " + String(err))
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+
+    try {
+      const salesCount = await hasSales(deleteTarget.id)
+
+      if (salesCount > 0) {
+        const result = await deleteProduct(deleteTarget.id, true)
+        if (result.success) {
+          router.refresh()
+        }
+      } else {
+        await deleteProduct(deleteTarget.id)
+        router.refresh()
       }
+    } catch (err) {
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
+    } finally {
+      setDeleteTarget(null)
+    }
+  }
+
+  const openDeleteConfirm = async (id: string, name: string) => {
+    try {
+      const salesCount = await hasSales(id)
+      setDeleteTarget({ id, name })
+
+      if (salesCount > 0) {
+        setAlertConfig({
+          title: "Archivar producto",
+          description: `Este producto tiene ${salesCount} venta${salesCount > 1 ? "s" : ""} asociada${salesCount > 1 ? "s" : ""}.\n\nSe archivará en lugar de eliminar para preservar los datos de las órdenes.\n\n¿Deseas continuar?`,
+        })
+        setArchiveConfirmOpen(true)
+      } else {
+        setDeleteConfirmOpen(true)
+      }
+    } catch (err) {
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
+    }
+  }
+
+  const handleArchiveConfirm = async () => {
+    if (!deleteTarget) return
+    try {
+      await deleteProduct(deleteTarget.id, true)
+      router.refresh()
+    } catch (err) {
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
+    } finally {
+      setDeleteTarget(null)
     }
   }
 
@@ -157,7 +214,8 @@ export default function ProductGrid({ products, categories }: { products: Produc
       await toggleProductActive(id, active)
       router.refresh()
     } catch (err) {
-      alert("Error: " + String(err))
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
     }
   }
 
@@ -171,70 +229,77 @@ export default function ProductGrid({ products, categories }: { products: Produc
           </Link>
           Gestionar Productos
         </h1>
-        <button
-          onClick={openNewModal}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm transition"
-        >
-          <Plus className="w-4 h-4" /> Nuevo Producto
-        </button>
+        <div className="flex gap-3">
+          <Link
+            href="/admin/products/archived"
+            className="border border-input hover:bg-accent px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition"
+          >
+            <Archive className="w-4 h-4" /> Ver Archivados
+          </Link>
+          <button
+            onClick={openNewModal}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm transition"
+          >
+            <Plus className="w-4 h-4" /> Nuevo Producto
+          </button>
+        </div>
       </div>
 
       {/* Product Grid */}
       <div className="flex-1 min-h-0 overflow-auto">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 pb-16">
-        {products?.map((p) => (
-          <div key={p.id} className={`bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition h-full ${(p as any).active === false ? 'opacity-50' : ''}`}>
-            <div className="aspect-square bg-muted flex items-center justify-center p-3 border-b border-border relative">
-              {p.image_url ? (
-                <img src={p.image_url} alt={p.name} className="w-full h-full object-contain mix-blend-multiply" />
-              ) : (
-                <span className="text-xs text-muted-foreground font-mono">IMG</span>
-              )}
-              <button
-                onClick={() => handleToggleActive(p.id, !(p as any).active)}
-                className={`absolute top-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition ${
-                  (p as any).active === false ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-                }`}
-              >
-                {(p as any).active === false ? 'OFF' : 'ON'}
-              </button>
-            </div>
-
-            <div className="p-3 flex flex-col flex-grow">
-              <h3 className="text-sm font-bold text-card-foreground mb-0.5 line-clamp-1">{p.name}</h3>
-              <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{p.categories?.name || "N/A"}</p>
-
-              <div className="font-extrabold text-primary text-lg mb-1">
-                {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(p.price)}
-              </div>
-              <div className="text-xs text-muted-foreground mb-3">
-                Stock: <span className="font-medium text-foreground">{(p as any).effective_stock ?? p.stock}</span>
-              </div>
-
-              <div className="flex gap-2 mt-auto">
+          {products?.map((p) => (
+            <div key={p.id} className={`bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition h-full ${(p as any).active === false ? 'opacity-50' : ''}`}>
+              <div className="aspect-square bg-muted flex items-center justify-center p-3 border-b border-border relative">
+                {p.image_url ? (
+                  <img src={p.image_url} alt={p.name} className="w-full h-full object-contain mix-blend-multiply" />
+                ) : (
+                  <span className="text-xs text-muted-foreground font-mono">IMG</span>
+                )}
                 <button
-                  onClick={() => openEditModal(p)}
-                  className="flex-1 flex justify-center items-center gap-1 py-1.5 border border-input rounded-md text-xs font-bold hover:bg-accent transition"
+                  onClick={() => handleToggleActive(p.id, !(p as any).active)}
+                  className={`absolute top-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition ${(p as any).active === false ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                    }`}
                 >
-                  <Pencil className="w-3.5 h-3.5" /> Editar
-                </button>
-                <button
-                  onClick={() => handleDelete(p.id, p.name)}
-                  className="w-8 flex justify-center items-center border border-input text-destructive rounded-md hover:bg-destructive/10 hover:border-destructive/20 transition"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  {(p as any).active === false ? 'OFF' : 'ON'}
                 </button>
               </div>
-            </div>
-          </div>
-        ))}
 
-        {(!products || products.length === 0) && (
-          <div className="col-span-full py-16 text-center text-muted-foreground bg-card border rounded-xl shadow-sm">
-            No hay productos registrados.
-          </div>
-        )}
-      </div>
+              <div className="p-3 flex flex-col flex-grow">
+                <h3 className="text-sm font-bold text-card-foreground mb-0.5 line-clamp-1">{p.name}</h3>
+                <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{p.categories?.name || "N/A"}</p>
+
+                <div className="font-extrabold text-primary text-lg mb-1">
+                  {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(p.price)}
+                </div>
+                <div className="text-xs text-muted-foreground mb-3">
+                  Stock: <span className="font-medium text-foreground">{(p as any).effective_stock ?? p.stock}</span>
+                </div>
+
+                <div className="flex gap-2 mt-auto">
+                  <button
+                    onClick={() => openEditModal(p)}
+                    className="flex-1 flex justify-center items-center gap-1 py-1.5 border border-input rounded-md text-xs font-bold hover:bg-accent transition"
+                  >
+                    <Pencil className="w-3.5 h-3.5" /> Editar
+                  </button>
+                  <button
+                    onClick={() => openDeleteConfirm(p.id, p.name)}
+                    className="w-12 flex justify-center items-center border border-input text-destructive rounded-lg hover:bg-destructive/10 hover:border-destructive/20 transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {(!products || products.length === 0) && (
+            <div className="col-span-full py-16 text-center text-muted-foreground bg-card border rounded-xl shadow-sm">
+              No hay productos registrados.
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal */}
@@ -352,9 +417,8 @@ export default function ProductGrid({ products, categories }: { products: Produc
                   }}
                   required={!hasVariants}
                   readOnly={hasVariants}
-                  className={`w-full h-10 rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${
-                    hasVariants ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-background"
-                  }`}
+                  className={`w-full h-10 rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${hasVariants ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-background"
+                    }`}
                 />
                 {hasVariants && (
                   <p className="text-xs text-muted-foreground mt-1">
@@ -397,13 +461,13 @@ export default function ProductGrid({ products, categories }: { products: Produc
               ) : (
                 <ProductVariantsEditor
                   initialOptions={variantOptions}
-                  initialVariants={variantStocks.map(v => ({ 
-                    id: v.id, 
-                    sku_code: v.sku_code, 
-                    stock: v.stock, 
+                  initialVariants={variantStocks.map(v => ({
+                    id: v.id,
+                    sku_code: v.sku_code,
+                    stock: v.stock,
                     active: v.active,
                     price_override: v.price_override,
-                    option_values: [] 
+                    option_values: []
                   }))}
                   hasVariants={hasVariants}
                   onHasVariantsChange={handleHasVariantsChange}
@@ -424,6 +488,44 @@ export default function ProductGrid({ products, categories }: { products: Produc
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false)
+          setDeleteTarget(null)
+        }}
+        onConfirm={handleDelete}
+        title="¿Eliminar producto?"
+        description={deleteTarget ? `¿Estás seguro que deseas eliminar el producto "${deleteTarget.name}"?` : ""}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        destructive
+      />
+
+      <ConfirmDialog
+        open={archiveConfirmOpen}
+        onClose={() => {
+          setArchiveConfirmOpen(false)
+          setDeleteTarget(null)
+        }}
+        onConfirm={() => {
+          handleArchiveConfirm()
+          setArchiveConfirmOpen(false)
+        }}
+        title="Archivar producto"
+        description={alertConfig.description}
+        confirmText="Archivar"
+        cancelText="Cancelar"
+        destructive
+      />
+
+      <AlertDialog
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        title={alertConfig.title}
+        description={alertConfig.description}
+      />
     </div>
   )
 }
