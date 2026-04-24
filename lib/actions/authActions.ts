@@ -167,3 +167,19 @@ export async function updateUserRole(userId: string, role: UserRole) {
   if (error) throw new Error(error.message)
   revalidatePath("/admin/users")
 }
+
+export async function resetPasswordForEmail(formData: FormData) {
+  const email = formData.get("email") as string;
+  if (!email) throw new Error("El correo es requerido");
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/reset-password`,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { message: "Se ha enviado un enlace de recuperación a tu correo." };
+}
