@@ -105,7 +105,7 @@ export default function ProductList({ initialProducts, categories }: { initialPr
   return (
     <div className="flex flex-col">
       <motion.div
-        className="w-full bg-gray-900 px-6 py-4"
+        className="w-full bg-secondary/50 backdrop-blur-md border-b border-border px-6 py-4"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -115,23 +115,23 @@ export default function ProductList({ initialProducts, categories }: { initialPr
             className="flex-1 relative"
             whileFocus={{ scale: 1.02 }}
           >
-            <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" weight="bold" />
+            <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" weight="bold" />
             <input
               type="text"
               placeholder="Buscar productos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-12 pr-4 rounded-full bg-white/20 backdrop-blur-sm text-white placeholder:text-white/60 border border-white/30 focus:bg-white/30 focus:border-white/50 focus:outline-none transition-all"
+              className="w-full h-12 pl-12 pr-4 rounded-full bg-background/80 backdrop-blur-lg text-foreground placeholder:text-muted-foreground border border-input focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all shadow-sm"
             />
           </motion.div>
           <motion.div
-            className="hidden md:flex items-center gap-2 text-white/90 text-sm"
+            className="hidden md:flex items-center gap-2 text-muted-foreground text-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
             <span>¿Necesitas ayuda?</span>
-            <span className="font-semibold">Llámanos</span>
+            <span className="font-semibold text-foreground">Llámanos</span>
           </motion.div>
         </div>
       </motion.div>
