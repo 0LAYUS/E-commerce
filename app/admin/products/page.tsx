@@ -4,10 +4,11 @@ import ProductGrid from '@/components/admin/ProductGrid';
 export default async function ProductsPage() {
   const supabase = await createClient();
   
-  // Fetch products
+  // Fetch products (only non-archived)
   const { data: products } = await supabase
     .from('products')
     .select('*, categories(name)')
+    .eq('archived', false)
     .order('created_at', { ascending: false });
 
   // Get variant stocks aggregated by product (only active variants)

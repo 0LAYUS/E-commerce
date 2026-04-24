@@ -100,12 +100,12 @@ export async function POST(request: NextRequest) {
       await adminClient.from("pos_sale_payments").insert(paymentsWithSaleId)
     }
 
-    const { data: stockDecremented } = await adminClient.rpc("decrement_pos_stock", {
-      p_items: itemsJson,
+    const { error: stockError } = await adminClient.rpc("decrement_pos_stock", {
+      p_items: items, // array directo, sin JSON.stringify
     })
 
-    if (!stockDecremented) {
-      console.error("Stock decrement failed, rolling back sale")
+    if (stockError) {
+      console.error("Stock decrement failed, rolling back sale", stockError)
       await adminClient.from("pos_sales").delete().eq("id", sale.id)
       return NextResponse.json({ error: "Stock insufficient" }, { status: 400 })
     }
