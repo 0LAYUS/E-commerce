@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { usePathname } from "next/navigation"
+<import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, ShoppingCart, Package, Tag, LayoutDashboard, Users, ShoppingBag } from "lucide-react"
 import ProductSearchBar from "./components/ProductSearchBar"
@@ -46,7 +46,7 @@ type SaleResponse = {
 }
 
 export default function POSPage() {
-  const pathname = usePathname()
+const pathname = usePathname()
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/")
 
   const [products, setProducts] = useState<Product[]>([])
@@ -347,7 +347,7 @@ export default function POSPage() {
             <div className="flex gap-2 mb-4 flex-wrap shrink-0">
               <button
                 onClick={() => handleCategoryChange("")}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
                   selectedCategory === ""
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary hover:bg-accent"
