@@ -2,13 +2,21 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Tag, Pencil, Trash2, Plus, X } from 'lucide-react';
 import { createCategory, updateCategory, deleteCategory } from '@/lib/actions/adminActions';
+import { AlertDialog, ConfirmDialog } from '@/components/ui/modal';
 
 export default function CategoryGrid({ categories }: { categories: any[] }) {
+  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{ title: string; description: string }>({ title: '', description: '' });
 
   const openNewModal = () => {
     setEditingCategory(null);
@@ -35,20 +43,34 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
       }
       closeModal();
     } catch (err) {
-      alert("Error al guardar: " + String(err));
+      setAlertConfig({ title: "Error al guardar", description: String(err) });
+      setAlertOpen(true);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (confirm(`¿Estás seguro que deseas eliminar la categoría "${name}"? Esto podría afectar a los productos asociados.`)) {
-      try {
-        await deleteCategory(id);
-      } catch (err) {
-        alert("Error al eliminar: " + String(err));
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      const result = await deleteCategory(deleteTarget.id);
+      if (!result.success && result.error) {
+        setAlertConfig({ title: "No se puede eliminar", description: result.error });
+        setAlertOpen(true);
+        return;
       }
+    } catch (err) {
+      setAlertConfig({ title: "Error al eliminar", description: String(err) });
+      setAlertOpen(true);
+    } finally {
+      setDeleteTarget(null);
     }
+  };
+
+  const openDeleteConfirm = (id: string, name: string) => {
+    setDeleteTarget({ id, name });
+    setDeleteConfirmOpen(true);
   };
 
   return (
@@ -78,7 +100,7 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
                 <button onClick={() => openEditModal(c)} className="hover:text-foreground transition p-1.5" title="Editar">
                   <Pencil className="w-4 h-4" />
                 </button>
-                <button onClick={() => handleDelete(c.id, c.name)} className="hover:text-destructive transition p-1.5" title="Eliminar">
+                <button onClick={() => openDeleteConfirm(c.id, c.name)} className="hover:text-destructive transition p-1.5" title="Eliminar">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -150,6 +172,27 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setDeleteTarget(null);
+        }}
+        onConfirm={handleDelete}
+        title="¿Eliminar categoría?"
+        description={deleteTarget ? `¿Estás seguro que deseas eliminar la categoría "${deleteTarget.name}"?` : ''}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        destructive
+      />
+
+      <AlertDialog
+        open={alertOpen}
+        onClose={() => setAlertOpen(false)}
+        title={alertConfig.title}
+        description={alertConfig.description}
+      />
     </div>
   );
 }

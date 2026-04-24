@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { DashboardClient } from '@/components/admin/DashboardClient';
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -30,6 +31,10 @@ export default async function AdminDashboard() {
           <h3 className="text-gray-500 font-medium">Total Órdenes</h3>
           <p className="text-3xl font-bold text-gray-900 mt-2">{currentOrders || 0}</p>
         </div>
+      </div>
+
+      <div className="mt-8">
+        <DashboardClient />
       </div>
 
       <div className="mt-10">
