@@ -1,31 +1,37 @@
 "use client"
 
 import * as React from "react"
-import { Popover as PopoverPrimitive } from "radix-ui"
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverAnchor,
+  PopoverPortal,
+} from "@radix-ui/react-popover"
 
 import { cn } from "@/lib/utils"
 
-function Popover({
+function PopoverWrapper({
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Root>) {
-  return <PopoverPrimitive.Root data-slot="popover" {...props} />
+}: React.ComponentProps<typeof Popover>) {
+  return <Popover data-slot="popover" {...props} />
 }
 
-function PopoverTrigger({
+function PopoverTriggerWrapper({
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
+}: React.ComponentProps<typeof PopoverTrigger>) {
+  return <PopoverTrigger data-slot="popover-trigger" {...props} />
 }
 
-function PopoverContent({
+function PopoverContentWrapper({
   className,
   align = "center",
   sideOffset = 4,
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+}: React.ComponentProps<typeof PopoverContent>) {
   return (
-    <PopoverPrimitive.Portal>
-      <PopoverPrimitive.Content
+    <PopoverPortal>
+      <PopoverContent
         data-slot="popover-content"
         align={align}
         sideOffset={sideOffset}
@@ -35,14 +41,14 @@ function PopoverContent({
         )}
         {...props}
       />
-    </PopoverPrimitive.Portal>
+    </PopoverPortal>
   )
 }
 
-function PopoverAnchor({
+function PopoverAnchorWrapper({
   ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Anchor>) {
-  return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />
+}: React.ComponentProps<typeof PopoverAnchor>) {
+  return <PopoverAnchor data-slot="popover-anchor" {...props} />
 }
 
 function PopoverHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -79,10 +85,10 @@ function PopoverDescription({
 }
 
 export {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverAnchor,
+  PopoverWrapper as Popover,
+  PopoverTriggerWrapper as PopoverTrigger,
+  PopoverContentWrapper as PopoverContent,
+  PopoverAnchorWrapper as PopoverAnchor,
   PopoverHeader,
   PopoverTitle,
   PopoverDescription,

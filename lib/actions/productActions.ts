@@ -8,7 +8,7 @@ import type { OptionDef, VariantStock, ProductInput, VariantInput } from "@/type
 // GET FUNCTIONS
 // ============================================
 
-export async function getProductOptions(productId: string): Promise<{ name: string; values: string[] }[]> {
+export async function getProductOptions(productId: string): Promise<{ id: string; name: string; values: string[] }[]> {
   const supabase = await createClient()
 
   const { data: types } = await supabase
@@ -28,6 +28,7 @@ export async function getProductOptions(productId: string): Promise<{ name: stri
         .order("position")
 
       return {
+        id: type.id,
         name: type.name,
         values: values?.map((v) => v.value) || [],
       }
