@@ -47,7 +47,6 @@ export default function AddToCartButton({
         price,
         imageUrl,
         sku_code: skuCode,
-        quantity,
       })
       if (!result.success && result.error) {
         setError(result.error)

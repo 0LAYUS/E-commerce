@@ -112,7 +112,6 @@ export default function ProductVariantSelector({
         name: productName,
         price: currentPrice,
         sku_code: selectedSku.sku_code,
-        quantity,
       })
       if (!result.success && result.error) {
         setError(result.error)
