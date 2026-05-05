@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Pencil, Trash2, Plus, Upload, X, Archive } from "lucide-react"
-import { createProduct, updateProduct, deleteProduct, getProductOptions, getProductVariants, toggleProductActive, hasSales } from "@/lib/actions/productActions"
+import { createProduct, updateProduct, deleteProduct, getProductOptions, getProductVariants, getProductImages, toggleProductActive, hasSales } from "@/lib/actions/productActions"
 import ProductVariantsEditor from "./ProductVariantsEditor"
 import ToggleSwitch from "@/components/ui/ToggleSwitch"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
@@ -21,13 +21,22 @@ type Product = {
   categories?: { name: string }
 }
 
+type ImageItem = {
+  id: string
+  url: string
+  type: "existing" | "new"
+  file?: File
+}
+
 export default function ProductGrid({ products, categories }: { products: Product[], categories: any[] }) {
   const router = useRouter()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [imageItems, setImageItems] = useState<ImageItem[]>([])
+  const [draggingImageId, setDraggingImageId] = useState<string | null>(null)
   const [loadingVariants, setLoadingVariants] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const [hasVariants, setHasVariants] = useState(false)
   const [variantOptions, setVariantOptions] = useState<{ name: string; values: string[] }[]>([])
@@ -46,7 +55,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
 
   const openNewModal = () => {
     setEditingProduct(null)
-    setPreviewImage(null)
+    setImageItems([])
     setHasVariants(false)
     setVariantOptions([])
     setVariantStocks([])
@@ -57,15 +66,16 @@ export default function ProductGrid({ products, categories }: { products: Produc
 
   const openEditModal = async (product: Product) => {
     setEditingProduct(product)
-    setPreviewImage(product.image_url)
+    setImageItems([])
     setProductActive(product.active ?? true)
     setLoadingVariants(true)
     setModalOpen(true)
 
     try {
-      const [options, variants] = await Promise.all([
+      const [options, variants, images] = await Promise.all([
         getProductOptions(product.id),
         getProductVariants(product.id),
+        getProductImages(product.id),
       ])
       setHasVariants(options.length > 0)
       setVariantOptions(options)
@@ -77,6 +87,13 @@ export default function ProductGrid({ products, categories }: { products: Produc
         price_override: v.price_override ?? null,
         option_values: v.option_values || []
       })))
+      if (images.length > 0) {
+        setImageItems(images.map((img) => ({
+          id: img.id,
+          url: img.url,
+          type: "existing",
+        })))
+      }
     } catch (err) {
       console.error("Error loading variants:", err)
     } finally {
@@ -85,13 +102,16 @@ export default function ProductGrid({ products, categories }: { products: Produc
   }
 
   const closeModal = () => {
-    if (previewImage) {
-      URL.revokeObjectURL(previewImage)
-    }
+    imageItems.forEach((item) => {
+      if (item.type === "new") {
+        URL.revokeObjectURL(item.url)
+      }
+    })
+    setDraggingImageId(null)
     setModalOpen(false)
     setTimeout(() => {
       setEditingProduct(null)
-      setPreviewImage(null)
+      setImageItems([])
       setHasVariants(false)
       setVariantOptions([])
       setVariantStocks([])
@@ -99,13 +119,47 @@ export default function ProductGrid({ products, categories }: { products: Produc
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (previewImage) {
-        URL.revokeObjectURL(previewImage)
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
+    const newItems = files.map((file) => ({
+      id: `new-${crypto?.randomUUID ? crypto.randomUUID() : Date.now()}-${file.name}`,
+      url: URL.createObjectURL(file),
+      type: "new" as const,
+      file,
+    }))
+
+    setImageItems((prev) => [...prev, ...newItems])
+    e.target.value = ""
+  }
+
+  const handleRemoveImage = (id: string) => {
+    setImageItems((prev) => {
+      const next = prev.filter((item) => item.id !== id)
+      const removed = prev.find((item) => item.id === id)
+      if (removed?.type === "new") {
+        URL.revokeObjectURL(removed.url)
       }
-      setPreviewImage(URL.createObjectURL(file))
-    }
+      return next
+    })
+  }
+
+  const handleDragStart = (id: string) => {
+    setDraggingImageId(id)
+  }
+
+  const handleDrop = (targetId: string) => {
+    if (!draggingImageId || draggingImageId === targetId) return
+    setImageItems((prev) => {
+      const fromIndex = prev.findIndex((item) => item.id === draggingImageId)
+      const toIndex = prev.findIndex((item) => item.id === targetId)
+      if (fromIndex === -1 || toIndex === -1) return prev
+      const updated = [...prev]
+      const [moved] = updated.splice(fromIndex, 1)
+      updated.splice(toIndex, 0, moved)
+      return updated
+    })
+    setDraggingImageId(null)
   }
 
   const handleHasVariantsChange = (value: boolean) => {
@@ -123,6 +177,20 @@ export default function ProductGrid({ products, categories }: { products: Produc
       const formData = new FormData(e.currentTarget)
       const hasVariantsVal = formData.get("has_variants") === "true"
       const variantOptionsStr = formData.get("variant_options") as string
+
+      formData.delete("images")
+      formData.delete("image")
+
+      const imageOrder = imageItems.map((item) =>
+        item.type === "existing" ? { type: "existing", id: item.id } : { type: "new" }
+      )
+      formData.set("image_order", JSON.stringify(imageOrder))
+
+      imageItems
+        .filter((item) => item.type === "new" && item.file)
+        .forEach((item) => {
+          formData.append("images", item.file as File)
+        })
 
       if (hasVariantsVal) {
         const options = JSON.parse(variantOptionsStr || "[]")
@@ -329,19 +397,58 @@ export default function ProductGrid({ products, categories }: { products: Produc
                 {hasVariants && <p className="text-xs text-muted-foreground mt-1">Stock calculado desde variantes activas</p>}
               </div>
               <div>
-                <label className="block text-sm font-semibold text-card-foreground mb-1.5">Imagen</label>
-                <div className="relative border-2 border-dashed border-input rounded-xl p-8 flex flex-col items-center justify-center bg-muted hover:bg-accent transition group cursor-pointer overflow-hidden">
-                  <input type="file" name="image" accept="image/*" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
-                  <Upload className="w-10 h-10 text-muted-foreground group-hover:text-primary transition mb-3" />
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Sube una imagen</p>
-                  <button type="button" className="mt-2 px-4 py-2 border border-input rounded-md text-sm font-semibold bg-card shadow-sm pointer-events-none">Seleccionar Imagen</button>
+                <label className="block text-sm font-semibold text-card-foreground mb-1.5">Imagenes</label>
+                <div className="flex flex-wrap items-center gap-3 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="inline-flex items-center gap-2 px-4 py-2 border border-input rounded-md text-sm font-semibold bg-card shadow-sm hover:bg-accent transition"
+                  >
+                    <Upload className="w-4 h-4" /> Agregar imagenes
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    name="images"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  <span className="text-xs text-muted-foreground">Arrastra para reordenar</span>
                 </div>
+                {imageItems.length > 0 ? (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    {imageItems.map((item) => (
+                      <div
+                        key={item.id}
+                        draggable
+                        onDragStart={() => handleDragStart(item.id)}
+                        onDragEnd={() => setDraggingImageId(null)}
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={() => handleDrop(item.id)}
+                        className={`relative border rounded-lg bg-card p-2 flex items-center justify-center aspect-square cursor-grab ${
+                          draggingImageId === item.id ? "opacity-70" : ""
+                        }`}
+                      >
+                        <img src={item.url} alt="Preview" className="w-full h-full object-contain" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(item.id)}
+                          className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow"
+                          aria-label="Eliminar imagen"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-input rounded-xl p-6 text-center text-sm text-muted-foreground">
+                    Todavia no hay imagenes cargadas.
+                  </div>
+                )}
               </div>
-              {previewImage && (
-                <div className="border rounded-lg p-2 bg-card inline-block">
-                  <img src={previewImage} className="w-24 h-24 object-contain" alt="Preview" />
-                </div>
-              )}
               {loadingVariants ? (
                 <div className="flex items-center justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
               ) : (

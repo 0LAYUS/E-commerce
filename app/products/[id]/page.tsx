@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, AlertTriangle } from "lucide-react"
-import { getProductOptions, getProductVariants } from "@/lib/actions/productActions"
+import { getProductOptions, getProductVariants, getProductImages, getVariantImagesByProductId } from "@/lib/actions/productActions"
 import ProductVariantSelector from "@/components/products/ProductVariantSelector"
 import AddToCartButton from "@/components/products/AddToCartButton"
 import RelatedProductsCarousel from "@/components/products/RelatedProductsCarousel"
@@ -47,9 +47,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const [options, skus] = await Promise.all([
+  const [options, skus, productImages, variantImages] = await Promise.all([
     getProductOptions(id),
     getProductVariants(id),
+    getProductImages(id),
+    getVariantImagesByProductId(id),
   ])
 
   const { data: relatedProducts } = await supabase
@@ -71,6 +73,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
       basePrice={basePrice}
       hasVariants={hasVariants}
       relatedProducts={relatedProducts || []}
+      productImages={productImages}
+      variantImages={variantImages}
     />
   )
 }
