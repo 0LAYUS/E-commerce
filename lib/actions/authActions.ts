@@ -122,7 +122,7 @@ export async function getAllUsers(options?: { limit?: number; offset?: number; r
   if (error) throw new Error(error.message)
 
   const userIds = data.map(p => p.id)
-  let orderCountMap = new Map<string, number>()
+  const orderCountMap = new Map<string, number>()
 
   if (userIds.length > 0) {
     const { data: ordersData, error: ordersError } = await supabase

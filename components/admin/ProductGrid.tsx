@@ -28,7 +28,7 @@ type ImageItem = {
   file?: File
 }
 
-export default function ProductGrid({ products, categories }: { products: Product[], categories: any[] }) {
+export default function ProductGrid({ products, categories }: { products: Product[], categories: { id: string; name: string }[] }) {
   const router = useRouter()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -51,7 +51,6 @@ export default function ProductGrid({ products, categories }: { products: Produc
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
 
   const openNewModal = () => {
     setEditingProduct(null)
@@ -79,7 +78,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
       ])
       setHasVariants(options.length > 0)
       setVariantOptions(options)
-      setVariantStocks(variants.map((v: any) => ({
+      setVariantStocks(variants.map((v) => ({
         id: v.id,
         sku_code: v.sku_code || "",
         stock: v.stock,
@@ -194,7 +193,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
 
       if (hasVariantsVal) {
         const options = JSON.parse(variantOptionsStr || "[]")
-        if (options.length === 0 || options.some((o: any) => o.values.length === 0)) {
+        if (options.length === 0 || options.some((o: { values: string[] }) => o.values.length === 0)) {
           setAlertConfig({ title: "Variantes requeridas", description: "Las variantes requieren al menos una opción con valores" })
           setAlertOpen(true)
           setIsSubmitting(false)
@@ -303,7 +302,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
       <div className="flex-1 min-h-0 overflow-auto">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 pb-16">
           {products?.map((p) => (
-            <div key={p.id} className={`bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition h-full ${(p as any).active === false ? 'opacity-50' : ''}`}>
+            <div key={p.id} className={`bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition h-full ${(p as { active?: boolean }).active === false ? 'opacity-50' : ''}`}>
               <div className="aspect-square bg-muted flex items-center justify-center p-3 border-b border-border relative">
                 {p.image_url ? (
                   <img src={p.image_url} alt={p.name} className="w-full h-full object-contain mix-blend-multiply" />
@@ -311,12 +310,12 @@ export default function ProductGrid({ products, categories }: { products: Produc
                   <span className="text-xs text-muted-foreground font-mono">IMG</span>
                 )}
                 <button
-                  onClick={() => handleToggleActive(p.id, !(p as any).active)}
+                  onClick={() => handleToggleActive(p.id, !(p as { active?: boolean }).active)}
                   className={`absolute top-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition ${
-                    (p as any).active === false ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                    (p as { active?: boolean }).active === false ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
                   }`}
                 >
-                  {(p as any).active === false ? 'OFF' : 'ON'}
+                  {(p as { active?: boolean }).active === false ? 'OFF' : 'ON'}
                 </button>
               </div>
               <div className="p-3 flex flex-col flex-grow">
@@ -326,7 +325,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
                   {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(p.price)}
                 </div>
                 <div className="text-xs text-muted-foreground mb-3">
-                  Stock: <span className="font-medium text-foreground">{(p as any).effective_stock ?? p.stock}</span>
+                  Stock: <span className="font-medium text-foreground">{(p as { effective_stock?: number }).effective_stock ?? p.stock}</span>
                 </div>
                 <div className="flex gap-2 mt-auto">
                   <button onClick={() => openEditModal(p)} className="flex-1 flex justify-center items-center gap-1 py-1.5 border border-input rounded-md text-xs font-bold hover:bg-accent transition">

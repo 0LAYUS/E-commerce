@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Plus, Trash2, Tag, Package } from "lucide-react"
+import { ArrowLeft, Plus, Trash2, Tag } from "lucide-react"
 
 type BogoOffer = {
   id: string
@@ -60,8 +60,9 @@ export default function AdminPOSOffersPage() {
       setNewOffer({ name: "", product_id: "", variant_id: "" })
       setShowForm(false)
       loadOffers()
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err: unknown) {
+      const messageText = err instanceof Error ? err.message : "Error al crear oferta"
+      alert(messageText)
     } finally {
       setIsSubmitting(false)
     }

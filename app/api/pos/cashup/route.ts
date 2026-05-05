@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       .eq("payment_method", "efectivo")
       .gte("created_at", today.toISOString())
 
-    const expectedCash = todaySales?.reduce((sum: number, sale: any) => {
+    const expectedCash = todaySales?.reduce((sum: number, sale: { amount_received: number | null; change_amount: number | null }) => {
       const received = sale.amount_received || 0
       const change = sale.change_amount || 0
       return sum + received - change

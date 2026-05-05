@@ -2,15 +2,20 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Tag, Pencil, Trash2, Plus, X } from 'lucide-react';
 import { createCategory, updateCategory, deleteCategory } from '@/lib/actions/adminActions';
 import { AlertDialog, ConfirmDialog } from '@/components/ui/modal';
 
-export default function CategoryGrid({ categories }: { categories: any[] }) {
-  const router = useRouter();
+type Category = {
+  id: string
+  name: string
+  description?: string | null
+  products?: { id: string }[]
+}
+
+export default function CategoryGrid({ categories }: { categories: Category[] }) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -23,7 +28,7 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
     setModalOpen(true);
   };
 
-  const openEditModal = (category: any) => {
+  const openEditModal = (category: Category) => {
     setEditingCategory(category);
     setModalOpen(true);
   };
@@ -107,7 +112,7 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
             </div>
             <h3 className="text-sm font-bold text-card-foreground mb-1 line-clamp-1">{c.name}</h3>
             <p className="text-xs text-muted-foreground mb-3 flex-grow line-clamp-2">
-              {c.description || 'Sin descripción.'}
+              {c.description ?? 'Sin descripción.'}
             </p>
             <span className="text-xs font-semibold text-primary">{c.products?.length || 0} productos</span>
           </div>
@@ -151,7 +156,7 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
                   <label className="block text-sm font-semibold text-card-foreground mb-1.5">Descripción (Opcional)</label>
                   <textarea
                     name="description"
-                    defaultValue={editingCategory?.description}
+                    defaultValue={editingCategory?.description ?? undefined}
                     className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     rows={4}
                     placeholder="Escribe una breve descripción de lo que incluye esta categoría..."

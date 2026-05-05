@@ -217,7 +217,7 @@ describe('ProductVariantSelector', () => {
     })
 
     it('should show loading state while adding', async () => {
-      let resolveAddItem: (value: any) => void
+      let resolveAddItem: (value: unknown) => void
       mockAddItem.mockImplementationOnce(
         () =>
           new Promise((resolve) => {
