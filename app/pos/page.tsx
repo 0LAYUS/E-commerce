@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-<import { usePathname } from "next/navigation"
+import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, ShoppingCart, Package, Tag, LayoutDashboard, Users, ShoppingBag } from "lucide-react"
 import ProductSearchBar from "./components/ProductSearchBar"
