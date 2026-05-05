@@ -212,11 +212,12 @@ async function syncProductImages(
     await supabase.from("product_images").delete().in("id", toDelete.map((img) => img.id))
   }
 
-  for (const img of existingList) {
+  for (let i = 0; i < existingList.length; i++) {
+    const img = existingList[i]
     if (!keepExistingIds.has(img.id)) continue
     await supabase
       .from("product_images")
-      .update({ position: img.position + 1000 })
+      .update({ position: 1000 + i })
       .eq("id", img.id)
   }
 
