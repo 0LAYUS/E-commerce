@@ -26,8 +26,6 @@ export default function ProductImageGallery({ images, productName }: Props) {
     setActiveIndex(0)
   }, [normalized.length])
 
-  const activeImage = normalized[activeIndex]
-
   const handlePrev = () => {
     setActiveIndex((prev) => (prev === 0 ? normalized.length - 1 : prev - 1))
   }
@@ -72,11 +70,21 @@ export default function ProductImageGallery({ images, productName }: Props) {
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        <img
-          src={activeImage.url}
-          alt={activeImage.alt || productName}
-          className="w-full h-full object-contain p-8"
-        />
+        <div
+          className="flex h-full w-full transition-transform duration-300 ease-out"
+          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+        >
+          {normalized.map((img, index) => (
+            <div key={img.id ?? `${img.url}-${index}`} className="h-full w-full shrink-0">
+              <img
+                src={img.url}
+                alt={img.alt || productName}
+                className="w-full h-full object-contain p-8"
+                draggable={false}
+              />
+            </div>
+          ))}
+        </div>
         {normalized.length > 1 && (
           <>
             <button
