@@ -230,23 +230,7 @@ export default function Footer() {
             </motion.div>
           </div>
 
-          <motion.div
-            className="mt-6 pt-6 border-t border-border/50 flex flex-col items-center gap-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-          >
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Hecho con</span>
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-              >
-                <Heart className="w-5 h-5 text-red-500" weight="fill" />
-              </motion.div>
-              <span>usando Next.js y Supabase</span>
-            </div>
-          </motion.div>
+
         </motion.div>
       </div>
     </motion.footer>

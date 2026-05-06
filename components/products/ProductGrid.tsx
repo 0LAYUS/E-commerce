@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/components/providers/CartProvider"
 import { motion, AnimatePresence, Variants } from "framer-motion"
@@ -14,6 +13,8 @@ type Product = {
   price: number
   category_id: string
   image_url: string
+  stock?: number
+  effective_stock?: number
   hasVariants?: boolean
 }
 
@@ -22,9 +23,23 @@ type Category = {
   name: string
 }
 
-export default function ProductList({ initialProducts, categories }: { initialProducts: Product[], categories: Category[] }) {
+type ProductGridProps = {
+  initialProducts: Product[]
+  categories: Category[]
+  /** Mostrar productos sin stock. Default: false (los oculta) */
+  showOutOfStock?: boolean
+  /** Filtro inicial por categoría. Default: "ALL" */
+  defaultCategory?: string
+}
+
+export default function ProductGrid({
+  initialProducts,
+  categories,
+  showOutOfStock = false,
+  defaultCategory = "ALL"
+}: ProductGridProps) {
   const router = useRouter()
-  const [selectedCategory, setSelectedCategory] = useState<string>("ALL")
+  const [selectedCategory, setSelectedCategory] = useState<string>(defaultCategory)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const productRefs = useRef<Map<string, HTMLDivElement>>(new Map())
@@ -35,7 +50,8 @@ export default function ProductList({ initialProducts, categories }: { initialPr
     const matchesSearch = searchQuery === "" ||
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.description.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
+    const hasStock = showOutOfStock || (p.stock && p.stock > 0) || (p.effective_stock && p.effective_stock > 0)
+    return matchesCategory && matchesSearch && hasStock
   })
 
   useEffect(() => {
@@ -143,6 +159,18 @@ export default function ProductList({ initialProducts, categories }: { initialPr
         transition={{ delay: 0.1, duration: 0.4 }}
       >
         <div className="flex gap-2 overflow-x-auto px-6 py-4 max-w-screen-2xl mx-auto">
+          <motion.button
+            onClick={() => setSelectedCategory("ALL")}
+            className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
+              selectedCategory === "ALL"
+                ? "bg-gray-800 text-white shadow-lg shadow-gray-900/30 border border-gray-700"
+                : "bg-secondary text-secondary-foreground hover:bg-accent"
+            }`}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Todos
+          </motion.button>
           {categories.map((cat) => (
             <motion.button
               key={cat.id}
