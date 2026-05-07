@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
+import { useCart } from "@/components/providers/CartProvider"
+import { motion, AnimatePresence, Variants } from "framer-motion"
 import { MagnifyingGlass, ShoppingBag, Star, Plus, Check } from "@phosphor-icons/react"
 
 type Product = {
@@ -12,6 +13,8 @@ type Product = {
   price: number
   category_id: string
   image_url: string
+  stock?: number
+  effective_stock?: number
   hasVariants?: boolean
 }
 
@@ -23,19 +26,32 @@ type Category = {
 type ProductGridProps = {
   initialProducts: Product[]
   categories: Category[]
+  /** Mostrar productos sin stock. Default: false (los oculta) */
+  showOutOfStock?: boolean
+  /** Filtro inicial por categoría. Default: "ALL" */
+  defaultCategory?: string
 }
 
-export default function ProductGrid({ initialProducts, categories }: ProductGridProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>("ALL")
+export default function ProductGrid({
+  initialProducts,
+  categories,
+  showOutOfStock = false,
+  defaultCategory = "ALL"
+}: ProductGridProps) {
+  const router = useRouter()
+  const [selectedCategory, setSelectedCategory] = useState<string>(defaultCategory)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const productRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const { addItem } = useCart()
 
   const filteredProducts = initialProducts.filter((p) => {
     const matchesCategory = selectedCategory === "ALL" || p.category_id === selectedCategory
     const matchesSearch = searchQuery === "" ||
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.description.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
+    const hasStock = showOutOfStock || (p.stock && p.stock > 0) || (p.effective_stock && p.effective_stock > 0)
+    return matchesCategory && matchesSearch && hasStock
   })
 
   useEffect(() => {
@@ -45,7 +61,41 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
     }
   }, [toastMessage])
 
-  const containerVariants = {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("animate-fade-in")
+          }
+        })
+      },
+      { threshold: 0.1 }
+    )
+
+    productRefs.current.forEach((element) => {
+      observer.observe(element)
+    })
+
+    return () => observer.disconnect()
+  }, [filteredProducts])
+
+  const handleAddToCart = (product: Product) => {
+    if (product.hasVariants) {
+      router.push(`/products/${product.id}`)
+      return
+    }
+    addItem({
+      id: product.id,
+      product_id: product.id,
+      name: product.name,
+      price: product.price,
+      imageUrl: product.image_url,
+    })
+    setToastMessage(`"${product.name}" agregado al carrito`)
+  }
+
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -55,7 +105,7 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
     },
   }
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
@@ -69,9 +119,9 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col">
       <motion.div
-        className="w-full bg-gray-900 px-6 py-4"
+        className="w-full bg-secondary/50 backdrop-blur-md border-b border-border px-6 py-4"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -81,17 +131,17 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
             className="flex-1 relative"
             whileFocus={{ scale: 1.02 }}
           >
-            <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" weight="bold" />
+            <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" weight="bold" />
             <input
               type="text"
               placeholder="Buscar productos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-12 pr-4 rounded-full bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-gray-600 focus:outline-none transition-all"
+              className="w-full h-12 pl-12 pr-4 rounded-full bg-background/80 backdrop-blur-lg text-foreground placeholder:text-muted-foreground border border-input focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all shadow-sm"
             />
           </motion.div>
           <motion.div
-            className="hidden md:flex items-center gap-2 text-gray-400 text-sm"
+            className="hidden md:flex items-center gap-2 text-muted-foreground text-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -103,7 +153,7 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
       </motion.div>
 
       <motion.div
-        className="w-full bg-card border-b border-border"
+        className="w-full bg-card border-b"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.4 }}
@@ -113,8 +163,8 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
             onClick={() => setSelectedCategory("ALL")}
             className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
               selectedCategory === "ALL"
-                ? "bg-gray-800 text-white shadow-lg border border-gray-700"
-                : "bg-secondary text-secondary-foreground hover:bg-gray-700 hover:text-foreground border border-border"
+                ? "bg-gray-800 text-white shadow-lg shadow-gray-900/30 border border-gray-700"
+                : "bg-secondary text-secondary-foreground hover:bg-accent"
             }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -127,8 +177,8 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
                 selectedCategory === cat.id
-                  ? "bg-gray-800 text-white shadow-lg border border-gray-700"
-                  : "bg-secondary text-secondary-foreground hover:bg-gray-700 hover:text-foreground border border-border"
+                  ? "bg-gray-800 text-white shadow-lg shadow-gray-900/30 border border-gray-700"
+                  : "bg-secondary text-secondary-foreground hover:bg-accent"
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -145,10 +195,10 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
             initial={{ opacity: 0, y: -50, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -50, scale: 0.8 }}
-            className="fixed top-24 right-6 bg-gray-800 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3 border border-gray-700"
+            className="fixed top-24 right-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3"
           >
             <motion.div
-              className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center"
+              className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 500 }}
@@ -169,11 +219,15 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
         {filteredProducts.map((product) => (
           <motion.div
             key={product.id}
+            ref={(el) => {
+              if (el) productRefs.current.set(product.id, el)
+            }}
             data-product-id={product.id}
-            className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col hover:shadow-2xl hover:border-gray-600 transition-all duration-300"
+            className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col hover:shadow-2xl hover:border-gray-600 transition-all duration-300 cursor-pointer"
             variants={itemVariants}
             whileHover={{ y: -8 }}
             layout
+            onClick={() => router.push(`/products/${product.id}`)}
           >
             <motion.div
               className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden"
@@ -224,7 +278,7 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
             </motion.div>
 
             <div className="p-4 flex flex-col flex-grow">
-              <Link href={`/products/${product.id}`} className="flex-grow">
+              <div className="flex-grow">
                 <motion.h3
                   className="font-bold text-card-foreground group-hover:text-foreground transition-colors duration-200 line-clamp-2 text-sm leading-tight mb-2"
                   whileHover={{ x: 5 }}
@@ -232,7 +286,7 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
                   {product.name}
                 </motion.h3>
                 <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{product.description}</p>
-              </Link>
+              </div>
 
               <motion.div
                 className="flex items-center gap-1 mb-3"
@@ -241,7 +295,7 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
                 transition={{ delay: 0.1 }}
               >
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <Star key={star} className="w-3 h-3 fill-gray-500 text-gray-500" weight="fill" />
+                  <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" weight="fill" />
                 ))}
                 <span className="text-xs text-muted-foreground ml-1">(128)</span>
               </motion.div>
@@ -256,26 +310,31 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
                   </span>
                 </motion.div>
 
-                <Link href={`/products/${product.id}`}>
-                  <motion.button
-                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                      product.hasVariants
-                        ? "bg-secondary text-secondary-foreground hover:bg-gray-800 hover:text-white hover:border-gray-700 border border-border"
-                        : "bg-gray-800 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 border border-gray-700"
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <span className="flex items-center gap-1">
-                      {product.hasVariants ? "Ver" : (
-                        <>
-                          <Plus className="w-4 h-4" weight="bold" />
-                          Agregar
-                        </>
-                      )}
-                    </span>
-                  </motion.button>
-                </Link>
+                <motion.button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleAddToCart(product)
+                  }}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
+                    product.hasVariants
+                      ? "bg-secondary text-secondary-foreground hover:bg-gray-800 hover:text-white hover:border-gray-700"
+                      : "bg-gray-800 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 border border-gray-700"
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="flex items-center gap-1">
+                    {product.hasVariants ? (
+                      "Ver"
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4" weight="bold" />
+                        Agregar
+                      </>
+                    )}
+                  </span>
+                </motion.button>
               </div>
             </div>
           </motion.div>
@@ -288,7 +347,7 @@ export default function ProductGrid({ initialProducts, categories }: ProductGrid
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
         >
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-card flex items-center justify-center border border-border">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-card flex items-center justify-center">
             <MagnifyingGlass className="w-10 h-10 text-muted-foreground" weight="duotone" />
           </div>
           <h3 className="text-xl font-bold text-card-foreground mb-2">No se encontraron productos</h3>

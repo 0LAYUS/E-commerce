@@ -183,8 +183,8 @@ export default function UserManagement({
               <tr key={user.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5" />
+                    <div className="w-9 h-9 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4" />
                     </div>
                     <span className="font-medium text-foreground truncate max-w-[150px]">
                       {user.email.split("@")[0]}

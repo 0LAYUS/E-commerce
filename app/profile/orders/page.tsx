@@ -21,8 +21,8 @@ export default async function ProfileOrdersPage() {
     .order('created_at', { ascending: false });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 mt-8 mb-20">
-      <h1 className="text-3xl font-extrabold mb-8 text-gray-900">Mis Órdenes</h1>
+    <div>
+      <h1 className="text-3xl font-extrabold mb-8 text-gray-900">Mis Compras</h1>
       
       <div className="space-y-6">
         {orders?.map(order => {

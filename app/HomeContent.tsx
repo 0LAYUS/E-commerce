@@ -1,7 +1,9 @@
 "use client"
 
 import { motion } from "framer-motion"
-import ProductList from "@/components/products/ProductList"
+import { useState, useEffect } from "react"
+import HeroCarousel from "@/components/layout/HeroCarousel"
+import ProductGrid from "@/components/products/ProductGrid"
 
 type Category = {
   id: string
@@ -15,17 +17,40 @@ type Product = {
   price: number
   category_id: string
   image_url: string
+  stock?: number
+  effective_stock?: number
   hasVariants?: boolean
 }
 
 export default function HomeContent({ categories, products }: { categories: Category[], products: Product[] }) {
+  const [carouselItems, setCarouselItems] = useState<Array<{
+    id: string
+    title: string
+    subtitle: string
+    image_url: string
+    link: string
+  }>>([])
+
+  useEffect(() => {
+    const inStockProducts = products.filter((p) => (p.stock && p.stock > 0) || (p.effective_stock && p.effective_stock > 0) && p.image_url)
+    const randomProducts = inStockProducts.sort(() => Math.random() - 0.5)
+    setCarouselItems(randomProducts.map((p) => ({
+      id: p.id,
+      title: p.name,
+      subtitle: p.description.slice(0, 80) + (p.description.length > 80 ? "..." : ""),
+      image_url: p.image_url || "",
+      link: `/products/${p.id}`,
+    })))
+  }, [products])
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <ProductList initialProducts={products} categories={categories} />
+      <HeroCarousel items={carouselItems} />
+      <ProductGrid initialProducts={products} categories={categories} />
     </motion.div>
   )
 }

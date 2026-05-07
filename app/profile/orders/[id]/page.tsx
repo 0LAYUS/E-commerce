@@ -37,7 +37,7 @@ export default async function OrderDetailsPage(props: { params: Promise<{ id: st
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 mt-8 mb-20">
+    <div>
       <Link href="/profile/orders" className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-blue-600 mb-6 transition">
         <ArrowLeft className="w-4 h-4 mr-2" /> Volver
       </Link>

@@ -19,7 +19,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("wompi-cart", JSON.stringify(items))
   }, [items])
 
-  const validateItem = useCallback(async (item: Omit<CartItem, "quantity">): Promise<CartValidationResult> => {
+  const validateItem = useCallback(async (item: Omit<CartItem, "quantity"> & { quantity?: number }): Promise<CartValidationResult> => {
     const response = await fetch("/api/cart/validate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -28,7 +28,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           id: item.variant_id || item.id,
           product_id: item.product_id,
           variant_id: item.variant_id,
-          quantity: 1,
+          quantity: item.quantity || 1,
           price_snapshot: item.price,
         }],
       }),
@@ -106,7 +106,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items.length, revalidateCart])
 
-  const addItem = useCallback(async (product: Omit<CartItem, "quantity">): Promise<{ success: boolean; error?: string }> => {
+  const addItem = useCallback(async (product: Omit<CartItem, "quantity"> & { quantity?: number }): Promise<{ success: boolean; error?: string }> => {
     try {
       const result = await validateItem(product)
 
@@ -132,10 +132,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const existing = prev.find((i) => (i.variant_id || i.id) === cartId)
         if (existing) {
           return prev.map((i) =>
-            (i.variant_id || i.id) === cartId ? { ...i, quantity: i.quantity + 1 } : i
+            (i.variant_id || i.id) === cartId ? { ...i, quantity: i.quantity + (product.quantity || 1) } : i
           )
         }
-        return [...prev, { ...product, quantity: 1, price_snapshot: product.price }]
+        return [...prev, { ...product, quantity: product.quantity || 1, price_snapshot: product.price }]
       })
 
       const newStatuses = new Map(itemStatuses)

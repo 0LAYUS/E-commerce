@@ -17,11 +17,7 @@ type Product = {
   categories?: { name: string }
 }
 
-type OptionDef = {
-  id: string
-  name: string
-  values: string[]
-}
+import type { OptionDef } from "@/types/product.types"
 
 type SKU = {
   id: string

@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, ShoppingCart } from "lucide-react"
+import { ArrowLeft, ShoppingCart, Package, Tag, LayoutDashboard, Users, ShoppingBag } from "lucide-react"
 import ProductSearchBar from "./components/ProductSearchBar"
 import ProductGridPOS from "./components/ProductGridPOS"
 import CartPOS, { CartItem } from "./components/CartPOS"
@@ -45,6 +46,14 @@ type SaleResponse = {
 }
 
 export default function POSPage() {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const isActive = (href: string) => {
+    if (href === "/admin") return pathname === "/admin"
+    return pathname.startsWith(href)
+  }
+
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>("")
@@ -110,10 +119,10 @@ export default function POSPage() {
           prev.map((item) =>
             item.id === existingItem.id
               ? {
-                  ...item,
-                  quantity: item.quantity + 1,
-                  subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
-                }
+                ...item,
+                quantity: item.quantity + 1,
+                subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
+              }
               : item
           )
         )
@@ -144,10 +153,10 @@ export default function POSPage() {
           prev.map((item) =>
             item.id === existingItem.id
               ? {
-                  ...item,
-                  quantity: item.quantity + 1,
-                  subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
-                }
+                ...item,
+                quantity: item.quantity + 1,
+                subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
+              }
               : item
           )
         )
@@ -175,10 +184,10 @@ export default function POSPage() {
       prev.map((item) =>
         item.id === id
           ? {
-              ...item,
-              quantity,
-              subtotal: quantity * item.unit_price * (1 - item.discount_pct / 100),
-            }
+            ...item,
+            quantity,
+            subtotal: quantity * item.unit_price * (1 - item.discount_pct / 100),
+          }
           : item
       )
     )
@@ -269,66 +278,102 @@ export default function POSPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Link
-                href="/admin"
-                className="p-2 hover:bg-accent rounded-lg transition"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-              <h1 className="text-xl font-extrabold text-card-foreground flex items-center gap-2">
-                <ShoppingCart className="w-6 h-6" />
-                Punto de Venta
-              </h1>
-            </div>
-            <Link
-              href="/admin/pos"
-              className="text-sm text-muted-foreground hover:text-foreground transition"
-            >
-              Ver ventas
-            </Link>
-          </div>
+    <div className="flex min-h-[calc(100vh-8rem)] bg-secondary rounded-lg overflow-hidden border">
+      {/* Sidebar */}
+      <div className="w-64 bg-card shadow-sm border-r border-border">
+        <div className="p-6 border-b border-border">
+          <h2 className="text-xl font-bold text-card-foreground">Panel Admin</h2>
         </div>
-      </header>
+        <nav className="p-4 space-y-2">
+          <Link href="/admin" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin") ? "bg-primary/10 text-primary font-medium" : ""}`}>
+            <LayoutDashboard className="w-5 h-5" />
+            Dashboard
+          </Link>
+          <Link href="/admin/users" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/users") ? "bg-primary/10 text-primary font-medium" : ""}`}>
+            <Users className="w-5 h-5" />
+            Usuarios
+          </Link>
+          <Link href="/admin/categories" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/categories") ? "bg-primary/10 text-primary font-medium" : ""}`}>
+            <Tag className="w-5 h-5" />
+            Categorías
+          </Link>
+          <Link href="/admin/products" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/products") ? "bg-primary/10 text-primary font-medium" : ""}`}>
+            <Package className="w-5 h-5" />
+            Productos
+          </Link>
+          <Link href="/admin/sales" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/sales") ? "bg-primary/10 text-primary font-medium" : ""}`}>
+            <ShoppingBag className="w-5 h-5" />
+            Ventas
+          </Link>
+          <Link href="/pos" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/pos") ? "bg-primary/10 text-primary font-medium" : ""}`}>
+            <ShoppingCart className="w-5 h-5" />
+            POS
+          </Link>
+          <Link href="/admin/pos" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/pos") ? "bg-primary/10 text-primary font-medium" : ""}`}>
+            <ShoppingBag className="w-5 h-5" />
+            Ventas POS
+          </Link>
+        </nav>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-card rounded-xl shadow-sm border p-4">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="bg-card border-b border-border shrink-0">
+          <div className="px-6">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/admin"
+                  className="p-2 hover:bg-accent rounded-lg transition"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </Link>
+                <h1 className="text-xl font-extrabold text-card-foreground flex items-center gap-2">
+                  <ShoppingCart className="w-6 h-6" />
+                  Punto de Venta
+                </h1>
+              </div>
+              <Link
+                href="/admin/pos"
+                className="text-sm text-muted-foreground hover:text-foreground transition"
+              >
+                Ver ventas
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 min-h-0 flex overflow-hidden p-6">
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="mb-4 shrink-0">
               <ProductSearchBar onSearch={handleSearch} />
             </div>
 
-            <div className="bg-card rounded-xl shadow-sm border p-4">
-              <div className="flex gap-2 mb-4 flex-wrap">
-                <button
-                  onClick={() => handleCategoryChange("")}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                    selectedCategory === ""
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary hover:bg-accent"
+            <div className="flex gap-2 mb-4 flex-wrap shrink-0">
+              <button
+                onClick={() => handleCategoryChange("")}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${selectedCategory === ""
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary hover:bg-accent"
                   }`}
-                >
-                  Todas
-                </button>
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleCategoryChange(cat.id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                      selectedCategory === cat.id
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary hover:bg-accent"
+              >
+                Todas
+              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategoryChange(cat.id)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${selectedCategory === cat.id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary hover:bg-accent"
                     }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-              </div>
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
 
+            <div className="flex-1 min-h-0 overflow-auto">
               {isLoading ? (
                 <div className="flex items-center justify-center py-16">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -343,8 +388,8 @@ export default function POSPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-1">
-            <div className="sticky top-24">
+          <div className="w-80 xl:w-96 shrink-0 border-l border-border overflow-auto">
+            <div className="p-4">
               <CartPOS
                 items={cart}
                 onUpdateQuantity={handleUpdateQuantity}
@@ -360,8 +405,8 @@ export default function POSPage() {
               />
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       <PaymentModal
         isOpen={isPaymentOpen}

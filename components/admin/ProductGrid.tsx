@@ -72,8 +72,8 @@ export default function ProductGrid({ products, categories }: { products: Produc
       ])
       setHasVariants(options.length > 0)
       setVariantOptions(options)
-      setVariantStocks(variants.map((v: any) => ({ 
-        id: v.id, 
+      setVariantStocks(variants.map((v: any) => ({
+        id: v.id,
         sku_code: v.sku_code || "",
         stock: v.stock,
         active: v.active ?? true,
@@ -220,10 +220,10 @@ export default function ProductGrid({ products, categories }: { products: Produc
   }
 
   return (
-    <div className="max-w-6xl mx-auto pb-20 mt-4 px-4">
+    <div className="flex flex-col h-screen px-4 py-4 overflow-hidden">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-extrabold text-foreground flex items-center gap-3">
+      <div className="flex justify-between items-center mb-4 shrink-0">
+        <h1 className="text-2xl font-extrabold text-foreground flex items-center gap-3">
           <Link href="/admin" className="text-muted-foreground hover:text-foreground transition">
             <ArrowLeft className="w-5 h-5" />
           </Link>
@@ -246,65 +246,60 @@ export default function ProductGrid({ products, categories }: { products: Produc
       </div>
 
       {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-        {products?.map((p) => (
-          <div key={p.id} className={`bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition h-full ${(p as any).active === false ? 'opacity-50' : ''}`}>
-            <div className="aspect-[4/3] bg-muted flex items-center justify-center p-6 border-b border-border relative h-48">
-              {p.image_url ? (
-                <img src={p.image_url} alt={p.name} className="w-full h-full object-contain mix-blend-multiply" />
-              ) : (
-                <span className="text-xs text-muted-foreground font-mono">IMG</span>
-              )}
-              {/* Active toggle */}
-              <button
-                onClick={() => handleToggleActive(p.id, !(p as any).active)}
-                className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition ${
-                  (p as any).active === false ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-                }`}
-              >
-                {(p as any).active === false ? 'OFF' : 'ON'}
-              </button>
-            </div>
-
-            <div className="p-6 flex flex-col flex-grow">
-              <h3 className="text-lg font-bold text-card-foreground mb-1">{p.name}</h3>
-              <p className="text-xs text-muted-foreground mb-3 flex-grow line-clamp-2">{p.description}</p>
-
-              <div className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
-                Categoría: <span className="text-foreground">{p.categories?.name || "N/A"}</span>
-              </div>
-
-              <div className="font-extrabold text-primary text-xl mb-1">
-                {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(p.price)}
-              </div>
-              <div className="text-sm text-muted-foreground mb-5">
-                Stock: <span className="font-medium text-foreground">{(p as any).effective_stock ?? p.stock}</span>
-                {(p as any).has_variants && <span className="ml-1 text-xs">(variantes)</span>}
-              </div>
-
-              <div className="flex gap-3 mt-auto">
+      <div className="flex-1 min-h-0 overflow-auto">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 pb-16">
+          {products?.map((p) => (
+            <div key={p.id} className={`bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition h-full ${(p as any).active === false ? 'opacity-50' : ''}`}>
+              <div className="aspect-square bg-muted flex items-center justify-center p-3 border-b border-border relative">
+                {p.image_url ? (
+                  <img src={p.image_url} alt={p.name} className="w-full h-full object-contain mix-blend-multiply" />
+                ) : (
+                  <span className="text-xs text-muted-foreground font-mono">IMG</span>
+                )}
                 <button
-                  onClick={() => openEditModal(p)}
-                  className="flex-1 flex justify-center items-center gap-2 py-2 border border-input rounded-lg text-sm font-bold hover:bg-accent transition"
+                  onClick={() => handleToggleActive(p.id, !(p as any).active)}
+                  className={`absolute top-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition ${(p as any).active === false ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                    }`}
                 >
-                  <Pencil className="w-4 h-4" /> Editar
-                </button>
-                <button
-                  onClick={() => openDeleteConfirm(p.id, p.name)}
-                  className="w-12 flex justify-center items-center border border-input text-destructive rounded-lg hover:bg-destructive/10 hover:border-destructive/20 transition"
-                >
-                  <Trash2 className="w-4 h-4" />
+                  {(p as any).active === false ? 'OFF' : 'ON'}
                 </button>
               </div>
-            </div>
-          </div>
-        ))}
 
-        {(!products || products.length === 0) && (
-          <div className="col-span-full py-16 text-center text-muted-foreground bg-card border rounded-xl shadow-sm">
-            No hay productos registrados.
-          </div>
-        )}
+              <div className="p-3 flex flex-col flex-grow">
+                <h3 className="text-sm font-bold text-card-foreground mb-0.5 line-clamp-1">{p.name}</h3>
+                <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{p.categories?.name || "N/A"}</p>
+
+                <div className="font-extrabold text-primary text-lg mb-1">
+                  {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(p.price)}
+                </div>
+                <div className="text-xs text-muted-foreground mb-3">
+                  Stock: <span className="font-medium text-foreground">{(p as any).effective_stock ?? p.stock}</span>
+                </div>
+
+                <div className="flex gap-2 mt-auto">
+                  <button
+                    onClick={() => openEditModal(p)}
+                    className="flex-1 flex justify-center items-center gap-1 py-1.5 border border-input rounded-md text-xs font-bold hover:bg-accent transition"
+                  >
+                    <Pencil className="w-3.5 h-3.5" /> Editar
+                  </button>
+                  <button
+                    onClick={() => openDeleteConfirm(p.id, p.name)}
+                    className="w-12 flex justify-center items-center border border-input text-destructive rounded-lg hover:bg-destructive/10 hover:border-destructive/20 transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {(!products || products.length === 0) && (
+            <div className="col-span-full py-16 text-center text-muted-foreground bg-card border rounded-xl shadow-sm">
+              No hay productos registrados.
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal */}
@@ -422,9 +417,8 @@ export default function ProductGrid({ products, categories }: { products: Produc
                   }}
                   required={!hasVariants}
                   readOnly={hasVariants}
-                  className={`w-full h-10 rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${
-                    hasVariants ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-background"
-                  }`}
+                  className={`w-full h-10 rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${hasVariants ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-background"
+                    }`}
                 />
                 {hasVariants && (
                   <p className="text-xs text-muted-foreground mt-1">
@@ -467,13 +461,13 @@ export default function ProductGrid({ products, categories }: { products: Produc
               ) : (
                 <ProductVariantsEditor
                   initialOptions={variantOptions}
-                  initialVariants={variantStocks.map(v => ({ 
-                    id: v.id, 
-                    sku_code: v.sku_code, 
-                    stock: v.stock, 
+                  initialVariants={variantStocks.map(v => ({
+                    id: v.id,
+                    sku_code: v.sku_code,
+                    stock: v.stock,
                     active: v.active,
                     price_override: v.price_override,
-                    option_values: [] 
+                    option_values: []
                   }))}
                   hasVariants={hasVariants}
                   onHasVariantsChange={handleHasVariantsChange}

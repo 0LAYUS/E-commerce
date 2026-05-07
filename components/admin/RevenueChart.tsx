@@ -41,7 +41,9 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
   const [tooltip, setTooltip] = useState<TooltipData | null>(null)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const svgRef = useRef<SVGSVGElement>(null)
   const [width, setWidth] = useState(600)
+  const [lastSvgRect, setLastSvgRect] = useState({ left: 0, top: 0, width: 600, height: 280 })
 
   // Fetch data
   useEffect(() => {
@@ -63,9 +65,9 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
     }
   }, [start, end])
 
-  // Measure container width
+  // Measure container width and SVG rect
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current || !svgRef.current) return
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0]
       if (entry) {
@@ -73,7 +75,20 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
       }
     })
     observer.observe(containerRef.current)
-    return () => observer.disconnect()
+
+    // Also track SVG rect for tooltip positioning
+    const svgObserver = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (entry) {
+        setLastSvgRect(entry.target.getBoundingClientRect())
+      }
+    })
+    svgObserver.observe(svgRef.current)
+
+    return () => {
+      observer.disconnect()
+      svgObserver.disconnect()
+    }
   }, [])
 
   // Calculate chart dimensions
@@ -150,36 +165,45 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!data || data.online.length === 0) return
 
-    const rect = e.currentTarget.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left
+    // Use SVG's own bounding rect - tooltip lives in container which has same coordinate system
+    const svgRect = e.currentTarget.getBoundingClientRect()
+    setLastSvgRect(svgRect)
 
-    // Convert DOM coordinates to viewBox coordinates
-    const scaleX = width / rect.width
-    const scaledMouseX = mouseX * scaleX
+    // Mouse position relative to SVG
+    const mouseX = e.clientX - svgRect.left
+    const mouseProgress = mouseX / svgRect.width
 
     let closestIndex = 0
-    let closestDistance = Infinity
-
-    for (let i = 0; i < data.online.length; i++) {
-      const pointX = getXScale(i)
-      const distance = Math.abs(pointX - scaledMouseX)
-      if (distance < closestDistance) {
-        closestDistance = distance
-        closestIndex = i
-      }
+    if (data.online.length > 1) {
+      closestIndex = Math.round(mouseProgress * (data.online.length - 1))
+      closestIndex = Math.max(0, Math.min(closestIndex, data.online.length - 1))
     }
 
     const dayData = data.online[closestIndex]
     const posDayData = data.pos[closestIndex]
     if (!dayData) return
 
+    // Calculate tooltip position directly in pixels using SVG's bounding rect
+    // Point positions within SVG (same coordinate system as container)
+    // x: 0 = left edge of SVG, svgRect.width = right edge
+    // y: 0 = top edge of SVG, svgRect.height = bottom edge
+    const svgPaddingLeft = PADDING.left * (svgRect.width / width)
+    const svgPaddingTop = PADDING.top * (svgRect.height / HEIGHT)
+    const svgPlotWidth = (width - PADDING.left - PADDING.right) * (svgRect.width / width)
+    const svgPlotHeight = (HEIGHT - PADDING.top - PADDING.bottom) * (svgRect.height / HEIGHT)
+
+    const tooltipX = svgPaddingLeft + (closestIndex / Math.max(data.online.length - 1, 1)) * svgPlotWidth
+
+    const maxRevenue = Math.max(dayData.revenue, posDayData?.revenue ?? 0, 1)
+    const tooltipY = svgPaddingTop + svgPlotHeight * (1 - maxRevenue / maxValue)
+
     setHoveredIndex(closestIndex)
     setTooltip({
       day: dayData.day,
       online: dayData.revenue,
       pos: posDayData?.revenue ?? 0,
-      x: getXScale(closestIndex),
-      y: yScale(Math.max(dayData.revenue, posDayData?.revenue ?? 0)),
+      x: tooltipX,
+      y: tooltipY,
     })
   }
 
@@ -238,7 +262,7 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div ref={containerRef} className="relative w-full">
+        <div ref={containerRef} className="relative w-full min-w-[300px] max-w-[600px] mx-auto">
           {/* Legend */}
           <div className="flex gap-4 mb-4 justify-end">
             <div className="flex items-center gap-2">
@@ -253,10 +277,11 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
 
           {/* SVG Chart */}
           <svg
-            width="100%"
+            ref={svgRef}
+            width={600}
             height={HEIGHT}
             viewBox={`0 0 ${width} ${HEIGHT}`}
-            className="overflow-visible"
+            className="overflow-visible mx-auto"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
           >
@@ -376,10 +401,10 @@ export function RevenueChart({ start, end, filter, className }: RevenueChartProp
           {/* Tooltip */}
           {tooltip && (
             <div
-              className="absolute z-10 bg-background border rounded-lg shadow-lg px-3 py-2 text-sm pointer-events-none"
+              className="fixed z-50 bg-background border rounded-lg shadow-lg px-3 py-2 text-sm pointer-events-none"
               style={{
-                left: tooltip.x,
-                top: tooltip.y - 80,
+                left: lastSvgRect.left + tooltip.x,
+                top: lastSvgRect.top + tooltip.y - 80,
                 transform: "translateX(-50%)",
               }}
             >
