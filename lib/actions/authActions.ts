@@ -17,8 +17,25 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    // Basic error handling for server action
     redirect("/login?error=" + encodeURIComponent(error.message));
+  }
+
+  // Force refresh session to ensure cookies are set before redirect
+  await supabase.auth.refreshSession();
+
+  // Fetch user role to determine redirect
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role === "administrador") {
+      revalidatePath("/", "layout");
+      redirect("/admin");
+    }
   }
 
   revalidatePath("/", "layout");
@@ -50,6 +67,26 @@ export async function signup(formData: FormData) {
 
   revalidatePath("/", "layout");
   redirect("/");
+}
+
+export async function resetPasswordForEmail(formData: FormData) {
+  const email = formData.get("email") as string;
+
+  if (!email) {
+    return { success: false, message: "El correo es requerido" };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'http://localhost:3000'}/update-password`,
+  });
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  return { success: true, message: "Revisa tu correo para el enlace de recuperación" };
 }
 
 export async function logout() {

@@ -3,10 +3,12 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Package, Tag, ShoppingBag, LayoutDashboard, Users, ShoppingCart } from "lucide-react"
+import { SignOut } from "@phosphor-icons/react"
 import { LicenseOverlay } from "@/components/license/LicenseOverlay"
 import type { MensajeResponse } from "@/types/license.types"
 import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
+import { logout } from "@/lib/actions/authActions"
 
 const MENSAJE_BLOQUEADO: MensajeResponse = {
   title: "PAGO NO REGISTRADO",
@@ -31,11 +33,11 @@ function AdminContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-[calc(100vh-8rem)] bg-secondary rounded-lg overflow-hidden border">
       {/* Sidebar */}
-      <div className="w-64 bg-card shadow-sm border-r border-border">
+      <div className="w-64 bg-card shadow-sm border-r border-border flex flex-col">
         <div className="p-6 border-b border-border">
           <h2 className="text-xl font-bold text-card-foreground">Panel Admin</h2>
         </div>
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-2 flex-1">
           <Link href="/admin" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin") ? "bg-primary/10 text-primary font-medium" : ""}`}>
             <LayoutDashboard className="w-5 h-5"/>
             Dashboard
@@ -65,6 +67,17 @@ function AdminContent({ children }: { children: React.ReactNode }) {
             Ventas POS
           </Link>
         </nav>
+        <div className="p-4 border-t border-border">
+          <form action={logout}>
+            <button
+              type="submit"
+              className="flex items-center gap-3 w-full px-4 py-2 text-sm font-medium text-muted-foreground hover:text-red-400 hover:bg-destructive/10 rounded-md transition-colors"
+            >
+              <SignOut className="w-5 h-5"/>
+              Salir
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Main Content */}

@@ -81,6 +81,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     .select("*, categories(name)")
     .eq("id", id)
     .eq("active", true)
+    .eq("archived", false)
     .single()
 
   if (!product) {
@@ -97,6 +98,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     .select("id, name, price, image_url")
     .eq("category_id", product.category_id)
     .eq("active", true)
+    .eq("archived", false)
     .neq("id", id)
     .limit(8)
 
