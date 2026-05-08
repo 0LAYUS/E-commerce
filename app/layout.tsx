@@ -9,12 +9,34 @@ import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+  : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Prigma Comercio"
+const siteDescription = process.env.NEXT_PUBLIC_SITE_DESCRIPTION || "Tienda online — Encuentra los mejores productos con envío a toda Colombia."
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Wompi E-commerce",
-  description: "Tienda online básica con Next.js y Wompi",
+  title: {
+    default: siteName,
+    template: `%s | ${siteName}`,
+  },
+  description: siteDescription,
+  openGraph: {
+    type: "website",
+    locale: "es_CO",
+    siteName,
+    title: siteName,
+    description: siteDescription,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteName,
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 const geistSans = Geist({

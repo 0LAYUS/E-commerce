@@ -4,6 +4,7 @@ import { useCart } from "@/components/providers/CartProvider"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createOrder } from "@/lib/actions/checkoutActions"
+import { getWompiIntegritySignature } from "@/lib/actions/wompiActions"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { AlertTriangle, TrendingUp, TrendingDown, Clock } from "lucide-react"
 import Link from "next/link"
@@ -120,9 +121,13 @@ export default function CheckoutPage() {
         direccion
       )
 
-      const checkout = new (window as any).WidgetCheckout({
+      // Generar firma de integridad en el servidor (requerida por Wompi en producción)
+      const amountInCents = total * 100
+      const integritySignature = await getWompiIntegritySignature(orderId, amountInCents, "COP")
+
+      const widgetConfig: Record<string, any> = {
         currency: "COP",
-        amountInCents: total * 100,
+        amountInCents,
         reference: orderId,
         publicKey: wompiPublicKey,
         redirectUrl: `${window.location.origin}/checkout/result`,
@@ -130,7 +135,14 @@ export default function CheckoutPage() {
           email: email,
           fullName: nombre,
         },
-      })
+      }
+
+      // Solo incluir la firma si está disponible (requerida en producción)
+      if (integritySignature) {
+        widgetConfig.signature = { integrity: integritySignature }
+      }
+
+      const checkout = new (window as any).WidgetCheckout(widgetConfig)
 
       checkout.open(async (result: any) => {
         const transaction = result.transaction
@@ -296,7 +308,7 @@ export default function CheckoutPage() {
                 onChange={(e) => setNombre(e.target.value)}
                 required
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Juan"
+                placeholder="Nombre"
               />
             </div>
             <div>
@@ -307,7 +319,7 @@ export default function CheckoutPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="juan@gmail.com"
+                placeholder="email@gmail.com"
               />
             </div>
             <div>
@@ -334,9 +346,8 @@ export default function CheckoutPage() {
               return (
                 <div
                   key={item.id}
-                  className={`flex justify-between items-center text-sm ${
-                    isBlocked ? "opacity-50 line-through" : ""
-                  }`}
+                  className={`flex justify-between items-center text-sm ${isBlocked ? "opacity-50 line-through" : ""
+                    }`}
                 >
                   <span className="font-medium text-foreground">
                     {item.name} x {item.quantity}
