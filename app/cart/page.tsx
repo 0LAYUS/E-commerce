@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useCart } from "@/components/providers/CartProvider"
 import Link from "next/link"
+import Image from "next/image"
 import { Trash2, Minus, Plus, AlertTriangle, Info, TrendingUp, TrendingDown } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -204,9 +205,9 @@ export default function CartPage() {
                   </div>
                 )}
 
-                <div className="flex-shrink-0 w-24 h-24 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+                <div className="flex-shrink-0 w-24 h-24 bg-muted rounded-lg flex items-center justify-center overflow-hidden relative">
                   {item.imageUrl ? (
-                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain" />
+                    <Image src={item.imageUrl} alt={item.name} fill className="object-contain" sizes="96px" />
                   ) : (
                     <div className="text-xs text-muted-foreground">IMG</div>
                   )}

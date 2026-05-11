@@ -20,6 +20,49 @@ export async function validateCartItems(items: CartValidationItem[]): Promise<Ca
   }
 
   const supabase = await createAdminClient()
+
+  const variantIds = items.filter((i) => i.variant_id).map((i) => i.variant_id!)
+  const productIds = items.filter((i) => !i.variant_id).map((i) => i.product_id)
+
+  const [skuData, productData] = await Promise.all([
+    variantIds.length > 0
+      ? supabase
+          .from("product_skus")
+          .select("*, product_id, sku_code, price_override, stock, active")
+          .in("id", variantIds)
+      : { data: [], error: null },
+    productIds.length > 0
+      ? supabase
+          .from("products")
+          .select("id, name, price, stock, active, archived, has_active_reservation")
+          .in("id", productIds)
+      : { data: [], error: null },
+  ])
+
+  const skuMap = new Map((skuData.data || []).map((sku) => [sku.id, sku]))
+  const productMap = new Map((productData.data || []).map((p) => [p.id, p]))
+  const productIdsWithReservations = (productData.data || [])
+    .filter((p) => p.has_active_reservation)
+    .map((p) => p.id)
+
+  if (productIdsWithReservations.length > 0) {
+    await Promise.all(
+      productIdsWithReservations.map((pid) =>
+        supabase.rpc("cleanup_expired_reservations_for_product", { p_product_id: pid })
+      )
+    )
+    const { data: refreshedProducts } = await supabase
+      .from("products")
+      .select("id, stock")
+      .in("id", productIdsWithReservations)
+    refreshedProducts?.forEach((p) => {
+      const existing = productMap.get(p.id)
+      if (existing) {
+        existing.stock = p.stock
+      }
+    })
+  }
+
   const validatedItems: ValidatedCartItem[] = []
   const blockedItems: string[] = []
 
@@ -33,34 +76,22 @@ export async function validateCartItems(items: CartValidationItem[]): Promise<Ca
     }
 
     if (item.variant_id) {
-      const { data: sku, error: skuError } = await supabase
-        .from("product_skus")
-        .select("*, product_id, sku_code, price_override, stock, active")
-        .eq("id", item.variant_id)
-        .single()
+      const sku = skuMap.get(item.variant_id)
 
-      if (skuError || !sku) {
+      if (!sku) {
         validated.status = "variant_inactive"
         blockedItems.push(item.id)
         validatedItems.push(validated)
         continue
       }
 
-      if (!sku.active) {
-        validated.status = "variant_inactive"
-        blockedItems.push(item.id)
-        validatedItems.push(validated)
-        continue
-      }
-
-      // Also check if parent product is archived
       const { data: parentProduct } = await supabase
         .from("products")
         .select("archived")
         .eq("id", sku.product_id)
         .single()
 
-      if (parentProduct?.archived) {
+      if (!sku.active || parentProduct?.archived) {
         validated.status = "variant_inactive"
         blockedItems.push(item.id)
         validatedItems.push(validated)
@@ -81,13 +112,9 @@ export async function validateCartItems(items: CartValidationItem[]): Promise<Ca
         }
       }
     } else {
-      const { data: product, error: productError } = await supabase
-        .from("products")
-        .select("id, name, price, stock, active, archived, has_active_reservation")
-        .eq("id", item.product_id)
-        .single()
+      const product = productMap.get(item.product_id)
 
-      if (productError || !product) {
+      if (!product) {
         validated.status = "product_inactive"
         blockedItems.push(item.id)
         validatedItems.push(validated)
@@ -99,22 +126,6 @@ export async function validateCartItems(items: CartValidationItem[]): Promise<Ca
         blockedItems.push(item.id)
         validatedItems.push(validated)
         continue
-      }
-
-      // If product has active reservation flag, cleanup expired ones first
-      if (product.has_active_reservation) {
-        await supabase.rpc("cleanup_expired_reservations_for_product", {
-          p_product_id: product.id,
-        })
-        // Re-fetch product stock after cleanup
-        const { data: refreshedProduct } = await supabase
-          .from("products")
-          .select("stock")
-          .eq("id", item.product_id)
-          .single()
-        if (refreshedProduct) {
-          product.stock = refreshedProduct.stock
-        }
       }
 
       validated.current_price = product.price

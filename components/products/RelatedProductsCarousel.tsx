@@ -2,6 +2,7 @@
 
 import { useRef } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 type RelatedProduct = {
@@ -69,12 +70,14 @@ export default function RelatedProductsCarousel({ products }: RelatedProductsCar
             href={`/products/${rp.id}`}
             className="group bg-card rounded-xl border overflow-hidden hover:shadow-md transition flex-shrink-0 w-64"
           >
-            <div className="aspect-square bg-muted flex items-center justify-center p-4">
+            <div className="aspect-square bg-muted flex items-center justify-center p-4 relative">
               {rp.image_url ? (
-                <img
+                <Image
                   src={rp.image_url}
                   alt={rp.name}
-                  className="w-full h-full object-contain group-hover:scale-105 transition"
+                  fill
+                  className="object-contain group-hover:scale-105 transition"
+                  sizes="256px"
                 />
               ) : (
                 <span className="text-muted-foreground font-mono text-sm">IMG</span>

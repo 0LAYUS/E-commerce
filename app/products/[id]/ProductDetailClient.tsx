@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import Link from "next/link"
+import Image from "next/image"
 import { ArrowLeft, ShoppingBag } from "@phosphor-icons/react"
 import ProductVariantSelector from "@/components/products/ProductVariantSelector"
 import AddToCartButton from "@/components/products/AddToCartButton"
@@ -75,12 +76,14 @@ export default function ProductDetailClient({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="aspect-square bg-card rounded-2xl overflow-hidden flex items-center justify-center border border-border shadow-xl">
+            <div className="aspect-square bg-card rounded-2xl overflow-hidden flex items-center justify-center border border-border shadow-xl relative">
               {product.image_url ? (
-                <img
+                <Image
                   src={product.image_url}
                   alt={product.name}
-                  className="w-full h-full object-contain p-8"
+                  fill
+                  className="object-contain p-8"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               ) : (
                 <div className="flex flex-col items-center gap-4 text-muted-foreground">

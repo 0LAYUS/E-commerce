@@ -9,7 +9,9 @@ export async function POST(request: NextRequest) {
 
     const result = await validateCartItems(items || [])
 
-    return NextResponse.json(result)
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "no-store" },
+    })
   } catch (error) {
     console.error("Cart validation error:", error)
     return NextResponse.json(

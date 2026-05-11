@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { useCart } from "@/components/providers/CartProvider"
 import { motion, AnimatePresence, Variants } from "framer-motion"
 import { MagnifyingGlass, ShoppingBag, Star, Plus, Check } from "@phosphor-icons/react"
@@ -230,17 +231,17 @@ export default function ProductGrid({
             onClick={() => router.push(`/products/${product.id}`)}
           >
             <motion.div
-              className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden"
-              whileHover={{ scale: 1.05 }}
+              className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300"
+              whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.3 }}
             >
               {product.image_url ? (
-                <motion.img
+                <Image
                   src={product.image_url}
                   alt={product.name}
-                  className="object-cover w-full h-full"
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ duration: 0.5 }}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
                 />
               ) : (
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">

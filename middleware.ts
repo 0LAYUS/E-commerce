@@ -2,11 +2,20 @@ import { NextResponse, type NextRequest } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { signLicenseRequest } from "@/lib/license/sign-request"
 
-const PRIGMA_URL = process.env.PRIGMA_URL || "https://prigma.onrender.com"
+const PRIGMA_URL = process.env.PRIGMA_URL || "https://prisma.onrender.com"
 const LICENSE_KEY = process.env.LICENSE_KEY || ""
+const LICENSE_CACHE_SECONDS = 300
 
-async function verificarLicenciaActiva(): Promise<boolean> {
+async function verificarLicenciaActiva(request: NextRequest): Promise<boolean> {
   if (!LICENSE_KEY) return true
+
+  const cachedStatus = request.cookies.get("_license_status")?.value
+  if (cachedStatus) {
+    const cached = JSON.parse(cachedStatus)
+    if (Date.now() / 1000 < cached.expiresAt) {
+      return cached.active
+    }
+  }
 
   try {
     const timestamp = Math.floor(Date.now() / 1000)
@@ -23,7 +32,18 @@ async function verificarLicenciaActiva(): Promise<boolean> {
     if (!res.ok) return true
 
     const data = await res.json()
-    return data.status === "active" || data.status === "trial" || data.status === "grace_period"
+    const active = data.status === "active" || data.status === "trial" || data.status === "grace_period"
+
+    const response = NextResponse.next()
+    response.cookies.set("_license_status", JSON.stringify({
+      active,
+      expiresAt: (Date.now() / 1000) + LICENSE_CACHE_SECONDS,
+    }), {
+      maxAge: LICENSE_CACHE_SECONDS,
+      httpOnly: true,
+      sameSite: "lax",
+    })
+    return active
   } catch {
     return true
   }
@@ -53,7 +73,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL("/", request.url))
       }
 
-      const licenciaActiva = await verificarLicenciaActiva()
+      const licenciaActiva = await verificarLicenciaActiva(request)
       if (!licenciaActiva) {
         return NextResponse.redirect(new URL("/admin?bloqueado=si", request.url))
       }

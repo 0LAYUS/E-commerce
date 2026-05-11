@@ -1,7 +1,7 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react"
-import { CartItem, CartItemValidationStatus, CartValidationResult, ItemStatus, CartContextType } from "@/types/cart.types"
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from "react"
+import { CartItem, ItemStatus, CartContextType } from "@/types/cart.types"
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
@@ -9,6 +9,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [itemStatuses, setItemStatuses] = useState<Map<string, ItemStatus>>(new Map())
   const [isValidating, setIsValidating] = useState(false)
+  const revalidateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     const stored = localStorage.getItem("wompi-cart")
@@ -19,7 +20,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("wompi-cart", JSON.stringify(items))
   }, [items])
 
-  const validateItem = useCallback(async (item: Omit<CartItem, "quantity"> & { quantity?: number }): Promise<CartValidationResult> => {
+  const validateItem = useCallback(async (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
     const response = await fetch("/api/cart/validate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -57,7 +58,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           })),
         }),
       })
-      const result: CartValidationResult = await response.json()
+      const result = await response.json()
 
       const newStatuses = new Map<string, ItemStatus>()
       const updatedItems: CartItem[] = []
@@ -65,7 +66,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       for (let i = 0; i < items.length; i++) {
         const item = items[i]
         const validatedItem = result.items.find(
-          (v) => v.id === (item.variant_id || item.id)
+          (v: { id: string }) => v.id === (item.variant_id || item.id)
         )
 
         if (validatedItem) {
@@ -102,7 +103,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (items.length > 0) {
-      revalidateCart()
+      if (revalidateTimeoutRef.current) {
+        clearTimeout(revalidateTimeoutRef.current)
+      }
+      revalidateTimeoutRef.current = setTimeout(() => {
+        revalidateCart()
+      }, 1500)
+    }
+    return () => {
+      if (revalidateTimeoutRef.current) {
+        clearTimeout(revalidateTimeoutRef.current)
+      }
     }
   }, [items.length, revalidateCart])
 
@@ -111,7 +122,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const result = await validateItem(product)
 
       if (!result.success && result.has_problems) {
-        const firstProblem = result.items.find((i) => i.status !== "valid")
+        const firstProblem = result.items.find((i: { status: string }) => i.status !== "valid")
         if (firstProblem) {
           switch (firstProblem.status) {
             case "product_inactive":
@@ -152,53 +163,60 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [validateItem, itemStatuses])
 
-  const removeFromCart = (id: string) => {
+  const removeFromCart = useCallback((id: string) => {
     setItems((prev) => prev.filter((i) => i.id !== id))
-    const newStatuses = new Map(itemStatuses)
-    newStatuses.delete(id)
-    setItemStatuses(newStatuses)
-  }
+    setItemStatuses((prev) => {
+      const next = new Map(prev)
+      next.delete(id)
+      return next
+    })
+  }, [])
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = useCallback((id: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(id)
       return
     }
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity } : i)))
-  }
+  }, [removeFromCart])
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([])
     setItemStatuses(new Map())
-  }
+  }, [])
 
-  const total = items.reduce((acc, current) => {
-    const status = itemStatuses.get(current.variant_id || current.id)
-    if (status && status.status === "valid" && status.current_price) {
-      return acc + status.current_price * current.quantity
-    }
-    return acc + current.price * current.quantity
-  }, 0)
+  const total = useMemo(() => {
+    return items.reduce((acc, current) => {
+      const status = itemStatuses.get(current.variant_id || current.id)
+      if (status && status.status === "valid" && status.current_price) {
+        return acc + status.current_price * current.quantity
+      }
+      return acc + current.price * current.quantity
+    }, 0)
+  }, [items, itemStatuses])
 
-  const hasBlockedItems = Array.from(itemStatuses.values()).some(
-    (s) => s.status !== "valid" && s.status !== "price_changed"
+  const hasBlockedItems = useMemo(() =>
+    Array.from(itemStatuses.values()).some(
+      (s) => s.status !== "valid" && s.status !== "price_changed"
+    ),
+    [itemStatuses]
   )
 
+  const contextValue = useMemo(() => ({
+    items,
+    addItem,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    total,
+    itemStatuses,
+    isValidating,
+    revalidateCart,
+    hasBlockedItems,
+  }), [items, addItem, removeFromCart, updateQuantity, clearCart, total, itemStatuses, isValidating, revalidateCart, hasBlockedItems])
+
   return (
-    <CartContext.Provider
-      value={{
-        items,
-        addItem,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        total,
-        itemStatuses,
-        isValidating,
-        revalidateCart,
-        hasBlockedItems,
-      }}
-    >
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   )

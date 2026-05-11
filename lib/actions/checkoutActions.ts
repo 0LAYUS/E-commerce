@@ -7,28 +7,39 @@ export async function validateStock(items: OrderItem[]): Promise<{ valid: boolea
   const supabase = await createClient()
   const insufficient: string[] = []
 
+  const variantIds = items.filter((i) => i.variant_id).map((i) => i.variant_id!)
+  const productIds = items.filter((i) => !i.variant_id).map((i) => i.product_id)
+
+  const [skuData, productData] = await Promise.all([
+    variantIds.length > 0
+      ? supabase
+          .from("product_skus")
+          .select("id, stock, active, product_id")
+          .in("id", variantIds)
+      : { data: [], error: null },
+    productIds.length > 0
+      ? supabase
+          .from("products")
+          .select("id, stock, active, archived")
+          .in("id", productIds)
+      : { data: [], error: null },
+  ])
+
+  const skuMap = new Map((skuData.data || []).map((s) => [s.id, s]))
+  const productMap = new Map((productData.data || []).map((p) => [p.id, p]))
+
   for (const item of items) {
     let availableStock = 0
 
     if (item.variant_id) {
-      const { data: sku } = await supabase
-        .from("product_skus")
-        .select("stock, active, product_id")
-        .eq("id", item.variant_id)
-        .single()
+      const sku = skuMap.get(item.variant_id)
 
       if (!sku || !sku.active) {
         insufficient.push(item.id)
         continue
       }
 
-      // Check if parent product is archived
-      const { data: parentProduct } = await supabase
-        .from("products")
-        .select("archived")
-        .eq("id", sku.product_id)
-        .single()
-
+      const parentProduct = productMap.get(sku.product_id)
       if (parentProduct?.archived) {
         insufficient.push(item.id)
         continue
@@ -36,11 +47,7 @@ export async function validateStock(items: OrderItem[]): Promise<{ valid: boolea
 
       availableStock = sku.stock
     } else {
-      const { data: product } = await supabase
-        .from("products")
-        .select("stock, active, archived")
-        .eq("id", item.product_id)
-        .single()
+      const product = productMap.get(item.product_id)
 
       if (!product || !product.active || product.archived) {
         insufficient.push(item.id)
@@ -70,36 +77,39 @@ export async function createOrder(
 
   if (!user) throw new Error("Debes iniciar sesión para comprar")
 
-  // Reserve stock atomically (check + decrement in one operation to avoid race conditions)
-  for (const item of items) {
-    // First check if product/variant is archived
-    if (item.variant_id) {
-      const { data: sku } = await supabase
-        .from("product_skus")
-        .select("active, product_id")
-        .eq("id", item.variant_id)
-        .single()
+  const variantIds = items.filter((i) => i.variant_id).map((i) => i.variant_id!)
+  const productIds = items.filter((i) => !i.variant_id).map((i) => i.product_id)
 
+  const [skuData, productData] = await Promise.all([
+    variantIds.length > 0
+      ? supabase
+          .from("product_skus")
+          .select("id, active, product_id")
+          .in("id", variantIds)
+      : { data: [], error: null },
+    productIds.length > 0
+      ? supabase
+          .from("products")
+          .select("id, active, archived")
+          .in("id", productIds)
+      : { data: [], error: null },
+  ])
+
+  const skuMap = new Map((skuData.data || []).map((s) => [s.id, s]))
+  const productMap = new Map((productData.data || []).map((p) => [p.id, p]))
+
+  for (const item of items) {
+    if (item.variant_id) {
+      const sku = skuMap.get(item.variant_id)
       if (!sku || !sku.active) {
         throw new Error("Variante no disponible: " + item.name)
       }
-
-      const { data: parentProduct } = await supabase
-        .from("products")
-        .select("archived")
-        .eq("id", sku.product_id)
-        .single()
-
+      const parentProduct = productMap.get(sku.product_id)
       if (parentProduct?.archived) {
         throw new Error("Producto archivado: " + item.name)
       }
     } else {
-      const { data: product } = await supabase
-        .from("products")
-        .select("active, archived")
-        .eq("id", item.product_id)
-        .single()
-
+      const product = productMap.get(item.product_id)
       if (!product || !product.active || product.archived) {
         throw new Error("Producto no disponible: " + item.name)
       }

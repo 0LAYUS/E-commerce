@@ -17,25 +17,29 @@ export async function getProductOptions(productId: string): Promise<{ id: string
     .eq("product_id", productId)
     .order("position")
 
-  if (!types) return []
+  if (!types || types.length === 0) return []
 
-  const result = await Promise.all(
-    types.map(async (type) => {
-      const { data: values } = await supabase
-        .from("product_option_values")
-        .select("value")
-        .eq("option_type_id", type.id)
-        .order("position")
+  const typeIds = types.map((t) => t.id)
 
-      return {
-        id: type.id,
-        name: type.name,
-        values: values?.map((v) => v.value) || [],
-      }
-    })
-  )
+  const { data: allValues } = await supabase
+    .from("product_option_values")
+    .select("value, option_type_id, position")
+    .in("option_type_id", typeIds)
+    .order("position")
 
-  return result
+  const valuesByType = new Map<string, string[]>()
+  for (const v of allValues || []) {
+    if (!valuesByType.has(v.option_type_id)) {
+      valuesByType.set(v.option_type_id, [])
+    }
+    valuesByType.get(v.option_type_id)!.push(v.value)
+  }
+
+  return types.map((type) => ({
+    id: type.id,
+    name: type.name,
+    values: valuesByType.get(type.id) || [],
+  }))
 }
 
 export async function getProductVariants(productId: string) {
@@ -46,30 +50,33 @@ export async function getProductVariants(productId: string) {
     .select("*")
     .eq("product_id", productId)
 
-  if (!skus) return []
+  if (!skus || skus.length === 0) return []
 
-  const variants = await Promise.all(
-    skus.map(async (sku) => {
-      const { data: links } = await supabase
-        .from("sku_option_values")
-        .select("option_value_id")
-        .eq("sku_id", sku.id)
+  const skuIds = skus.map((s) => s.id)
 
-      if (!links) return { ...sku, option_value_ids: [] }
+  const { data: links } = await supabase
+    .from("sku_option_values")
+    .select("sku_id, option_value_id")
+    .in("sku_id", skuIds)
 
-      const { data: optionValues } = await supabase
-        .from("product_option_values")
-        .select("value")
-        .in("id", links.map((l) => l.option_value_id))
+  const { data: optionValues } = await supabase
+    .from("product_option_values")
+    .select("id, value")
+    .in("id", (links || []).map((l) => l.option_value_id))
 
-      return {
-        ...sku,
-        option_values: optionValues?.map((v) => v.value) || [],
-      }
-    })
-  )
+  const optionValueMap = new Map((optionValues || []).map((ov) => [ov.id, ov.value]))
+  const linksBySku = new Map<string, string[]>()
+  for (const link of links || []) {
+    if (!linksBySku.has(link.sku_id)) {
+      linksBySku.set(link.sku_id, [])
+    }
+    linksBySku.get(link.sku_id)!.push(optionValueMap.get(link.option_value_id) || "")
+  }
 
-  return variants
+  return skus.map((sku) => ({
+    ...sku,
+    option_values: linksBySku.get(sku.id) || [],
+  }))
 }
 
 // ============================================
@@ -467,38 +474,21 @@ export async function hasOnlineSales(productId: string): Promise<number> {
 
 /**
  * Count POS sales for a product (checks items JSONB column)
- * Direct query on pos_sales items JSONB - more reliable than RPC
+ * Uses RPC function to count in database instead of loading all records
  */
 export async function hasPOSSales(productId: string): Promise<number> {
   const supabase = await createClient()
 
-  // Fetch all pos_sales (with items) and count those containing this product
-  // items is JSONB: [{product_id: "uuid", variant_id: "uuid", quantity: N}, ...]
-  const { data: sales, error } = await supabase
-    .from("pos_sales")
-    .select("items")
+  const { data, error } = await supabase.rpc("count_pos_sales_for_product", {
+    p_product_id: productId,
+  })
 
   if (error) {
     console.error("Error checking POS sales:", error.message)
     return 0
   }
 
-  let count = 0
-  for (const sale of sales || []) {
-    // items can be JSON string or JSON object depending on how it was stored
-    let items: Array<{ product_id?: string; variant_id?: string }> = []
-    if (sale.items) {
-      if (typeof sale.items === "string") {
-        items = JSON.parse(sale.items)
-      } else {
-        items = sale.items as Array<{ product_id?: string; variant_id?: string }>
-      }
-    }
-    if (items.some(item => item.product_id === productId)) {
-      count++
-    }
-  }
-  return count
+  return data ?? 0
 }
 
 /**
@@ -528,35 +518,21 @@ export async function hasVariantOnlineSales(variantId: string): Promise<number> 
 
 /**
  * Count POS sales for a specific variant (checks items JSONB)
+ * Uses RPC function to count in database instead of loading all records
  */
 export async function hasVariantPOSSales(variantId: string): Promise<number> {
   const supabase = await createClient()
 
-  const { data: sales, error } = await supabase
-    .from("pos_sales")
-    .select("items")
+  const { data, error } = await supabase.rpc("count_pos_sales_for_variant", {
+    p_variant_id: variantId,
+  })
 
   if (error) {
     console.error("Error checking POS variant sales:", error.message)
     return 0
   }
 
-  let count = 0
-  for (const sale of sales || []) {
-    // items can be JSON string or JSON object depending on how it was stored
-    let items: Array<{ product_id?: string; variant_id?: string }> = []
-    if (sale.items) {
-      if (typeof sale.items === "string") {
-        items = JSON.parse(sale.items)
-      } else {
-        items = sale.items as Array<{ product_id?: string; variant_id?: string }>
-      }
-    }
-    if (items.some(item => item.variant_id === variantId)) {
-      count++
-    }
-  }
-  return count
+  return data ?? 0
 }
 
 /**
