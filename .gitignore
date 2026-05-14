@@ -50,3 +50,6 @@ next-env.d.ts
 
 # skills lock
 skills-lock.json
+
+# Supabase temp files
+supabase/.temp/
