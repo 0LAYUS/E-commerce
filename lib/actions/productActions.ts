@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
-import type { OptionDef, VariantStock, ProductInput, VariantInput } from "@/types/product.types"
+import type { OptionDef, ProductImage, VariantImage } from "@/types/product.types"
 
 // ============================================
 // GET FUNCTIONS
@@ -72,6 +72,188 @@ export async function getProductVariants(productId: string) {
   return variants
 }
 
+export async function getProductImages(productId: string): Promise<ProductImage[]> {
+  const supabase = await createClient()
+
+  const { data } = await supabase
+    .from("product_images")
+    .select("id, product_id, url, alt, position")
+    .eq("product_id", productId)
+    .order("position")
+
+  if (data && data.length > 0) return data
+
+  const { data: product } = await supabase
+    .from("products")
+    .select("image_url, name")
+    .eq("id", productId)
+    .single()
+
+  if (!product?.image_url) return []
+
+  const { data: seeded } = await supabase
+    .from("product_images")
+    .insert({
+      product_id: productId,
+      url: product.image_url,
+      alt: product.name || null,
+      position: 0,
+    })
+    .select("id, product_id, url, alt, position")
+
+  return seeded || []
+}
+
+export async function getVariantImagesByProductId(productId: string): Promise<Record<string, VariantImage[]>> {
+  const supabase = await createClient()
+
+  const { data: skus } = await supabase
+    .from("product_skus")
+    .select("id")
+    .eq("product_id", productId)
+
+  if (!skus || skus.length === 0) return {}
+
+  const skuIds = skus.map((sku) => sku.id)
+
+  const { data: images } = await supabase
+    .from("product_variant_images")
+    .select("id, sku_id, url, alt, position")
+    .in("sku_id", skuIds)
+    .order("position")
+
+  const grouped: Record<string, VariantImage[]> = {}
+  for (const image of images || []) {
+    if (!grouped[image.sku_id]) grouped[image.sku_id] = []
+    grouped[image.sku_id].push(image)
+  }
+
+  return grouped
+}
+
+type ImageOrderEntry = { type: "existing"; id: string } | { type: "new" }
+
+function parseImageOrder(raw: FormDataEntryValue | null): ImageOrderEntry[] | null {
+  if (!raw || typeof raw !== "string") return null
+  try {
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return null
+    return parsed.filter((entry) => entry && (entry.type === "existing" || entry.type === "new"))
+  } catch {
+    return null
+  }
+}
+
+function normalizeImageFiles(formData: FormData): File[] {
+  const files = formData.getAll("images").filter((f): f is File => f instanceof File && f.size > 0)
+  const single = formData.get("image")
+  if (files.length === 0 && single instanceof File && single.size > 0) {
+    return [single]
+  }
+  return files
+}
+
+async function uploadProductImage(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  productId: string,
+  file: File,
+  index: number
+) {
+  const fileExt = file.name.split(".").pop() || "jpg"
+  const fileName = `${Date.now()}-${index}.${fileExt}`
+  const filePath = `public/products/${productId}/${fileName}`
+
+  const { error: uploadError } = await supabase.storage
+    .from("product-images")
+    .upload(filePath, file)
+
+  if (uploadError) {
+    throw new Error("Error subiendo imagen: " + uploadError.message)
+  }
+
+  const { data } = supabase.storage.from("product-images").getPublicUrl(filePath)
+  return data.publicUrl
+}
+
+async function syncProductImages(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  productId: string,
+  files: File[],
+  imageOrder: ImageOrderEntry[] | null,
+  productName?: string
+) {
+  const { data: existing } = await supabase
+    .from("product_images")
+    .select("id, url")
+    .eq("product_id", productId)
+    .order("position")
+
+  const existingList = existing || []
+  const existingMap = new Map(existingList.map((img) => [img.id, img.url]))
+
+  const fallbackOrder: ImageOrderEntry[] = [
+    ...existingList.map((img) => ({ type: "existing" as const, id: img.id })),
+    ...files.map(() => ({ type: "new" as const })),
+  ]
+
+  const finalOrder = imageOrder && imageOrder.length > 0 ? imageOrder : fallbackOrder
+
+  if (finalOrder.length === 0) {
+    await supabase.from("product_images").delete().eq("product_id", productId)
+    await supabase.from("products").update({ image_url: null }).eq("id", productId)
+    return
+  }
+
+  const keepExistingIds = new Set(
+    finalOrder.filter((entry) => entry.type === "existing").map((entry) => entry.id)
+  )
+
+  const toDelete = existingList.filter((img) => !keepExistingIds.has(img.id))
+  if (toDelete.length > 0) {
+    await supabase.from("product_images").delete().in("id", toDelete.map((img) => img.id))
+  }
+
+  for (let i = 0; i < existingList.length; i++) {
+    const img = existingList[i]
+    if (!keepExistingIds.has(img.id)) continue
+    await supabase
+      .from("product_images")
+      .update({ position: 1000 + i })
+      .eq("id", img.id)
+  }
+
+  const fileQueue = [...files]
+  let firstUrl = ""
+
+  for (let i = 0; i < finalOrder.length; i++) {
+    const entry = finalOrder[i]
+    if (entry.type === "existing") {
+      const existingUrl = existingMap.get(entry.id) || ""
+      await supabase.from("product_images").update({ position: i }).eq("id", entry.id)
+      if (!firstUrl && existingUrl) firstUrl = existingUrl
+    } else {
+      const file = fileQueue.shift()
+      if (!file) continue
+      const url = await uploadProductImage(supabase, productId, file, i)
+      const { error: insertError } = await supabase.from("product_images").insert({
+        product_id: productId,
+        url,
+        alt: productName || null,
+        position: i,
+      })
+      if (insertError) {
+        throw new Error("Error guardando imagen: " + insertError.message)
+      }
+      if (!firstUrl) firstUrl = url
+    }
+  }
+
+  await supabase
+    .from("products")
+    .update({ image_url: firstUrl || null })
+    .eq("id", productId)
+}
+
 // ============================================
 // CREATE PRODUCT (with or without variants)
 // ============================================
@@ -85,27 +267,8 @@ export async function createProduct(formData: FormData) {
   const stock = parseInt(formData.get("stock") as string, 10) || 0
   const category_id = formData.get("category_id") as string
   const hasVariants = formData.get("has_variants") === "true"
-  const imageFile = formData.get("image") as File
-
-  let image_url = ""
-
-  // Upload image if present
-  if (imageFile && imageFile.size > 0) {
-    const fileExt = imageFile.name.split(".").pop()
-    const fileName = `${Date.now()}.${fileExt}`
-    const filePath = `public/${fileName}`
-
-    const { error: uploadError } = await supabase.storage
-      .from("product-images")
-      .upload(filePath, imageFile)
-
-    if (uploadError) {
-      throw new Error("Error subiendo imagen: " + uploadError.message)
-    }
-
-    const { data } = supabase.storage.from("product-images").getPublicUrl(filePath)
-    image_url = data.publicUrl
-  }
+  const imageOrder = parseImageOrder(formData.get("image_order"))
+  const imageFiles = normalizeImageFiles(formData)
 
   // Create product
   const { data: product, error: productError } = await supabase
@@ -116,7 +279,7 @@ export async function createProduct(formData: FormData) {
       price,
       stock: hasVariants ? 0 : stock, // If has variants, global stock is 0
       category_id,
-      image_url,
+      image_url: "",
     }])
     .select()
     .single()
@@ -128,6 +291,10 @@ export async function createProduct(formData: FormData) {
   // If has variants, create options and SKUs
   if (hasVariants) {
     await createProductVariants(supabase, product.id, formData, price)
+  }
+
+  if (imageOrder !== null || imageFiles.length > 0) {
+    await syncProductImages(supabase, product.id, imageFiles, imageOrder, name)
   }
 
   revalidatePath("/admin/products")
@@ -148,7 +315,8 @@ async function createProductVariants(
   if (!optionsRaw) return
 
   const options: OptionDef[] = JSON.parse(optionsRaw)
-  const variantsData = variantsRaw ? JSON.parse(variantsRaw) : []
+  const variantsData: Array<{ sku_code: string; stock?: number; price_override?: number | null; active?: boolean }> =
+    variantsRaw ? JSON.parse(variantsRaw) : []
 
   if (options.length === 0 || options.some((o) => o.values.length === 0)) {
     throw new Error("Las variantes requieren al menos una opción con valores")
@@ -194,7 +362,7 @@ async function createProductVariants(
     const sku_code = combo.map((c) => c.value.toUpperCase().replace(/\s+/g, "_")).join("-")
 
     // Find matching variant data by sku_code
-    const variantEntry = variantsData.find((v: any) => v.sku_code === sku_code)
+    const variantEntry = variantsData.find((v) => v.sku_code === sku_code)
     const stock = variantEntry?.stock ?? 0
     const price_override = variantEntry?.price_override ?? basePrice
     const active = variantEntry?.active ?? true
@@ -260,7 +428,8 @@ export async function updateProduct(formData: FormData) {
   const category_id = formData.get("category_id") as string
   const hasVariants = formData.get("has_variants") === "true"
   const active = formData.get("active") === "true"
-  const imageFile = formData.get("image") as File
+  const imageOrder = parseImageOrder(formData.get("image_order"))
+  const imageFiles = normalizeImageFiles(formData)
 
   const updates: Record<string, unknown> = {
     name,
@@ -271,21 +440,6 @@ export async function updateProduct(formData: FormData) {
     active,
   }
 
-  // Upload new image if present
-  if (imageFile && imageFile.size > 0) {
-    const fileExt = imageFile.name.split(".").pop()
-    const fileName = `${Date.now()}.${fileExt}`
-    const filePath = `public/${fileName}`
-
-    const { error: uploadError } = await supabase.storage
-      .from("product-images")
-      .upload(filePath, imageFile)
-
-    if (!uploadError) {
-      const { data } = supabase.storage.from("product-images").getPublicUrl(filePath)
-      updates.image_url = data.publicUrl
-    }
-  }
 
   // Update product
   const { error: productError } = await supabase
@@ -304,6 +458,45 @@ export async function updateProduct(formData: FormData) {
     // Delete existing variants if product no longer has them
     await supabase.from("product_skus").delete().eq("product_id", id)
     await supabase.from("product_option_types").delete().eq("product_id", id)
+  }
+
+  if (imageOrder !== null || imageFiles.length > 0) {
+    await syncProductImages(supabase, id, imageFiles, imageOrder, name)
+  }
+
+  revalidatePath("/admin/products")
+  revalidatePath("/")
+}
+
+export async function replaceVariantImages(variantId: string, formData: FormData) {
+  const supabase = await createClient()
+  const files = normalizeImageFiles(formData)
+
+  if (files.length === 0) return
+
+  await supabase.from("product_variant_images").delete().eq("sku_id", variantId)
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    const fileExt = file.name.split(".").pop() || "jpg"
+    const fileName = `${Date.now()}-${i}.${fileExt}`
+    const filePath = `public/variants/${variantId}/${fileName}`
+
+    const { error: uploadError } = await supabase.storage
+      .from("product-images")
+      .upload(filePath, file)
+
+    if (uploadError) {
+      throw new Error("Error subiendo imagen de variante: " + uploadError.message)
+    }
+
+    const { data } = supabase.storage.from("product-images").getPublicUrl(filePath)
+
+    await supabase.from("product_variant_images").insert({
+      sku_id: variantId,
+      url: data.publicUrl,
+      position: i,
+    })
   }
 
   revalidatePath("/admin/products")
@@ -338,7 +531,8 @@ async function updateProductVariants(
   if (!optionsRaw) return
 
   const options: OptionDef[] = JSON.parse(optionsRaw)
-  const variantsData = variantsRaw ? JSON.parse(variantsRaw) : []
+  const variantsData: Array<{ sku_code: string; stock?: number; price_override?: number | null; active?: boolean }> =
+    variantsRaw ? JSON.parse(variantsRaw) : []
 
   if (options.length === 0 || options.some((o) => o.values.length === 0)) return
 
@@ -379,7 +573,7 @@ async function updateProductVariants(
     const sku_code = combo.map((c) => c.value.toUpperCase().replace(/\s+/g, "_")).join("-")
     
     // Find variant data by SKU code
-    const variantEntry = variantsData.find((v: any) => v.sku_code === sku_code)
+    const variantEntry = variantsData.find((v) => v.sku_code === sku_code)
     const stock = variantEntry?.stock ?? 0
     const price_override = variantEntry?.price_override ?? basePrice
     const active = variantEntry?.active ?? true

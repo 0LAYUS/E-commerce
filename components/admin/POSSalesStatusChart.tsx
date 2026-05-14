@@ -39,6 +39,7 @@ export function POSSalesStatusChart({
   filter,
   className,
 }: POSSalesStatusChartProps) {
+  void filter
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<OrderStatusCount[]>([])
 
@@ -66,8 +67,6 @@ export function POSSalesStatusChart({
   // Calculate max for bar scaling
   const maxCount = Math.max(...data.map((d) => d.count), 1)
   const BAR_MAX_WIDTH = 200
-  const BAR_HEIGHT = 24
-  const LABEL_WIDTH = 80
 
   // Loading skeleton
   if (loading) {

@@ -2,10 +2,12 @@
 
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { ArrowLeft, ShoppingBag } from "@phosphor-icons/react"
+import { ArrowLeft } from "@phosphor-icons/react"
 import ProductVariantSelector from "@/components/products/ProductVariantSelector"
 import AddToCartButton from "@/components/products/AddToCartButton"
 import RelatedProductsCarousel from "@/components/products/RelatedProductsCarousel"
+import ProductImageGallery from "@/components/products/ProductImageGallery"
+import { useMemo, useState } from "react"
 
 type Product = {
   id: string
@@ -29,6 +31,19 @@ type SKU = {
   option_values: string[]
 }
 
+type ProductImage = {
+  id: string
+  url: string
+  alt?: string | null
+}
+
+type VariantImage = {
+  id: string
+  sku_id: string
+  url: string
+  alt?: string | null
+}
+
 type Props = {
   product: Product
   options: OptionDef[]
@@ -36,6 +51,8 @@ type Props = {
   basePrice: number
   hasVariants: boolean
   relatedProducts: { id: string; name: string; price: number; image_url: string }[]
+  productImages: ProductImage[]
+  variantImages: Record<string, VariantImage[]>
 }
 
 export default function ProductDetailClient({
@@ -45,7 +62,36 @@ export default function ProductDetailClient({
   basePrice,
   hasVariants,
   relatedProducts,
+  productImages,
+  variantImages,
 }: Props) {
+  const [selectedSkuId, setSelectedSkuId] = useState<string | null>(null)
+  const totalVariantStock = useMemo(
+    () => skus.reduce((sum, sku) => sum + (sku.active ? sku.stock : 0), 0),
+    [skus]
+  )
+
+  const activeImages = useMemo(() => {
+    if (selectedSkuId && variantImages[selectedSkuId]?.length) {
+      return variantImages[selectedSkuId].map((img) => ({
+        id: img.id,
+        url: img.url,
+        alt: img.alt,
+      }))
+    }
+    if (productImages.length > 0) return productImages
+    if (product.image_url) return [{ id: "fallback", url: product.image_url, alt: product.name }]
+    return []
+  }, [productImages, product.image_url, product.name, selectedSkuId, variantImages])
+
+  const primaryImageUrl = activeImages[0]?.url
+
+  const formatStockLabel = (stock: number) => {
+    if (stock <= 0) return "Agotado"
+    if (stock < 5) return `Ultimas ${stock} unidades`
+    return `${stock} unidades`
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-screen-2xl mx-auto px-6 py-8">
@@ -75,20 +121,7 @@ export default function ProductDetailClient({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="aspect-square bg-card rounded-2xl overflow-hidden flex items-center justify-center border border-border shadow-xl">
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-contain p-8"
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-4 text-muted-foreground">
-                  <ShoppingBag className="w-20 h-20" weight="duotone" />
-                  <span className="text-sm">Sin imagen</span>
-                </div>
-              )}
-            </div>
+            <ProductImageGallery images={activeImages} productName={product.name} />
           </motion.div>
 
           <motion.div
@@ -153,6 +186,8 @@ export default function ProductDetailClient({
                   basePrice={basePrice}
                   productId={product.id}
                   productName={product.name}
+                  totalStock={totalVariantStock}
+                  onSkuChange={(sku) => setSelectedSkuId(sku?.id ?? null)}
                 />
               </motion.div>
             )}
@@ -167,7 +202,7 @@ export default function ProductDetailClient({
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm text-muted-foreground">Stock disponible</span>
                   <span className={`text-xl font-bold ${product.stock > 0 ? "text-green-500" : "text-destructive"}`}>
-                    {product.stock > 0 ? `${product.stock} unidades` : "Agotado"}
+                    {formatStockLabel(product.stock)}
                   </span>
                 </div>
                 {product.stock > 0 && (
@@ -175,7 +210,7 @@ export default function ProductDetailClient({
                     productId={product.id}
                     productName={product.name}
                     price={product.price}
-                    imageUrl={product.image_url}
+                    imageUrl={primaryImageUrl}
                     stock={product.stock}
                   />
                 )}

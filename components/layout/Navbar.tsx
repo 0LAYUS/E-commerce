@@ -7,19 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { User, Shield, Layout, List, X, ShoppingBag, SignOut, Package } from '@phosphor-icons/react'
 import { logout } from '@/lib/actions/authActions'
 import CartIcon from './CartIcon'
-import { usePathname } from 'next/navigation'
 
-const AUTH_ROUTES = ['/login', '/register', '/forgot-password', '/update-password']
-
-function NavbarContent() {
-  const pathname = usePathname()
-  const isAuthRoute = AUTH_ROUTES.some(route => pathname.startsWith(route))
-
-  if (isAuthRoute) {
-    return null
-  }
-
-  const [user, setUser] = useState<any>(null)
+export default function Navbar() {
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
   const [role, setRole] = useState('cliente')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -258,8 +248,4 @@ function NavbarContent() {
       </div>
     </motion.nav>
   )
-}
-
-export default function Navbar() {
-  return <NavbarContent />
 }

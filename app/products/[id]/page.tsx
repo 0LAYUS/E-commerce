@@ -1,11 +1,9 @@
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, ShoppingBag } from "@phosphor-icons/react"
-import { getProductOptions, getProductVariants } from "@/lib/actions/productActions"
-import ProductVariantSelector from "@/components/products/ProductVariantSelector"
-import AddToCartButton from "@/components/products/AddToCartButton"
-import RelatedProductsCarousel from "@/components/products/RelatedProductsCarousel"
+import Image from "next/image"
+import { ArrowLeft, AlertTriangle } from "lucide-react"
+import { getProductOptions, getProductVariants, getProductImages, getVariantImagesByProductId } from "@/lib/actions/productActions"
 import ProductDetailClient from "./ProductDetailClient"
 
 type PageProps = {
@@ -28,9 +26,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const [options, skus] = await Promise.all([
+  const [options, skus, productImages, variantImages] = await Promise.all([
     getProductOptions(id),
     getProductVariants(id),
+    getProductImages(id),
+    getVariantImagesByProductId(id),
   ])
 
   const { data: relatedProducts } = await supabase
@@ -53,6 +53,90 @@ export default async function ProductDetailPage({ params }: PageProps) {
       basePrice={basePrice}
       hasVariants={hasVariants}
       relatedProducts={relatedProducts || []}
+      productImages={productImages}
+      variantImages={variantImages}
     />
   )
 }
+
+async function ArchivedProductPage({ productId }: { productId: string }) {
+  const supabase = await createClient()
+
+  // Fetch archived product details (admin can see it, this page is for customers who somehow access it)
+  const { data: product } = await supabase
+    .from("products")
+    .select("*, categories(name)")
+    .eq("id", productId)
+    .single()
+
+  if (!product) {
+    notFound()
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Link
+        href="/"
+        className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition mb-6"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Volver a productos
+      </Link>
+
+      {/* Archived notice */}
+      <div className="bg-muted/50 border border-destructive/20 rounded-lg p-4 mb-8 flex items-center gap-3">
+        <AlertTriangle className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+        <p className="text-sm text-muted-foreground">
+          Este producto no está disponible.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 opacity-60 grayscale pointer-events-none select-none">
+        <div className="space-y-4">
+          <div className="aspect-square bg-muted rounded-2xl overflow-hidden flex items-center justify-center border">
+            {product.image_url ? (
+              <div className="relative w-full h-full">
+                <Image
+                  src={product.image_url}
+                  alt={product.name}
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-contain"
+                />
+              </div>
+            ) : (
+              <span className="text-muted-foreground font-mono">Sin imagen</span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-col">
+          <div className="mb-2">
+            <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              {product.categories?.name || "Sin categoría"}
+            </span>
+          </div>
+
+          <h1 className="text-3xl font-extrabold text-foreground mb-4">
+            {product.name}
+          </h1>
+
+          <div className="mb-6">
+            <span className="text-3xl font-extrabold text-primary">
+              {new Intl.NumberFormat("es-CO", {
+                style: "currency",
+                currency: "COP",
+                minimumFractionDigits: 0,
+              }).format(product.price)}
+            </span>
+          </div>
+
+          <p className="text-muted-foreground mb-8 leading-relaxed">
+            {product.description}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+

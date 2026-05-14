@@ -23,6 +23,14 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  useEffect(() => {
+    if (items.length === 0) {
+      setCurrentIndex(0)
+    } else if (currentIndex >= items.length) {
+      setCurrentIndex(0)
+    }
+  }, [items, currentIndex])
+
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % items.length)
   }, [items.length])
@@ -51,6 +59,9 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
 
   if (items.length === 0) return null
 
+  const currentItem = items[currentIndex]
+  if (!currentItem) return null
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div
@@ -67,10 +78,10 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
             transition={{ duration: 0.5 }}
             className="absolute inset-0"
           >
-            {items[currentIndex].image_url ? (
+            {currentItem.image_url ? (
               <Image
-                src={items[currentIndex].image_url}
-                alt={items[currentIndex].title}
+                src={currentItem.image_url}
+                alt={currentItem.title}
                 fill
                 className="object-cover"
                 priority={currentIndex === 0}
@@ -83,7 +94,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
 
             <Link
-              href={`/products/${items[currentIndex].id}`}
+              href={`/products/${currentItem.id}`}
               className="absolute inset-0 z-10"
             />
 
@@ -102,7 +113,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 transition={{ delay: 0.2 }}
                 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 leading-tight"
               >
-                {items[currentIndex].title}
+                {currentItem.title}
               </motion.h2>
               <motion.p
                 initial={{ y: 20, opacity: 0 }}
@@ -110,7 +121,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 transition={{ delay: 0.4 }}
                 className="text-base sm:text-lg md:text-xl text-white/80 mb-6 line-clamp-2"
               >
-                {items[currentIndex].subtitle}
+                {currentItem.subtitle}
               </motion.p>
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
@@ -119,7 +130,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 className="relative z-30"
               >
                 <Link
-                  href={`/products/${items[currentIndex].id}`}
+                  href={`/products/${currentItem.id}`}
                   className="inline-flex items-center gap-2 bg-white text-gray-900 px-6 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                 >
                   Ver producto

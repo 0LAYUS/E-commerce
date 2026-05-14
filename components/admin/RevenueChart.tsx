@@ -35,7 +35,7 @@ const HEIGHT = 280
  * Line chart showing daily revenue for online orders and POS sales.
  * Uses CSS variables for colors and vanilla SVG for rendering.
  */
-export function RevenueChart({ start, end, filter, className }: RevenueChartProps) {
+export function RevenueChart({ start, end, className }: RevenueChartProps) {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<{ online: RevenueDayData[]; pos: RevenueDayData[] } | null>(null)
   const [tooltip, setTooltip] = useState<TooltipData | null>(null)

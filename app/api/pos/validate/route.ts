@@ -21,6 +21,13 @@ type ValidateResponse = {
   }[]
 }
 
+type ProductRow = {
+  name: string
+  price: number
+  active: boolean
+  archived: boolean
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: { items: ValidateItem[] } = await request.json()
@@ -67,7 +74,7 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        const product = sku.product as any
+        const product = sku.product as ProductRow | null
         if (!product || !product.active || product.archived) {
           validated.status = "inactive"
           allValid = false

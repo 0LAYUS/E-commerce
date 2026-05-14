@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ShoppingCart, DollarSign, CreditCard, Smartphone, TrendingUp, Clock } from "lucide-react"
+import { ShoppingCart, DollarSign, CreditCard, Smartphone, TrendingUp } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 type SummaryData = {

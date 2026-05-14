@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { Plus, X, ChevronDown, ChevronUp, MoreVertical, Archive, Trash2 } from "lucide-react"
-import { updateVariant, hasVariantSales, archiveVariant, deleteVariant } from "@/lib/actions/productActions"
+import { updateVariant, hasVariantSales, archiveVariant, deleteVariant, replaceVariantImages } from "@/lib/actions/productActions"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 
 type OptionDef = {
@@ -212,6 +212,19 @@ export default function ProductVariantsEditor({
         [field]: value,
       },
     }))
+  }
+
+  const handleVariantImageChange = async (variantId: string, files: FileList | null) => {
+    if (!files || files.length === 0 || variantId.startsWith('temp-')) return
+    const formData = new FormData()
+    Array.from(files).forEach((file) => formData.append("images", file))
+    try {
+      await replaceVariantImages(variantId, formData)
+    } catch (err) {
+      console.error("Error uploading variant images:", err)
+      setAlertConfig({ title: "Error", description: String(err) })
+      setAlertOpen(true)
+    }
   }
 
   // Save variant to database (for existing variants with real UUIDs)
@@ -437,6 +450,7 @@ export default function ProductVariantsEditor({
                         ))}
                         <th className="text-left p-3 font-medium text-muted-foreground w-24">Precio</th>
                         <th className="text-left p-3 font-medium text-muted-foreground w-24">Stock</th>
+                        <th className="text-left p-3 font-medium text-muted-foreground w-28">Fotos</th>
                         <th className="text-left p-3 font-medium text-muted-foreground w-12">Acciones</th>
                       </tr>
                     </thead>
@@ -509,6 +523,22 @@ export default function ProductVariantsEditor({
                               }}
                               className="w-20 h-8 px-2 rounded border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                             />
+                          </td>
+                          <td className="p-3">
+                            <label className={`inline-flex items-center gap-2 text-xs font-semibold ${v.id.startsWith('temp-') ? 'text-muted-foreground' : 'text-foreground'}`}>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                disabled={v.id.startsWith('temp-')}
+                                onChange={(e) => handleVariantImageChange(v.id, e.target.files)}
+                                className="hidden"
+                              />
+                              <span className={`px-2 py-1 rounded border ${v.id.startsWith('temp-') ? 'border-border' : 'border-input hover:border-primary cursor-pointer'}`}>
+                                {v.id.startsWith('temp-') ? 'Guarda para subir' : 'Subir fotos'}
+                              </span>
+                            </label>
+                            <p className="text-[11px] text-muted-foreground mt-1">Reemplaza imagenes actuales</p>
                           </td>
                           <td className="p-3">
                             <div className="relative">

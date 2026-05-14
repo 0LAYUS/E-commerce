@@ -8,7 +8,10 @@ type BogoOfferBody = {
   variant_id?: string
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _request: NextRequest
+) {
   try {
     const supabase = await createClient()
 
@@ -123,7 +126,7 @@ export async function PUT(request: NextRequest) {
 
     const adminClient = await createAdminClient()
 
-    const updates: Record<string, any> = {}
+    const updates: Partial<{ name: string; active: boolean }> = {}
     if (name !== undefined) updates.name = name
     if (active !== undefined) updates.active = active
 
