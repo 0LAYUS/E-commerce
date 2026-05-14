@@ -22,6 +22,8 @@ type ProductVariantSelectorProps = {
   basePrice: number
   productId: string
   productName: string
+  totalStock?: number
+  onSkuChange?: (sku: SKU | null) => void
 }
 
 export default function ProductVariantSelector({
@@ -30,6 +32,8 @@ export default function ProductVariantSelector({
   basePrice,
   productId,
   productName,
+  totalStock = 0,
+  onSkuChange,
 }: ProductVariantSelectorProps) {
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
   const [selectedSku, setSelectedSku] = useState<SKU | null>(null)
@@ -50,23 +54,21 @@ export default function ProductVariantSelector({
     })).filter(opt => opt.values.length > 0),
   [options, activeSkus])
 
-  const setInitialOptions = useCallback(() => {
-    const initial: Record<string, string> = {}
-    availableOptions.forEach((opt) => {
-      if (opt.values.length > 0) {
-        initial[opt.name] = opt.values[0]
-      }
-    })
-    setSelectedOptions(initial)
-  }, [availableOptions])
-
-  useEffect(() => {
-    if (availableOptions.length === 0) return
-    setInitialOptions()
-  }, [availableOptions, setInitialOptions])
-
   const updateMatchedSku = useCallback(() => {
-    if (activeSkus.length === 0 || Object.keys(selectedOptions).length === 0) return
+    if (activeSkus.length === 0 || Object.keys(selectedOptions).length === 0) {
+      setSelectedSku(null)
+      setCurrentStock(0)
+      setCurrentPrice(basePrice)
+      return
+    }
+
+    const hasFullSelection = availableOptions.every((opt) => selectedOptions[opt.name])
+    if (!hasFullSelection) {
+      setSelectedSku(null)
+      setCurrentStock(0)
+      setCurrentPrice(basePrice)
+      return
+    }
 
     const matchedSku = activeSkus.find((sku) => {
       return sku.option_values.every((val) => {
@@ -81,12 +83,17 @@ export default function ProductVariantSelector({
     } else {
       setSelectedSku(null)
       setCurrentStock(0)
+      setCurrentPrice(basePrice)
     }
-  }, [selectedOptions, activeSkus, basePrice])
+  }, [selectedOptions, activeSkus, basePrice, availableOptions])
 
   useEffect(() => {
     updateMatchedSku()
   }, [updateMatchedSku])
+
+  useEffect(() => {
+    if (onSkuChange) onSkuChange(selectedSku)
+  }, [onSkuChange, selectedSku])
 
   const handleOptionChange = useCallback((optionName: string, value: string) => {
     setSelectedOptions((prev) => ({
@@ -125,11 +132,17 @@ export default function ProductVariantSelector({
     }
   }, [addItem, currentStock, selectedSku, productId, currentPrice, quantity, productName])
 
+  const formatStockLabel = (stock: number) => {
+    if (stock <= 0) return "Agotado"
+    if (stock < 5) return `Ultimas ${stock} unidades`
+    return `${stock} unidades`
+  }
+
   if (availableOptions.length === 0) {
     return (
       <div className="border-t border-border pt-6">
         <div className="text-sm text-muted-foreground mb-2">Stock disponible</div>
-        <div className="text-2xl font-bold text-foreground">{basePrice} unidades</div>
+        <div className="text-2xl font-bold text-foreground">{formatStockLabel(totalStock)}</div>
       </div>
     )
   }
@@ -182,9 +195,11 @@ export default function ProductVariantSelector({
             </span>
           </div>
           <div className="text-right">
-            <span className="text-sm text-muted-foreground mb-1 block">Stock</span>
-            <span className={`text-xl font-bold ${currentStock > 0 ? "text-green-600" : "text-destructive"}`}>
-              {currentStock > 0 ? `${currentStock} unidades` : "Agotado"}
+            <span className="text-sm text-muted-foreground mb-1 block">
+              {selectedSku ? "Stock" : "Stock disponible"}
+            </span>
+            <span className={`text-xl font-bold ${currentStock > 0 || !selectedSku ? "text-green-600" : "text-destructive"}`}>
+              {selectedSku ? formatStockLabel(currentStock) : formatStockLabel(totalStock)}
             </span>
           </div>
         </div>
@@ -195,7 +210,7 @@ export default function ProductVariantSelector({
           </div>
         ) : null}
 
-        {currentStock > 0 ? (
+        {selectedSku && currentStock > 0 ? (
           <div className="flex items-center gap-3 mb-4">
             <label className="text-sm font-medium text-foreground">Cantidad:</label>
             <Input
@@ -212,10 +227,16 @@ export default function ProductVariantSelector({
 
         <button
           onClick={handleAddToCart}
-          disabled={currentStock === 0 || loading}
+          disabled={!selectedSku || currentStock === 0 || loading}
           className="w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground py-4 rounded-xl font-bold text-lg transition shadow-sm"
         >
-          {loading ? "Agregando..." : currentStock === 0 ? "Agotado" : "Añadir al carrito"}
+          {loading
+            ? "Agregando..."
+            : !selectedSku
+              ? "Selecciona una variante"
+              : currentStock === 0
+                ? "Agotado"
+                : "Añadir al carrito"}
         </button>
       </div>
     </div>

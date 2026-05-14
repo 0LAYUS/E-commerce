@@ -9,7 +9,7 @@ import { logout } from '@/lib/actions/authActions'
 import CartIcon from './CartIcon'
 
 export default function Navbar() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
   const [role, setRole] = useState('cliente')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)

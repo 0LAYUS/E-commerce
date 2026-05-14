@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 export default async function CheckoutResultPage({ searchParams }: { searchParams: Promise<{ id?: string, status?: string }> }) {
   const { id, status } = await searchParams;
 
@@ -30,9 +32,12 @@ export default async function CheckoutResultPage({ searchParams }: { searchParam
       )}
 
       <div className="mt-10">
-        <a href="/" className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition shadow">
+        <Link
+          href="/"
+          className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition shadow"
+        >
           Volver a la tienda principal
-        </a>
+        </Link>
       </div>
     </div>
   );

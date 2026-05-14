@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Shield, User, MoreVertical, Search, Eye, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { UserDetailsModal } from "./UserDetailsModal"

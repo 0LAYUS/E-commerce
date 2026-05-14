@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/components/providers/CartProvider"
 import { motion, AnimatePresence, Variants } from "framer-motion"

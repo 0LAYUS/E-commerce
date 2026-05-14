@@ -43,8 +43,9 @@ export default function UpdatePasswordPage() {
         router.push("/profile");
       }, 2000);
 
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+    } catch (err: unknown) {
+      const messageText = err instanceof Error ? err.message : "Error al actualizar la contraseña";
+      setMessage({ type: "error", text: messageText });
     } finally {
       setLoading(false);
     }

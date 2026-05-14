@@ -1,6 +1,13 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
+type SaleRow = {
+  total: number | string | null
+  payment_method: string | null
+  amount_received: number | string | null
+  change_amount: number | string | null
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -45,7 +52,7 @@ export async function GET(request: NextRequest) {
     const salesData = sales || []
 
     const totalSales = salesData.length
-    const totalAmount = salesData.reduce((sum: number, s: any) => sum + Number(s.total), 0)
+    const totalAmount = salesData.reduce((sum: number, s: SaleRow) => sum + Number(s.total), 0)
     const avgTicket = totalSales > 0 ? totalAmount / totalSales : 0
 
     const byPaymentMethod: Record<string, { count: number; amount: number }> = {
@@ -55,7 +62,7 @@ export async function GET(request: NextRequest) {
       mixto: { count: 0, amount: 0 },
     }
 
-    salesData.forEach((sale: any) => {
+    salesData.forEach((sale: SaleRow) => {
       const method = sale.payment_method || "mixto"
       if (byPaymentMethod[method]) {
         byPaymentMethod[method].count++
@@ -64,8 +71,8 @@ export async function GET(request: NextRequest) {
     })
 
     const efectivoCashIn = salesData
-      .filter((s: any) => s.payment_method === "efectivo")
-      .reduce((sum: number, s: any) => {
+      .filter((s: SaleRow) => s.payment_method === "efectivo")
+      .reduce((sum: number, s: SaleRow) => {
         const received = Number(s.amount_received) || 0
         const change = Number(s.change_amount) || 0
         return sum + received - change

@@ -1,11 +1,9 @@
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { ArrowLeft, AlertTriangle } from "lucide-react"
-import { getProductOptions, getProductVariants } from "@/lib/actions/productActions"
-import ProductVariantSelector from "@/components/products/ProductVariantSelector"
-import AddToCartButton from "@/components/products/AddToCartButton"
-import RelatedProductsCarousel from "@/components/products/RelatedProductsCarousel"
+import { getProductOptions, getProductVariants, getProductImages, getVariantImagesByProductId } from "@/lib/actions/productActions"
 import ProductDetailClient from "./ProductDetailClient"
 
 type PageProps = {
@@ -27,9 +25,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const [options, skus] = await Promise.all([
+  const [options, skus, productImages, variantImages] = await Promise.all([
     getProductOptions(id),
     getProductVariants(id),
+    getProductImages(id),
+    getVariantImagesByProductId(id),
   ])
 
   const { data: relatedProducts } = await supabase
@@ -51,6 +51,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
       basePrice={basePrice}
       hasVariants={hasVariants}
       relatedProducts={relatedProducts || []}
+      productImages={productImages}
+      variantImages={variantImages}
     />
   )
 }
@@ -91,11 +93,15 @@ async function ArchivedProductPage({ productId }: { productId: string }) {
         <div className="space-y-4">
           <div className="aspect-square bg-muted rounded-2xl overflow-hidden flex items-center justify-center border">
             {product.image_url ? (
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="w-full h-full object-contain"
-              />
+              <div className="relative w-full h-full">
+                <Image
+                  src={product.image_url}
+                  alt={product.name}
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-contain"
+                />
+              </div>
             ) : (
               <span className="text-muted-foreground font-mono">Sin imagen</span>
             )}

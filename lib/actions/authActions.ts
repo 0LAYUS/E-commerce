@@ -28,12 +28,20 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const firstName = formData.get("first_name") as string;
+  const lastName = formData.get("last_name") as string;
 
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+      },
+    },
   });
 
   if (error) {
@@ -101,7 +109,7 @@ export async function getAllUsers(options?: { limit?: number; offset?: number; r
   if (error) throw new Error(error.message)
 
   const userIds = data.map(p => p.id)
-  let orderCountMap = new Map<string, number>()
+  const orderCountMap = new Map<string, number>()
 
   if (userIds.length > 0) {
     const { data: ordersData, error: ordersError } = await supabase

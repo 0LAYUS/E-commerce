@@ -1,5 +1,17 @@
 import { createClient } from '@/lib/supabase/server';
 
+type OrderRow = {
+  id: string
+  total_amount: number
+  status: string
+  created_at: string
+  wompi_transaction_id: string | null
+  customer_name: string | null
+  customer_email: string | null
+  shipping_address: string | null
+  profiles?: { email: string | null } | null
+}
+
 export default async function SalesPage() {
   const supabase = await createClient();
 
@@ -23,9 +35,9 @@ export default async function SalesPage() {
     .order('created_at', { ascending: false });
 
   // Calc basic metrics for the admin dashboard
-  const approvedOrders = orders?.filter(o => o.status === 'APPROVED') || [];
+  const approvedOrders = (orders as OrderRow[] | null)?.filter(o => o.status === 'APPROVED') || [];
   const totalIncome = approvedOrders.reduce((acc, curr) => acc + curr.total_amount, 0);
-  const pendingOrders = orders?.filter(o => o.status === 'PENDING')?.length || 0;
+  const pendingOrders = (orders as OrderRow[] | null)?.filter(o => o.status === 'PENDING')?.length || 0;
 
   return (
     <div>
@@ -63,18 +75,18 @@ export default async function SalesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {orders?.map((order: any) => (
+              {(orders as OrderRow[] | null)?.map((order) => (
                 <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-mono text-gray-900" title={order.id}>{order.id.slice(0, 8)}...</div>
-                    <div className="text-xs text-gray-500 font-mono mt-1" title={order.wompi_transaction_id}>Wompi: {order.wompi_transaction_id || 'N/A'}</div>
+                    <div className="text-xs text-gray-500 font-mono mt-1" title={order.wompi_transaction_id ?? undefined}>Wompi: {order.wompi_transaction_id ?? 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900 font-bold">{order.customer_name || 'Sin Especificar'}</div>
                     <div className="text-sm text-gray-500">{order.customer_email || order.profiles?.email}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600 line-clamp-2 max-w-xs" title={order.shipping_address}>{order.shipping_address || 'N/A'}</div>
+                    <div className="text-sm text-gray-600 line-clamp-2 max-w-xs" title={order.shipping_address ?? undefined}>{order.shipping_address || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(order.created_at).toLocaleString()}
