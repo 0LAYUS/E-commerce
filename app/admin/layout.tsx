@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Package, Tag, ShoppingBag, LayoutDashboard, Users, ShoppingCart } from "lucide-react"
+import { Package, Tag, ShoppingBag, LayoutDashboard, Users, ShoppingCart, ListOrdered } from "lucide-react"
 import { SignOut } from "@phosphor-icons/react"
 import { LicenseOverlay } from "@/components/license/LicenseOverlay"
 import type { MensajeResponse } from "@/types/license.types"
@@ -57,6 +57,10 @@ function AdminContent({ children }: { children: React.ReactNode }) {
           <Link href="/admin/sales" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/sales") ? "bg-primary/10 text-primary font-medium" : ""}`}>
             <ShoppingBag className="w-5 h-5"/>
             Ventas
+          </Link>
+          <Link href="/admin/orders" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/orders") ? "bg-primary/10 text-primary font-medium" : ""}`}>
+            <ListOrdered className="w-5 h-5"/>
+            Órdenes
           </Link>
           <Link href="/pos" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/pos") ? "bg-primary/10 text-primary font-medium" : ""}`}>
             <ShoppingCart className="w-5 h-5"/>
