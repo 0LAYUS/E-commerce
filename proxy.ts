@@ -29,7 +29,7 @@ async function verificarLicenciaActiva(): Promise<boolean> {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl
 
   if (pathname.startsWith("/admin")) {
