@@ -3,7 +3,7 @@
 import { motion } from "framer-motion"
 import { useState, useEffect } from "react"
 import HeroCarousel from "@/components/layout/HeroCarousel"
-import ProductList from "@/components/products/ProductList"
+import ProductGrid from "@/components/products/ProductGrid"
 
 type Category = {
   id: string
@@ -17,7 +17,8 @@ type Product = {
   price: number
   category_id: string
   image_url: string
-  stock: number
+  stock?: number
+  effective_stock?: number
   hasVariants?: boolean
 }
 
@@ -31,7 +32,7 @@ export default function HomeContent({ categories, products }: { categories: Cate
   }>>([])
 
   useEffect(() => {
-    const inStockProducts = products.filter((p) => p.stock > 0 && p.image_url)
+    const inStockProducts = products.filter((p) => (p.stock && p.stock > 0) || (p.effective_stock && p.effective_stock > 0) && p.image_url)
     const randomProducts = inStockProducts.sort(() => Math.random() - 0.5)
     setCarouselItems(randomProducts.map((p) => ({
       id: p.id,
@@ -49,7 +50,7 @@ export default function HomeContent({ categories, products }: { categories: Cate
       transition={{ duration: 0.5 }}
     >
       <HeroCarousel items={carouselItems} />
-      <ProductList initialProducts={products} categories={categories} />
+      <ProductGrid initialProducts={products} categories={categories} />
     </motion.div>
   )
 }
