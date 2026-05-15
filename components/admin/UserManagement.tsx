@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Shield, User, MoreVertical, Search, Eye, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { UserDetailsModal } from "./UserDetailsModal"
@@ -39,14 +39,12 @@ export default function UserManagement({
 
   const LIMIT = 50
 
-  // Debounced search
   const [debouncedSearch, setDebouncedSearch] = useState("")
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 300)
     return () => clearTimeout(timer)
   }, [search])
 
-  // Server-side search: when debouncedSearch changes, fetch fresh results
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true)
@@ -78,7 +76,6 @@ export default function UserManagement({
     fetchUsers()
   }, [debouncedSearch, filterRole])
 
-  // Filter users client-side (only for role filter, search is server-side)
   const displayedUsers = useMemo(() => {
     return users.filter((user) => {
       const matchesRole = filterRole === "all" || user.role === filterRole
@@ -131,9 +128,7 @@ export default function UserManagement({
 
   return (
     <div className="space-y-4">
-      {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row gap-4">
-        {/* Search */}
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
@@ -146,7 +141,6 @@ export default function UserManagement({
           {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />}
         </div>
 
-        {/* Role Filter */}
         <div className="flex gap-2">
           {(["all", "administrador", "cliente"] as FilterRole[]).map((role) => (
             <button
@@ -165,7 +159,6 @@ export default function UserManagement({
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-card rounded-xl border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
@@ -277,7 +270,6 @@ export default function UserManagement({
         </table>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           Mostrando {displayedUsers.length} de {totalFromServer} usuarios
@@ -294,7 +286,6 @@ export default function UserManagement({
         )}
       </div>
 
-      {/* User Details Modal */}
       {selectedUserId && (
         <UserDetailsModal
           userId={selectedUserId}

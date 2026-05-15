@@ -1,7 +1,26 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Package } from 'lucide-react';
+
+type OrderItemRow = {
+  id: string
+  quantity: number
+  price_at_purchase: number
+  products: { name: string; image_url: string | null } | null
+}
+
+type OrderRow = {
+  id: string
+  status: string
+  created_at: string
+  customer_name: string | null
+  customer_email: string | null
+  shipping_address: string | null
+  total_amount: number
+  order_items: OrderItemRow[]
+}
 
 export default async function OrderDetailsPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -94,12 +113,18 @@ export default async function OrderDetailsPage(props: { params: Promise<{ id: st
       {/* MAIN CARD 2 (Productos) */}
       <h2 className="text-2xl font-extrabold text-gray-900 mb-6">Productos</h2>
       <div className="space-y-4">
-        {order.order_items?.map((item: any) => (
+        {(order as OrderRow).order_items?.map((item) => (
           <div key={item.id} className="relative flex p-4 bg-white rounded-xl shadow-sm border items-center">
             {/* Image */}
             <div className="flex-shrink-0 w-20 h-20 bg-gray-50 flex items-center justify-center overflow-hidden">
               {item.products?.image_url ? (
-                <img src={item.products.image_url} alt={item.products.name} className="w-full h-full object-contain mix-blend-multiply" />
+                <Image
+                  src={item.products.image_url}
+                  alt={item.products.name}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-contain mix-blend-multiply"
+                />
               ) : (
                 <span className="text-xs text-gray-400 font-mono">IMG</span>
               )}

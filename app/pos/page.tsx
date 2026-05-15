@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, ShoppingCart, Package, Tag, LayoutDashboard, Users, ShoppingBag } from "lucide-react"
 import ProductSearchBar from "./components/ProductSearchBar"
@@ -46,13 +46,8 @@ type SaleResponse = {
 }
 
 export default function POSPage() {
-  const router = useRouter()
-  const pathname = usePathname()
-
-  const isActive = (href: string) => {
-    if (href === "/admin") return pathname === "/admin"
-    return pathname.startsWith(href)
-  }
+const pathname = usePathname()
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/")
 
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -119,10 +114,10 @@ export default function POSPage() {
           prev.map((item) =>
             item.id === existingItem.id
               ? {
-                ...item,
-                quantity: item.quantity + 1,
-                subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
-              }
+                  ...item,
+                  quantity: item.quantity + 1,
+                  subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
+                }
               : item
           )
         )
@@ -153,10 +148,10 @@ export default function POSPage() {
           prev.map((item) =>
             item.id === existingItem.id
               ? {
-                ...item,
-                quantity: item.quantity + 1,
-                subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
-              }
+                  ...item,
+                  quantity: item.quantity + 1,
+                  subtotal: (item.quantity + 1) * item.unit_price * (1 - item.discount_pct / 100),
+                }
               : item
           )
         )
@@ -184,10 +179,10 @@ export default function POSPage() {
       prev.map((item) =>
         item.id === id
           ? {
-            ...item,
-            quantity,
-            subtotal: quantity * item.unit_price * (1 - item.discount_pct / 100),
-          }
+              ...item,
+              quantity,
+              subtotal: quantity * item.unit_price * (1 - item.discount_pct / 100),
+            }
           : item
       )
     )
@@ -286,31 +281,31 @@ export default function POSPage() {
         </div>
         <nav className="p-4 space-y-2">
           <Link href="/admin" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <LayoutDashboard className="w-5 h-5" />
+            <LayoutDashboard className="w-5 h-5"/>
             Dashboard
           </Link>
           <Link href="/admin/users" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/users") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <Users className="w-5 h-5" />
+            <Users className="w-5 h-5"/>
             Usuarios
           </Link>
           <Link href="/admin/categories" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/categories") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <Tag className="w-5 h-5" />
+            <Tag className="w-5 h-5"/>
             Categorías
           </Link>
           <Link href="/admin/products" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/products") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <Package className="w-5 h-5" />
+            <Package className="w-5 h-5"/>
             Productos
           </Link>
           <Link href="/admin/sales" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/sales") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <ShoppingBag className="w-5 h-5" />
+            <ShoppingBag className="w-5 h-5"/>
             Ventas
           </Link>
           <Link href="/pos" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/pos") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <ShoppingCart className="w-5 h-5" />
+            <ShoppingCart className="w-5 h-5"/>
             POS
           </Link>
           <Link href="/admin/pos" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/pos") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <ShoppingBag className="w-5 h-5" />
+            <ShoppingBag className="w-5 h-5"/>
             Ventas POS
           </Link>
         </nav>
@@ -352,10 +347,11 @@ export default function POSPage() {
             <div className="flex gap-2 mb-4 flex-wrap shrink-0">
               <button
                 onClick={() => handleCategoryChange("")}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${selectedCategory === ""
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary hover:bg-accent"
-                  }`}
+className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                  selectedCategory === ""
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary hover:bg-accent"
+                }`}
               >
                 Todas
               </button>
@@ -363,10 +359,11 @@ export default function POSPage() {
                 <button
                   key={cat.id}
                   onClick={() => handleCategoryChange(cat.id)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${selectedCategory === cat.id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary hover:bg-accent"
-                    }`}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                    selectedCategory === cat.id
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary hover:bg-accent"
+                  }`}
                 >
                   {cat.name}
                 </button>

@@ -87,7 +87,7 @@ export default function ReceiptModal({ isOpen, onClose, sale, onNewSale }: Recei
     if (navigator.share) {
       try {
         await navigator.share({ text })
-      } catch (err) {
+      } catch {
         console.log("Share cancelled")
       }
     } else {
@@ -102,7 +102,7 @@ export default function ReceiptModal({ isOpen, onClose, sale, onNewSale }: Recei
     text += `${formatDate(sale.created_at)}\n`
     text += "----------------------------\n"
 
-    sale.items.forEach((item: any) => {
+    sale.items.forEach((item) => {
       text += `${item.quantity}x ${item.name}\n`
       text += `  ${formatPrice(item.unit_price)} = ${formatPrice(item.subtotal)}\n`
       if (item.discount_pct > 0) {
@@ -157,7 +157,7 @@ export default function ReceiptModal({ isOpen, onClose, sale, onNewSale }: Recei
             <div className="text-center text-xs mb-2">{formatDate(sale.created_at)}</div>
             <div className="line" />
 
-            {sale.items.map((item: any, idx: number) => (
+            {sale.items.map((item, idx) => (
               <div key={idx} className="my-2">
                 <div className="bold">{item.quantity}x {item.name}</div>
                 <div className="flex justify-between">

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
-import ProductVariantSelector from '@/components/product/ProductVariantSelector'
+import ProductVariantSelector from '@/components/products/ProductVariantSelector'
 
 const mockAddItem = vi.fn()
 vi.mock('@/components/providers/CartProvider', () => ({
@@ -70,7 +70,7 @@ describe('ProductVariantSelector', () => {
       )
 
       expect(screen.getByText('Precio')).toBeInTheDocument()
-      expect(screen.getByText('Stock')).toBeInTheDocument()
+      expect(screen.getByText('Stock disponible')).toBeInTheDocument()
     })
 
     it('should show "Stock disponible" when no options', () => {
@@ -89,7 +89,7 @@ describe('ProductVariantSelector', () => {
   })
 
   describe('option selection', () => {
-    it('should auto-select first option values on mount', async () => {
+    it('should require a selection before adding to cart', () => {
       render(
         <ProductVariantSelector
           options={mockOptions}
@@ -100,10 +100,8 @@ describe('ProductVariantSelector', () => {
         />
       )
 
-      await waitFor(() => {
-        expect(screen.getByText('Rojo')).toBeInTheDocument()
-        expect(screen.getByText('S')).toBeInTheDocument()
-      })
+      const button = screen.getByRole('button', { name: 'Selecciona una variante' })
+      expect(button).toBeDisabled()
     })
 
     it('should change selected option when clicked', async () => {
@@ -119,13 +117,14 @@ describe('ProductVariantSelector', () => {
 
       await waitFor(() => {})
 
-      const buttons = screen.getAllByRole('button')
-      const azulButton = buttons.find((b) => b.textContent === 'Azul')
+      const azulButton = screen.getByRole('button', { name: 'Azul' })
+      const mButton = screen.getByRole('button', { name: 'M' })
 
-      if (azulButton) fireEvent.click(azulButton)
+      fireEvent.click(azulButton)
+      fireEvent.click(mButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Azul')).toBeInTheDocument()
+        expect(screen.getByText('SKU: AZUL-M')).toBeInTheDocument()
       })
     })
 
@@ -142,14 +141,11 @@ describe('ProductVariantSelector', () => {
 
       await waitFor(() => {})
 
-      const buttons = screen.getAllByRole('button')
-      const azulButton = buttons.find((b) => b.textContent === 'Azul')
-      const sButton = buttons.find((b) => b.textContent === 'S')
+      const azulButton = screen.getByRole('button', { name: 'Azul' })
+      const sButton = screen.getByRole('button', { name: 'S' })
 
-      if (azulButton) fireEvent.click(azulButton)
-      await act(async () => {})
-
-      if (sButton) fireEvent.click(sButton)
+      fireEvent.click(azulButton)
+      fireEvent.click(sButton)
 
       await waitFor(() => {
         const agotadoButton = screen.getByRole('button', { name: 'Agotado' })
@@ -174,15 +170,18 @@ describe('ProductVariantSelector', () => {
 
       await waitFor(() => {})
 
+      fireEvent.click(screen.getByRole('button', { name: 'Rojo' }))
+      fireEvent.click(screen.getByRole('button', { name: 'S' }))
+
       await act(async () => {
         fireEvent.click(screen.getByText('Añadir al carrito'))
       })
 
       expect(mockAddItem).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: 'prod-1',
+          id: 'sku-1',
           product_id: 'prod-1',
-          variant_id: expect.any(String),
+          variant_id: 'sku-1',
           name: 'Test Product',
         })
       )
@@ -203,6 +202,9 @@ describe('ProductVariantSelector', () => {
 
       await waitFor(() => {})
 
+      fireEvent.click(screen.getByRole('button', { name: 'Rojo' }))
+      fireEvent.click(screen.getByRole('button', { name: 'S' }))
+
       await act(async () => {
         fireEvent.click(screen.getByText('Añadir al carrito'))
       })
@@ -215,7 +217,7 @@ describe('ProductVariantSelector', () => {
     })
 
     it('should show loading state while adding', async () => {
-      let resolveAddItem: (value: any) => void
+      let resolveAddItem: (value: unknown) => void
       mockAddItem.mockImplementationOnce(
         () =>
           new Promise((resolve) => {
@@ -234,6 +236,9 @@ describe('ProductVariantSelector', () => {
       )
 
       await waitFor(() => {})
+
+      fireEvent.click(screen.getByRole('button', { name: 'Rojo' }))
+      fireEvent.click(screen.getByRole('button', { name: 'S' }))
 
       await act(async () => {
         fireEvent.click(screen.getByText('Añadir al carrito'))
@@ -260,6 +265,9 @@ describe('ProductVariantSelector', () => {
       )
 
       await waitFor(() => {})
+
+      fireEvent.click(screen.getByRole('button', { name: 'Rojo' }))
+      fireEvent.click(screen.getByRole('button', { name: 'S' }))
 
       await act(async () => {
         fireEvent.click(screen.getByText('Añadir al carrito'))

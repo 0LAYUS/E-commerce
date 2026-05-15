@@ -45,8 +45,8 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const first_name = formData.get("first_name") as string;
-  const last_name = formData.get("last_name") as string;
+  const firstName = formData.get("first_name") as string;
+  const lastName = formData.get("last_name") as string;
 
   const supabase = await createClient();
 
@@ -55,8 +55,8 @@ export async function signup(formData: FormData) {
     password,
     options: {
       data: {
-        first_name,
-        last_name,
+        first_name: firstName,
+        last_name: lastName,
       },
     },
   });
@@ -96,6 +96,27 @@ export async function logout() {
   redirect("/login");
 }
 
+async function requireAdmin() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "admin") {
+    throw new Error("Unauthorized");
+  }
+
+  return supabase;
+}
+
 export async function getAllUsers(options?: { limit?: number; offset?: number; role?: UserRole; search?: string }) {
   const supabase = await createClient()
 
@@ -104,17 +125,14 @@ export async function getAllUsers(options?: { limit?: number; offset?: number; r
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
 
-  // Apply role filter
   if (options?.role) {
     query = query.eq("role", options.role)
   }
 
-  // Apply server-side search on email
   if (options?.search) {
     query = query.ilike("email", `%${options.search}%`)
   }
 
-  // Apply pagination
   if (options?.limit) {
     query = query.limit(options.limit)
   }
@@ -127,9 +145,8 @@ export async function getAllUsers(options?: { limit?: number; offset?: number; r
 
   if (error) throw new Error(error.message)
 
-  // Get order counts ONLY for the user IDs we actually returned (efficient)
   const userIds = data.map(p => p.id)
-  let orderCountMap = new Map<string, number>()
+  const orderCountMap = new Map<string, number>()
 
   if (userIds.length > 0) {
     const { data: ordersData, error: ordersError } = await supabase
@@ -146,10 +163,9 @@ export async function getAllUsers(options?: { limit?: number; offset?: number; r
     }
   }
 
-  // profiles.email contains the email directly - no need for auth.users lookup
   const usersWithOrderCount = data.map(profile => ({
     ...profile,
-    email: profile.email, // already in profiles table
+    email: profile.email,
     orderCount: orderCountMap.get(profile.id) ?? 0
   }))
 
@@ -162,7 +178,6 @@ export async function getAllUsers(options?: { limit?: number; offset?: number; r
 export async function getUserDetails(userId: string) {
   const supabase = await createClient()
 
-  // Get user profile
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("*")
@@ -171,12 +186,10 @@ export async function getUserDetails(userId: string) {
 
   if (profileError) throw new Error(profileError.message)
 
-  // Get email from admin client
   const adminSupabase = await import("@/lib/supabase/admin").then(m => m.createAdminClient())
   const { data: authUsers } = await adminSupabase.auth.admin.listUsers()
   const email = authUsers.users.find(u => u.id === userId)?.email ?? ""
 
-  // Get user's orders
   const { data: orders, error: ordersError } = await supabase
     .from("orders")
     .select("id, status, total_amount, created_at")
@@ -185,7 +198,6 @@ export async function getUserDetails(userId: string) {
 
   if (ordersError) throw new Error(ordersError.message)
 
-  // Calculate stats
   const totalSpent = (orders ?? []).reduce((sum, o) => sum + (o.total_amount ?? 0), 0)
   const avgOrderValue = orders && orders.length > 0 ? totalSpent / orders.length : 0
 
@@ -212,3 +224,5 @@ export async function updateUserRole(userId: string, role: UserRole) {
   if (error) throw new Error(error.message)
   revalidatePath("/admin/users")
 }
+
+

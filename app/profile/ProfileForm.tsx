@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import { updateProfile } from "@/lib/actions/profileActions";
 
-export default function ProfileForm({ initialProfile }: { initialProfile: any }) {
+type ProfileData = {
+  first_name?: string | null
+  last_name?: string | null
+  phone?: string | null
+  address?: string | null
+}
+
+export default function ProfileForm({ initialProfile }: { initialProfile: ProfileData | null }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -41,8 +48,9 @@ export default function ProfileForm({ initialProfile }: { initialProfile: any })
       // Clear password fields on success
       (form.elements.namedItem("password") as HTMLInputElement).value = "";
       (form.elements.namedItem("confirm_password") as HTMLInputElement).value = "";
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+    } catch (err: unknown) {
+      const messageText = err instanceof Error ? err.message : "Error al actualizar el perfil";
+      setMessage({ type: "error", text: messageText });
     } finally {
       setLoading(false);
     }

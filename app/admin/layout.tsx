@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Package, Tag, ShoppingBag, LayoutDashboard, Users, ShoppingCart, Truck } from "lucide-react"
+import { Package, Tag, ShoppingBag, LayoutDashboard, Users, ShoppingCart, Truck, ListOrdered } from "lucide-react"
 import { SignOut } from "@phosphor-icons/react"
 import { LicenseOverlay } from "@/components/license/LicenseOverlay"
 import type { MensajeResponse } from "@/types/license.types"
@@ -39,35 +39,39 @@ function AdminContent({ children }: { children: React.ReactNode }) {
         </div>
         <nav className="p-4 space-y-2 flex-1">
           <Link href="/admin" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <LayoutDashboard className="w-5 h-5"/>
+            <LayoutDashboard className="w-5 h-5" />
             Dashboard
           </Link>
           <Link href="/admin/users" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/users") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <Users className="w-5 h-5"/>
+            <Users className="w-5 h-5" />
             Usuarios
           </Link>
           <Link href="/admin/categories" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/categories") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <Tag className="w-5 h-5"/>
+            <Tag className="w-5 h-5" />
             Categorías
           </Link>
           <Link href="/admin/products" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/products") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <Package className="w-5 h-5"/>
+            <Package className="w-5 h-5" />
             Productos
           </Link>
           <Link href="/admin/sales" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/sales") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <ShoppingBag className="w-5 h-5"/>
+            <ShoppingBag className="w-5 h-5" />
             Ventas
           </Link>
+          <Link href="/admin/orders" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/orders") ? "bg-primary/10 text-primary font-medium" : ""}`}>
+            <ListOrdered className="w-5 h-5" />
+            Órdenes
+          </Link>
           <Link href="/pos" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/pos") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <ShoppingCart className="w-5 h-5"/>
+            <ShoppingCart className="w-5 h-5" />
             POS
           </Link>
           <Link href="/admin/pos" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/pos") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <ShoppingBag className="w-5 h-5"/>
+            <ShoppingBag className="w-5 h-5" />
             Ventas POS
           </Link>
           <Link href="/admin/shipping" className={`flex items-center gap-3 px-4 py-2 text-card-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors ${isActive("/admin/shipping") ? "bg-primary/10 text-primary font-medium" : ""}`}>
-            <Truck className="w-5 h-5"/>
+            <Truck className="w-5 h-5" />
             Envíos
           </Link>
         </nav>
@@ -77,7 +81,7 @@ function AdminContent({ children }: { children: React.ReactNode }) {
               type="submit"
               className="flex items-center gap-3 w-full px-4 py-2 text-sm font-medium text-muted-foreground hover:text-red-400 hover:bg-destructive/10 rounded-md transition-colors"
             >
-              <SignOut className="w-5 h-5"/>
+              <SignOut className="w-5 h-5" />
               Salir
             </button>
           </form>
@@ -101,31 +105,31 @@ function AdminContentFallback() {
         </div>
         <nav className="p-4 space-y-2">
           <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground">
-            <LayoutDashboard className="w-5 h-5"/>
+            <LayoutDashboard className="w-5 h-5" />
             Dashboard
           </div>
           <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground">
-            <Tag className="w-5 h-5"/>
+            <Tag className="w-5 h-5" />
             Categorías
           </div>
           <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground">
-            <Package className="w-5 h-5"/>
+            <Package className="w-5 h-5" />
             Productos
           </div>
           <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground">
-            <ShoppingBag className="w-5 h-5"/>
+            <ShoppingBag className="w-5 h-5" />
             Ventas
           </div>
           <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground">
-            <ShoppingCart className="w-5 h-5"/>
+            <ShoppingCart className="w-5 h-5" />
             POS
           </div>
           <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground">
-            <ShoppingBag className="w-5 h-5"/>
+            <ShoppingBag className="w-5 h-5" />
             Ventas POS
           </div>
           <div className="flex items-center gap-3 px-4 py-2 text-muted-foreground">
-            <Truck className="w-5 h-5"/>
+            <Truck className="w-5 h-5" />
             Envíos
           </div>
         </nav>

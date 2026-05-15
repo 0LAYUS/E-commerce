@@ -9,6 +9,8 @@ export type CartValidationItem = {
   price_snapshot?: number
 }
 
+const PENDING_TIMEOUT_MINUTES = 30
+
 export async function validateCartItems(items: CartValidationItem[]): Promise<CartValidationResult> {
   if (!items || !Array.isArray(items) || items.length === 0) {
     return {
@@ -27,15 +29,15 @@ export async function validateCartItems(items: CartValidationItem[]): Promise<Ca
   const [skuData, productData] = await Promise.all([
     variantIds.length > 0
       ? supabase
-          .from("product_skus")
-          .select("*, product_id, sku_code, price_override, stock, active")
-          .in("id", variantIds)
+        .from("product_skus")
+        .select("*, product_id, sku_code, price_override, stock, active")
+        .in("id", variantIds)
       : { data: [], error: null },
     productIds.length > 0
       ? supabase
-          .from("products")
-          .select("id, name, price, stock, active, archived, has_active_reservation")
-          .in("id", productIds)
+        .from("products")
+        .select("id, name, price, stock, active, archived, has_active_reservation")
+        .in("id", productIds)
       : { data: [], error: null },
   ])
 
@@ -61,6 +63,51 @@ export async function validateCartItems(items: CartValidationItem[]): Promise<Ca
         existing.stock = p.stock
       }
     })
+  }
+
+
+  // Cleanup PENDING orders older than timeout (huérfanas sin respuesta Wompi)
+  try {
+    const cutoffTime = new Date(Date.now() - PENDING_TIMEOUT_MINUTES * 60 * 1000).toISOString()
+
+    const { data: pendingOrders } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("status", "PENDING")
+      .lt("created_at", cutoffTime)
+
+    if (pendingOrders && pendingOrders.length > 0) {
+      console.log(`[CLEANUP] Found ${pendingOrders.length} PENDING orders to timeout`)
+
+      for (const order of pendingOrders) {
+        const { data: orderItems } = await supabase
+          .from("order_items")
+          .select("product_id, variant_id, quantity")
+          .eq("order_id", order.id)
+
+        for (const item of orderItems ?? []) {
+          if (item.variant_id) {
+            await supabase.rpc("increment_sku_stock", {
+              p_sku_id: item.variant_id,
+              p_quantity: item.quantity,
+            })
+          } else {
+            await supabase.rpc("increment_product_stock", {
+              p_product_id: item.product_id,
+              p_quantity: item.quantity,
+            })
+          }
+        }
+
+        await supabase
+          .from("orders")
+          .update({ status: "ERROR" })
+          .eq("id", order.id)
+          .eq("status", "PENDING")
+      }
+    }
+  } catch (pendingError) {
+    console.warn("Pending orders cleanup failed:", pendingError)
   }
 
   const validatedItems: ValidatedCartItem[] = []

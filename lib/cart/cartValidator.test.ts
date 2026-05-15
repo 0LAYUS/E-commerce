@@ -10,7 +10,7 @@ vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(() => Promise.resolve(mockSupabaseClient)),
 }))
 
-function mockProductSelect(data: any) {
+function mockProductSelect(data: { id: string; name: string; price: number; stock: number; active: boolean; has_active_reservation?: boolean }) {
   const mock = vi.fn()
   mock.mockReturnValue({
     eq: vi.fn(() => ({
@@ -20,7 +20,7 @@ function mockProductSelect(data: any) {
   mockSupabaseClient.from.mockReturnValue({ select: mock })
 }
 
-function mockSkuSelect(data: any) {
+function mockSkuSelect(data: { id: string; product_id: string; sku_code: string; price_override: number | null; stock: number; active: boolean }) {
   const mock = vi.fn()
   mock.mockReturnValue({
     eq: vi.fn(() => ({
@@ -57,7 +57,7 @@ describe('cartValidator', () => {
     })
 
     it('should return success when null/undefined items passed', async () => {
-      const result = await validateCartItems([] as any)
+      const result = await validateCartItems(null as unknown as [])
       
       expect(result.success).toBe(true)
       expect(result.items).toEqual([])
@@ -250,7 +250,7 @@ describe('cartValidator', () => {
     it('should validate multiple items and aggregate results correctly', async () => {
       mockSupabaseClient.from.mockImplementation((table: string) => ({
         select: vi.fn(() => ({
-          eq: vi.fn((field: string, value: any) => ({
+          eq: vi.fn((field: string, value: string) => ({
             single: vi.fn().mockImplementation(() => {
               if (table === 'product_skus' && value === 'sku-not-found') {
                 return Promise.resolve({ data: null, error: 'Not found' })
@@ -379,8 +379,9 @@ describe('cartValidator', () => {
 
     it('should validate reserved stock correctly after cleanup', async () => {
       let callCount = 0
-      
-      mockSupabaseClient.from.mockImplementation((table: string) => ({
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      mockSupabaseClient.from.mockImplementation((_table: string) => ({
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             single: vi.fn().mockImplementation(() => {

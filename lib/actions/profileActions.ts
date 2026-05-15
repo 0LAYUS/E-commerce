@@ -18,7 +18,7 @@ export async function updateProfile(formData: FormData) {
   const password = formData.get("password") as string;
 
   // Actualizar perfil en tabla "profiles"
-  const updates: any = {};
+  const updates: Record<string, string> = {};
   if (firstName) updates.first_name = firstName;
   if (lastName) updates.last_name = lastName;
   if (phone) updates.phone = phone;

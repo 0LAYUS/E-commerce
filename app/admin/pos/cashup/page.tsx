@@ -57,8 +57,9 @@ export default function AdminPOSCashupPage() {
       }
 
       setResult(data.summary)
-    } catch (err: any) {
-      alert(err.message || "Error al procesar arqueo")
+    } catch (err: unknown) {
+      const messageText = err instanceof Error ? err.message : "Error al procesar arqueo"
+      alert(messageText)
     } finally {
       setIsSubmitting(false)
     }

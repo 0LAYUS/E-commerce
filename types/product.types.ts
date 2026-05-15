@@ -38,6 +38,22 @@ export type Product = {
   categories?: { name: string }
 }
 
+export type ProductImage = {
+  id: string
+  product_id: string
+  url: string
+  alt?: string | null
+  position: number
+}
+
+export type VariantImage = {
+  id: string
+  sku_id: string
+  url: string
+  alt?: string | null
+  position: number
+}
+
 export type Category = {
   id: string
   name: string

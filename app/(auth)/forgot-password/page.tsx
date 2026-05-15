@@ -17,8 +17,9 @@ export default function ForgotPasswordPage() {
     try {
       const result = await resetPasswordForEmail(formData);
       setMessage({ type: "success", text: result.message });
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message });
+    } catch (err: unknown) {
+      const messageText = err instanceof Error ? err.message : "Error al enviar el enlace";
+      setMessage({ type: "error", text: messageText });
     } finally {
       setLoading(false);
     }

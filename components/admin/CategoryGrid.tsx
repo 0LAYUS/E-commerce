@@ -2,15 +2,20 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Tag, Pencil, Trash2, Plus, X } from 'lucide-react';
 import { createCategory, updateCategory, deleteCategory } from '@/lib/actions/adminActions';
 import { AlertDialog, ConfirmDialog } from '@/components/ui/modal';
 
-export default function CategoryGrid({ categories }: { categories: any[] }) {
-  const router = useRouter();
+type Category = {
+  id: string
+  name: string
+  description?: string | null
+  products?: { id: string }[]
+}
+
+export default function CategoryGrid({ categories }: { categories: Category[] }) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -23,7 +28,7 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
     setModalOpen(true);
   };
 
-  const openEditModal = (category: any) => {
+  const openEditModal = (category: Category) => {
     setEditingCategory(category);
     setModalOpen(true);
   };
@@ -89,36 +94,34 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
       </div>
 
       {/* GRID */}
-      <div className="flex-1 min-h-0 overflow-auto">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 pb-16">
-          {categories?.map(c => (
-            <div key={c.id} className="bg-card rounded-xl shadow-sm border p-4 flex flex-col hover:shadow-md transition">
-              <div className="flex justify-between items-start mb-3">
-                <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                  <Tag className="w-5 h-5" />
-                </div>
-                <div className="flex gap-1.5 text-muted-foreground">
-                  <button onClick={() => openEditModal(c)} className="hover:text-foreground transition p-1" title="Editar">
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button onClick={() => openDeleteConfirm(c.id, c.name)} className="hover:text-destructive transition p-1" title="Eliminar">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 relative z-0">
+        {categories?.map(c => (
+          <div key={c.id} className="bg-card rounded-xl shadow-sm border p-6 flex flex-col hover:shadow-md transition">
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-12 h-12 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
+                <Tag className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-card-foreground mb-1 line-clamp-1">{c.name}</h3>
-              <p className="text-xs text-muted-foreground mb-3 flex-grow line-clamp-2">
-                {c.description || 'Sin descripción.'}
-              </p>
-              <span className="text-xs font-semibold text-primary">{c.products?.length || 0} productos</span>
+              <div className="flex gap-2 text-muted-foreground">
+                <button onClick={() => openEditModal(c)} className="hover:text-foreground transition p-1.5" title="Editar">
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button onClick={() => openDeleteConfirm(c.id, c.name)} className="hover:text-destructive transition p-1.5" title="Eliminar">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          ))}
-          {(!categories || categories.length === 0) && (
-            <div className="col-span-full py-16 text-center text-muted-foreground bg-card border rounded-xl shadow-sm">
-              Aún no hay categorías registradas.
-            </div>
-          )}
-        </div>
+            <h3 className="text-sm font-bold text-card-foreground mb-1 line-clamp-1">{c.name}</h3>
+            <p className="text-xs text-muted-foreground mb-3 flex-grow line-clamp-2">
+              {c.description ?? 'Sin descripción.'}
+            </p>
+            <span className="text-xs font-semibold text-primary">{c.products?.length || 0} productos</span>
+          </div>
+        ))}
+        {(!categories || categories.length === 0) && (
+          <div className="col-span-full py-16 text-center text-muted-foreground bg-card border rounded-xl shadow-sm">
+            Aún no hay categorías registradas.
+          </div>
+        )}
       </div>
 
       {/* MODAL OVERLAY */}
@@ -153,7 +156,7 @@ export default function CategoryGrid({ categories }: { categories: any[] }) {
                   <label className="block text-sm font-semibold text-card-foreground mb-1.5">Descripción (Opcional)</label>
                   <textarea
                     name="description"
-                    defaultValue={editingCategory?.description}
+                    defaultValue={editingCategory?.description ?? undefined}
                     className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     rows={4}
                     placeholder="Escribe una breve descripción de lo que incluye esta categoría..."

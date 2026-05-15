@@ -11,6 +11,13 @@ import { AlertTriangle, TrendingUp, TrendingDown, Clock } from "lucide-react"
 import Link from "next/link"
 import { ShippingZone } from "@/types/cart.types"
 
+type WompiResult = {
+  transaction: {
+    id: string
+    status: string
+  }
+}
+
 export default function CheckoutPage() {
   const { items, total, clearCart, revalidateCart, hasBlockedItems, itemStatuses } = useCart()
   const router = useRouter()
@@ -201,7 +208,7 @@ export default function CheckoutPage() {
 
       const checkout = new (window as any).WidgetCheckout(widgetConfig)
 
-      checkout.open(async (result: any) => {
+      checkout.open(async (result: WompiResult) => {
         const transaction = result.transaction
 
         if (transaction.status === "APPROVED" && reservationId) {
@@ -221,7 +228,7 @@ export default function CheckoutPage() {
 
         router.push(`/checkout/result?id=${transaction.id}&status=${transaction.status}`)
       })
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (reservationId) {
         fetch("/api/cart/cancel", {
           method: "POST",
@@ -229,7 +236,8 @@ export default function CheckoutPage() {
           body: JSON.stringify({ reservation_id: reservationId }),
         }).catch(console.error)
       }
-      setError(err.message || "Error al procesar. Verifica tu sesión.")
+      const messageText = err instanceof Error ? err.message : "Error al procesar. Verifica tu sesión."
+      setError(messageText)
     } finally {
       setLoading(false)
     }
