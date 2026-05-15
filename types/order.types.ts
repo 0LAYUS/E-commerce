@@ -3,7 +3,7 @@ export type OrderItem = {
   product_id: string
   variant_id?: string
   quantity: number
-  price: number
+  price?: number
   name?: string
 }
 

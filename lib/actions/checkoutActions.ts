@@ -67,15 +67,19 @@ export async function validateStock(items: OrderItem[]): Promise<{ valid: boolea
 
 export async function createOrder(
   items: OrderItem[],
-  totalAmount: number,
+  subtotalAmount: number,
   customerName: string,
-  customerEmail: string,
-  shippingAddress: string
+  shippingAddress: string,
+  shippingCost: number,
+  shippingZoneId?: string
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) throw new Error("Debes iniciar sesión para comprar")
+
+  const userEmail = user.email
+  if (!userEmail) throw new Error("No se encontró email del usuario")
 
   const variantIds = items.filter((i) => i.variant_id).map((i) => i.variant_id!)
   const productIds = items.filter((i) => !i.variant_id).map((i) => i.product_id)
@@ -84,13 +88,13 @@ export async function createOrder(
     variantIds.length > 0
       ? supabase
           .from("product_skus")
-          .select("id, active, product_id")
+          .select("id, active, product_id, price_override, stock")
           .in("id", variantIds)
       : { data: [], error: null },
     productIds.length > 0
       ? supabase
           .from("products")
-          .select("id, active, archived")
+          .select("id, active, archived, price, stock")
           .in("id", productIds)
       : { data: [], error: null },
   ])
@@ -98,7 +102,12 @@ export async function createOrder(
   const skuMap = new Map((skuData.data || []).map((s) => [s.id, s]))
   const productMap = new Map((productData.data || []).map((p) => [p.id, p]))
 
+  let calculatedSubtotal = 0
+
   for (const item of items) {
+    let priceAtPurchase = 0
+    let availableStock = 0
+
     if (item.variant_id) {
       const sku = skuMap.get(item.variant_id)
       if (!sku || !sku.active) {
@@ -108,22 +117,30 @@ export async function createOrder(
       if (parentProduct?.archived) {
         throw new Error("Producto archivado: " + item.name)
       }
+      priceAtPurchase = sku.price_override ?? parentProduct?.price ?? 0
+      availableStock = sku.stock
     } else {
       const product = productMap.get(item.product_id)
       if (!product || !product.active || product.archived) {
         throw new Error("Producto no disponible: " + item.name)
       }
+      priceAtPurchase = product.price
+      availableStock = product.stock
     }
 
-    const { data: reserved } = await supabase.rpc("reserve_stock", {
-      p_sku_id: item.variant_id || null,
-      p_product_id: item.product_id,
-      p_quantity: item.quantity,
-    })
-    if (!reserved) {
+    if (availableStock < item.quantity) {
       throw new Error("Stock insuficiente para: " + item.name)
     }
+
+    calculatedSubtotal += priceAtPurchase * item.quantity
   }
+
+  const tolerance = 1
+  if (Math.abs(calculatedSubtotal - subtotalAmount) > tolerance) {
+    throw new Error("El total no coincide con los precios actuales. Por favor actualiza tu carrito.")
+  }
+
+  const totalAmount = calculatedSubtotal + shippingCost
 
   const { data: order, error } = await supabase.from("orders")
     .insert([{
@@ -131,21 +148,34 @@ export async function createOrder(
       total_amount: totalAmount,
       status: "PENDING",
       customer_name: customerName,
-      customer_email: customerEmail,
+      customer_email: userEmail,
       shipping_address: shippingAddress,
+      shipping_cost: shippingCost,
+      shipping_zone_id: shippingZoneId || null,
     }])
     .select()
     .single()
 
   if (error || !order) throw new Error("Error creando orden: " + error?.message)
 
-  const orderItems = items.map((i) => ({
-    order_id: order.id,
-    product_id: i.product_id,
-    variant_id: i.variant_id || null,
-    quantity: i.quantity,
-    price_at_purchase: i.price,
-  }))
+  const orderItems = items.map((i) => {
+    let priceAtPurchase = 0
+    if (i.variant_id) {
+      const sku = skuMap.get(i.variant_id)
+      const parentProduct = sku ? productMap.get(sku.product_id) : undefined
+      priceAtPurchase = sku?.price_override ?? parentProduct?.price ?? i.price
+    } else {
+      const product = productMap.get(i.product_id)
+      priceAtPurchase = product?.price ?? i.price
+    }
+    return {
+      order_id: order.id,
+      product_id: i.product_id,
+      variant_id: i.variant_id || null,
+      quantity: i.quantity,
+      price_at_purchase: priceAtPurchase,
+    }
+  })
 
   const { error: itemsError } = await supabase.from("order_items").insert(orderItems)
   if (itemsError) throw new Error("Error insertando items: " + itemsError.message)

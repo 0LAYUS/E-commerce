@@ -18,6 +18,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Reservation ID required" }, { status: 400 })
     }
 
+    const { data: reservation, error: fetchError } = await supabase
+      .from("stock_reservations")
+      .select("user_id")
+      .eq("id", reservation_id)
+      .single()
+
+    if (fetchError || !reservation) {
+      return NextResponse.json({ error: "Reserva no encontrada" }, { status: 404 })
+    }
+
+    if (reservation.user_id !== user.id) {
+      return NextResponse.json({ error: "No tienes permiso para cancelar esta reserva" }, { status: 403 })
+    }
+
     const adminClient = await createAdminClient()
 
     const { data, error } = await adminClient.rpc("cancel_stock_reservation", {

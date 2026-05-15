@@ -62,6 +62,15 @@ export type ItemStatus = {
   price_increased?: boolean
 }
 
+export type ShippingZone = {
+  id: string
+  name: string
+  cost: number
+  free_threshold: number
+  active?: boolean
+  position?: number
+}
+
 export type CartContextType = {
   items: CartItem[]
   addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => Promise<{ success: boolean; error?: string }>

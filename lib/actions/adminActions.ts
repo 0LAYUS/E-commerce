@@ -428,14 +428,96 @@ export async function getPOSSalesByStatus(
 
   if (error) throw new Error(error.message)
 
-  // Aggregate by status
   const statusMap = new Map<string, number>()
   for (const sale of data ?? []) {
     statusMap.set(sale.payment_status, (statusMap.get(sale.payment_status) ?? 0) + 1)
   }
 
-  // Return ordered by status name for consistency
   return Array.from(statusMap.entries())
     .map(([status, count]) => ({ status, count }))
     .sort((a, b) => a.status.localeCompare(b.status))
+}
+
+// ============================================
+// SHIPPING ZONES CRUD
+// ============================================
+
+export async function getShippingZones() {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("shipping_zones")
+    .select("*")
+    .order("position", { ascending: true })
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function createShippingZone(formData: FormData) {
+  const name = (formData.get("name") as string)?.trim()
+  const costStr = formData.get("cost") as string
+  const freeThresholdStr = formData.get("free_threshold") as string
+
+  if (!name || name.length === 0) {
+    throw new Error("El nombre de la zona es requerido")
+  }
+  if (name.length > 100) {
+    throw new Error("El nombre debe tener máximo 100 caracteres")
+  }
+
+  const cost = parseInt(costStr, 10)
+  if (isNaN(cost) || cost < 0 || cost > 999999999) {
+    throw new Error("El costo debe ser un número entre 0 y 999,999,999")
+  }
+
+  const freeThreshold = parseInt(freeThresholdStr, 10)
+  if (isNaN(freeThreshold) || freeThreshold < 0 || freeThreshold > 999999999) {
+    throw new Error("El umbral de envío gratis debe ser un número entre 0 y 999,999,999")
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from("shipping_zones").insert([{ name, cost, free_threshold: freeThreshold }])
+
+  if (error) throw new Error(error.message)
+  revalidatePath("/admin/shipping")
+}
+
+export async function updateShippingZone(formData: FormData) {
+  const id = formData.get("id") as string
+  const name = (formData.get("name") as string)?.trim()
+  const costStr = formData.get("cost") as string
+  const freeThresholdStr = formData.get("free_threshold") as string
+  const active = formData.get("active") === "true"
+
+  if (!name || name.length === 0) {
+    throw new Error("El nombre de la zona es requerido")
+  }
+  if (name.length > 100) {
+    throw new Error("El nombre debe tener máximo 100 caracteres")
+  }
+
+  const cost = parseInt(costStr, 10)
+  if (isNaN(cost) || cost < 0 || cost > 999999999) {
+    throw new Error("El costo debe ser un número entre 0 y 999,999,999")
+  }
+
+  const freeThreshold = parseInt(freeThresholdStr, 10)
+  if (isNaN(freeThreshold) || freeThreshold < 0 || freeThreshold > 999999999) {
+    throw new Error("El umbral de envío gratis debe ser un número entre 0 y 999,999,999")
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from("shipping_zones").update({ name, cost, free_threshold: freeThreshold, active }).eq("id", id)
+
+  if (error) throw new Error(error.message)
+  revalidatePath("/admin/shipping")
+}
+
+export async function deleteShippingZone(id: string) {
+  const supabase = await createClient()
+  const { error } = await supabase.from("shipping_zones").delete().eq("id", id)
+
+if (error) throw new Error(error.message)
+  revalidatePath("/admin/shipping")
+  return { success: true }
 }

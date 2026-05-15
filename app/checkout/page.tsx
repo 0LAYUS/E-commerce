@@ -1,13 +1,15 @@
 "use client"
 
 import { useCart } from "@/components/providers/CartProvider"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { createOrder } from "@/lib/actions/checkoutActions"
 import { getWompiIntegritySignature } from "@/lib/actions/wompiActions"
+import { createClient } from "@/lib/supabase/client"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { AlertTriangle, TrendingUp, TrendingDown, Clock } from "lucide-react"
 import Link from "next/link"
+import { ShippingZone } from "@/types/cart.types"
 
 export default function CheckoutPage() {
   const { items, total, clearCart, revalidateCart, hasBlockedItems, itemStatuses } = useCart()
@@ -17,12 +19,50 @@ export default function CheckoutPage() {
   const [isValidating, setIsValidating] = useState(false)
   const [reservationId, setReservationId] = useState<string | null>(null)
   const [reservationExpiresAt, setReservationExpiresAt] = useState<Date | null>(null)
+  const [zones, setZones] = useState<ShippingZone[]>([])
+  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null)
 
   const [nombre, setNombre] = useState("")
   const [email, setEmail] = useState("")
   const [direccion, setDireccion] = useState("")
 
   const wompiPublicKey = process.env.NEXT_PUBLIC_WOMPI_PUBLIC_KEY || "pub_test_wompi_key_placeholder"
+
+  useEffect(() => {
+    const fetchZones = async () => {
+      try {
+        const response = await fetch("/api/shipping/zones")
+        if (response.ok) {
+          const data = await response.json()
+          setZones(data.zones || [])
+        }
+      } catch (err) {
+        console.error("Failed to fetch shipping zones:", err)
+      }
+    }
+    fetchZones()
+  }, [])
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("first_name, last_name, address")
+          .eq("id", user.id)
+          .single()
+        if (profile) {
+          const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(" ")
+          if (fullName) setNombre(fullName)
+          if (profile.address) setDireccion(profile.address)
+        }
+        if (user.email) setEmail(user.email)
+      }
+    }
+    fetchProfile()
+  }, [])
 
   useEffect(() => {
     const script = document.createElement("script")
@@ -94,11 +134,30 @@ export default function CheckoutPage() {
     return () => window.removeEventListener("beforeunload", cleanup)
   }, [reservationExpiresAt, reservationId])
 
+  const selectedZone = useMemo(() => {
+    return zones.find(z => z.id === selectedZoneId) || null
+  }, [zones, selectedZoneId])
+
+  const shippingCost = useMemo(() => {
+    if (!selectedZone) return 0
+    if (selectedZone.free_threshold > 0 && total >= selectedZone.free_threshold) {
+      return 0
+    }
+    return selectedZone.cost
+  }, [selectedZone, total])
+
+  const grandTotal = useMemo(() => total + shippingCost, [total, shippingCost])
+
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (hasBlockedItems) {
       setError("Hay productos en tu carrito que no están disponibles. Por favor, revisa tu carrito.")
+      return
+    }
+
+    if (!selectedZoneId) {
+      setError("Por favor selecciona una ciudad de envío.")
       return
     }
 
@@ -113,16 +172,15 @@ export default function CheckoutPage() {
           product_id: i.product_id,
           variant_id: i.variant_id,
           quantity: i.quantity,
-          price: i.price,
         })),
         total,
         nombre,
-        email,
-        direccion
+        direccion,
+        shippingCost,
+        selectedZoneId || undefined
       )
 
-      // Generar firma de integridad en el servidor (requerida por Wompi en producción)
-      const amountInCents = total * 100
+      const amountInCents = Math.round(grandTotal) * 100
       const integritySignature = await getWompiIntegritySignature(orderId, amountInCents, "COP")
 
       const widgetConfig: Record<string, any> = {
@@ -137,7 +195,6 @@ export default function CheckoutPage() {
         },
       }
 
-      // Solo incluir la firma si está disponible (requerida en producción)
       if (integritySignature) {
         widgetConfig.signature = { integrity: integritySignature }
       }
@@ -206,7 +263,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="mt-8 mb-20 px-4 sm:px-6 lg:px-12">
+    <div className="mt-8 mb-20 px-4 sm:px-6 lg:px-80">
       <h1 className="text-3xl font-extrabold mb-8 text-foreground">Checkout</h1>
 
       {reservationExpiresAt && (
@@ -316,11 +373,27 @@ export default function CheckoutPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="email@gmail.com"
+                disabled
+                className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
               />
+              <p className="text-xs text-muted-foreground mt-1">Email de tu cuenta</p>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-card-foreground mb-1">Ciudad de Envío</label>
+              <select
+                value={selectedZoneId || ""}
+                onChange={(e) => setSelectedZoneId(e.target.value || null)}
+                required
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Selecciona una ciudad</option>
+                {zones.map((zone) => (
+                  <option key={zone.id} value={zone.id}>
+                    {zone.name}
+                    {zone.free_threshold > 0 ? ` (Gratis desde $${zone.free_threshold.toLocaleString("es-CO")})` : ""}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-semibold text-card-foreground mb-1">Dirección de Envío</label>
@@ -346,8 +419,7 @@ export default function CheckoutPage() {
               return (
                 <div
                   key={item.id}
-                  className={`flex justify-between items-center text-sm ${isBlocked ? "opacity-50 line-through" : ""
-                    }`}
+                  className={`flex justify-between items-center text-sm ${isBlocked ? "opacity-50 line-through" : ""}`}
                 >
                   <span className="font-medium text-foreground">
                     {item.name} x {item.quantity}
@@ -366,12 +438,29 @@ export default function CheckoutPage() {
             })}
           </div>
 
+          <div className="flex justify-between items-center mb-2 text-sm">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="text-foreground">{new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(total)}</span>
+          </div>
+          <div className="flex justify-between items-center mb-2 text-sm">
+            <span className="text-muted-foreground">Envío {selectedZone ? `a ${selectedZone.name}` : ""}</span>
+            <span className={shippingCost === 0 && selectedZone ? "text-green-600 font-semibold" : "text-foreground"}>
+              {!selectedZone ? (
+                <span className="text-muted-foreground italic">Selecciona una ciudad</span>
+              ) : shippingCost === 0 ? (
+                "Gratis"
+              ) : (
+                new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(shippingCost)
+              )}
+            </span>
+          </div>
+
           <hr className="border-border mb-5" />
 
           <div className="flex justify-between items-center mb-6">
             <span className="text-lg font-extrabold text-card-foreground">Total</span>
             <span className="text-lg font-extrabold text-primary">
-              {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(total)}
+              {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(grandTotal)}
             </span>
           </div>
 
@@ -383,10 +472,10 @@ export default function CheckoutPage() {
 
           <button
             type="submit"
-            disabled={loading || hasBlockedItems || isValidating}
+            disabled={loading || hasBlockedItems || isValidating || !selectedZoneId}
             className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm mt-2"
           >
-            {loading || isValidating ? "Verificando stock..." : "Proceder al Pago"}
+            {loading || isValidating ? "Verificando stock..." : !selectedZoneId ? "Selecciona una ciudad" : "Proceder al Pago"}
           </button>
 
           <p className="text-center text-xs text-muted-foreground mt-5">
