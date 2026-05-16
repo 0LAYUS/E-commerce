@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { validateCartItems, validateSingleItem, type CartValidationItem } from '@/lib/services/cart/cartValidationService'
+import { validateCartItems, validateSingleItem, type CartValidationItem } from './cartValidationService'
 
 // Mock de admin client para las dependencias internas
 vi.mock('@/lib/supabase/admin', () => ({
@@ -34,7 +34,7 @@ describe('cartValidationService', () => {
     vi.mocked(findSkusByIds).mockResolvedValue([])
     vi.mocked(findProductsWithReservationFlag).mockResolvedValue([])
     vi.mocked(findProductsStockByIds).mockResolvedValue([])
-    vi.mocked(findProductArchivedStatus).mockResolvedValue(null)
+    vi.mocked(findProductArchivedStatus).mockResolvedValue(null as any)
   })
 
   describe('validateCartItems', () => {

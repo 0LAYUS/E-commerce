@@ -1,9 +1,9 @@
 import { getOrders } from "@/features/orders/actions/orderActions"
-import { OrdersFilters } from "@/components/admin/OrdersFilters"
-import { OrdersTable } from "@/components/admin/OrdersTable"
-import { OrdersPagination } from "@/components/admin/OrdersPagination"
-import { OrdersExportButton } from "@/components/admin/OrdersExportButton"
-import type { OrderStatus } from "@/types/order.types"
+import { OrdersFilters } from "@/features/admin/components/OrdersFilters"
+import { OrdersTable } from "@/features/admin/components/OrdersTable"
+import { OrdersPagination } from "@/features/admin/components/OrdersPagination"
+import { OrdersExportButton } from "@/features/admin/components/OrdersExportButton"
+import type { OrderStatus } from "@/features/orders/types/order.types"
 
 interface SearchParams {
   status?: string

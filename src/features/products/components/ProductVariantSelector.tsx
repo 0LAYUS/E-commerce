@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
-import { useCart } from "@/components/providers/CartProvider"
-import type { OptionDef } from "@/types/product.types"
+import { useCart } from "@/shared/components/CartProvider"
+import type { OptionDef } from "@/features/products/types/product.types"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Input } from "@/components/ui/input"
 

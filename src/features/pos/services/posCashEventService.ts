@@ -42,5 +42,5 @@ export async function getCashEvents(filters: CashEventFilters): Promise<CashEven
   const { data, error } = await query
 
   if (error) throw new Error(error.message)
-  return data || []
+  return (data as unknown) as CashEvent[]
 }

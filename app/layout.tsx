@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Suspense } from "react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import { CartProvider } from "@/components/providers/CartProvider";
+import Navbar from "@/shared/components/layout/Navbar";
+import Footer from "@/shared/components/layout/Footer";
+import { CartProvider } from "@/shared/components/CartProvider";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL

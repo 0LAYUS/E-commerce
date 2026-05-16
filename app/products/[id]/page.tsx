@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { getProductOptions, getProductVariants, getProductImages, getVariantImagesByProductId } from "@/features/products/actions/productActions"
-import ProductDetailClient from "./ProductDetailClient"
+import ProductDetailClient from "@/features/products/components/ProductDetailClient"
 
 type PageProps = {
   params: Promise<{ id: string }>

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import ProductGrid from "@/components/products/ProductGrid"
+import ProductGrid from "@/features/products/components/ProductGrid"
 
 async function getProductsData() {
   const supabase = await createClient()

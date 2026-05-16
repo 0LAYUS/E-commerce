@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { useCart } from "@/components/providers/CartProvider"
+import { useCart } from "@/shared/components/CartProvider"
 import { motion, AnimatePresence, Variants } from "framer-motion"
 import { MagnifyingGlass, ShoppingBag, Star, Plus, Check } from "@phosphor-icons/react"
 

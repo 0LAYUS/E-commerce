@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { signLicenseRequest } from "@/lib/license/sign-request"
+import { signLicenseRequest } from "@/shared/utils/sign-request"
 
 const PRIGMA_URL = process.env.PRIGMA_URL || "https://prisma.onrender.com"
 const LICENSE_KEY = process.env.LICENSE_KEY || ""

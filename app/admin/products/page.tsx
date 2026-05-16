@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import ProductGrid from '@/components/admin/ProductGrid';
+import ProductGrid from '@/features/admin/components/ProductGrid';
 
 export default async function ProductsPage() {
   const supabase = await createClient();

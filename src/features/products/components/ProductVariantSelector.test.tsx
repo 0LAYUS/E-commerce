@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
-import ProductVariantSelector from '@/components/products/ProductVariantSelector'
+import ProductVariantSelector from '@/features/products/components/ProductVariantSelector'
 
 const mockAddItem = vi.fn()
-vi.mock('@/components/providers/CartProvider', () => ({
+vi.mock('@/shared/components/CartProvider', () => ({
   useCart: () => ({
     addItem: mockAddItem,
   }),

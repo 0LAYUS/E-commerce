@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { LicenseOverlay } from "@/components/license/LicenseOverlay"
-import type { MensajeResponse } from "@/types/license.types"
+import { LicenseOverlay } from "@/shared/components/license/LicenseOverlay"
+import type { MensajeResponse } from "@/shared/types/license.types"
 
 type LicenseState = {
   blocked: boolean

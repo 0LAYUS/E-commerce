@@ -4,11 +4,11 @@ import { useState, useEffect, useCallback } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, ShoppingCart, Package, Tag, LayoutDashboard, Users, ShoppingBag } from "lucide-react"
-import ProductSearchBar from "./components/ProductSearchBar"
-import ProductGridPOS from "./components/ProductGridPOS"
-import CartPOS, { CartItem } from "./components/CartPOS"
-import PaymentModal from "./components/PaymentModal"
-import ReceiptModal from "./components/ReceiptModal"
+import ProductSearchBar from "@/features/pos/components/ProductSearchBar"
+import ProductGridPOS from "@/features/pos/components/ProductGridPOS"
+import CartPOS, { CartItem } from "@/features/pos/components/CartPOS"
+import PaymentModal from "@/features/pos/components/PaymentModal"
+import ReceiptModal from "@/features/pos/components/ReceiptModal"
 
 type Product = {
   id: string

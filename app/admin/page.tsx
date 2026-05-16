@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { DashboardClient } from '@/components/admin/DashboardClient';
+import { DashboardClient } from '@/features/admin/components/DashboardClient';
 
 export default async function AdminDashboard() {
   const supabase = await createClient();

@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
-import type { OrderStatus, OrderFilters } from "@/types/order.types"
+import type { OrderStatus, OrderFilters } from "@/features/orders/types/order.types"
 
 // ============================================
 // READ

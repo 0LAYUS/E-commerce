@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useCart } from "@/components/providers/CartProvider"
+import { useCart } from "@/shared/components/CartProvider"
 import Link from "next/link"
 import Image from "next/image"
 import { Trash2, Minus, Plus, AlertTriangle, Info, TrendingUp, TrendingDown } from "lucide-react"

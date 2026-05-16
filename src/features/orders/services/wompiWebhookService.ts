@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin"
 import crypto from "crypto"
-import { sendOrderConfirmationEmail } from "@/lib/email/orderConfirmation"
+import { sendOrderConfirmationEmail } from "@/features/orders/services/orderConfirmation"
 import {
   findOrderItems,
   findOrderWithItemsForEmail,

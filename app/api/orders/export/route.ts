@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { exportOrdersToCSV } from "@/features/orders/services/orderService"
-import type { OrderStatus } from "@/types/order.types"
+import type { OrderStatus } from "@/features/orders/types/order.types"
 
 export async function GET(request: NextRequest) {
   try {

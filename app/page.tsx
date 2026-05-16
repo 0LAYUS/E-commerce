@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import { createClient } from "@/lib/supabase/server"
-import HomeContent from "./HomeContent"
+import HomeContent from "@/features/home/components/HomeContent"
 
 async function getProductsData() {
   const supabase = await createClient()

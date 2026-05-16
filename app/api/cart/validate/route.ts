@@ -1,5 +1,5 @@
-import { validateCartItems } from "@/lib/cart/cartValidator"
-import { CartValidationRequest } from "@/types/cart.types"
+import { validateCartItems } from "@/features/cart/services/cartValidator"
+import { CartValidationRequest } from "@/features/cart/types/cart.types"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {

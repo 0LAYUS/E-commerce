@@ -1,15 +1,15 @@
 "use client"
 
-import { useCart } from "@/components/providers/CartProvider"
+import { useCart } from "@/shared/components/CartProvider"
 import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { createOrder } from "@/features/orders/actions/checkoutActions"
-import { getWompiIntegritySignature } from "@/lib/actions/wompiActions"
+import { getWompiIntegritySignature } from "@/features/orders/actions/wompiActions"
 import { createClient } from "@/lib/supabase/client"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { AlertTriangle, TrendingUp, TrendingDown, Clock } from "lucide-react"
 import Link from "next/link"
-import { ShippingZone } from "@/types/cart.types"
+import { ShippingZone } from "@/features/cart/types/cart.types"
 
 type WompiResult = {
   transaction: {

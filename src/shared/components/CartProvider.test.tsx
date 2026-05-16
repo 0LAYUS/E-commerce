@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
-import { CartProvider, useCart } from '@/components/providers/CartProvider'
+import { CartProvider, useCart } from '@/shared/components/CartProvider'
 import React from 'react'
 
 const mockFetch = vi.fn()
