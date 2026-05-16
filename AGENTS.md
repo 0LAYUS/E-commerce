@@ -32,9 +32,18 @@ Configured in `tsconfig.json`:
 - **Pages** (`app/**/page.tsx`): Server Components by default
 - **Interactive components** (`components/**/*.tsx`): `"use client"` directive
 - **Server Actions**: `lib/actions/*.ts`
-- **Types**: `lib/types/*.ts`
-- **Utils**: `lib/utils.ts`
-- **Icons**: Lucide React
+- **Types**: `types/*.ts`
+- **Utils**: `lib/utils.ts`, `lib/format.ts`
+- **Icons**: Lucide React + Phosphor Icons
+
+## Product Components (`components/products/`)
+- **Container/Orchestrator**: `ProductGrid.tsx` — manages state, filtering, search, delegates to child components
+- **Presentational**: `ProductCard.tsx`, `ProductSearch.tsx`, `ProductCategoryFilter.tsx`, `ProductEmptyState.tsx` — receive props, no business logic
+- **Feature**: `ProductImageGallery.tsx`, `ProductVariantSelector.tsx`, `AddToCartButton.tsx`, `RelatedProductsCarousel.tsx` — self-contained interactive features
+- **Reusable UI**: `PriceDisplay.tsx`, `QuantitySelector.tsx` — shared across multiple components
+- **Tests**: co-located `*.test.tsx` (e.g., `ProductVariantSelector.test.tsx`)
+- **Types**: domain types (`Product`, `SKU`, `Category`, `GalleryImage`, `OptionDef`) in `types/product.types.ts`; component `Props` types stay local
+- **Rules**: always use shadcn/ui (`Button`, `Badge`, `Input`, `Alert`), `next/image` for images, `lib/format.ts` for currency/stock formatting, never hardcode colors or magic numbers
 
 ## shadcn/ui Components
 - Source: `components/ui/`

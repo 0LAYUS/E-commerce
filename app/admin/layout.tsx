@@ -17,7 +17,7 @@ import { LicenseOverlay } from "@/components/license/LicenseOverlay";
 import type { MensajeResponse } from "@/types/license.types";
 import { Suspense } from "react";
 import { logout } from "@/lib/actions/authActions";
-import { cn } from "@/lib/utils";
+// import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const MENSAJE_BLOQUEADO: MensajeResponse = {
@@ -48,7 +48,7 @@ function SidebarLink({
   href,
   label,
   icon: Icon,
-  active,
+  // active,
 }: {
   href: string;
   label: string;

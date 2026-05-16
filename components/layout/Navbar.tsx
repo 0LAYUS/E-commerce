@@ -198,7 +198,7 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(!mobileOpen)}
               >
                 {mobileOpen ? (
-                  <X className="w-6 h-6 text-foreground" weight="bold" />
+                  <X className="w-6 h-6 text-text-white" weight="bold" />
                 ) : (
                   <List className="w-6 h-6" weight="bold" />
                 )}
@@ -223,12 +223,11 @@ export default function Navbar() {
                     <motion.div key={item.href} whileTap={{ scale: 0.95 }}>
                       <Button
                         asChild
-                        variant="ghost"
-                        className="w-full justify-start"
+                        className="w-full justify-start text-center"
                       >
                         <Link
                           href={item.href}
-                          className="flex items-center gap-3 px-4 py-3"
+                          className="flex items-center gap-3 px-4 py-3 justify-center"
                         >
                           <Icon className="w-5 h-5" weight="duotone" />
                           {item.label}
