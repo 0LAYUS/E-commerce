@@ -6,6 +6,7 @@ import Image from "next/image"
 import { useCart } from "@/components/providers/CartProvider"
 import { motion, AnimatePresence, Variants } from "framer-motion"
 import { MagnifyingGlass, ShoppingBag, Star, Plus, Check } from "@phosphor-icons/react"
+import { Button } from "@/components/ui/button"
 
 type Product = {
   id: string
@@ -27,9 +28,7 @@ type Category = {
 type ProductGridProps = {
   initialProducts: Product[]
   categories: Category[]
-  /** Mostrar productos sin stock. Default: false (los oculta) */
   showOutOfStock?: boolean
-  /** Filtro inicial por categoría. Default: "ALL" */
   defaultCategory?: string
 }
 
@@ -62,25 +61,6 @@ export default function ProductGrid({
     }
   }, [toastMessage])
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("animate-fade-in")
-          }
-        })
-      },
-      { threshold: 0.1 }
-    )
-
-    productRefs.current.forEach((element) => {
-      observer.observe(element)
-    })
-
-    return () => observer.disconnect()
-  }, [filteredProducts])
-
   const handleAddToCart = (product: Product) => {
     if (product.hasVariants) {
       router.push(`/products/${product.id}`)
@@ -100,9 +80,7 @@ export default function ProductGrid({
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.05,
-      },
+      transition: { staggerChildren: 0.05 },
     },
   }
 
@@ -111,11 +89,7 @@ export default function ProductGrid({
     visible: {
       opacity: 1,
       y: 0,
-      transition: {
-        type: "spring" as const,
-        stiffness: 300,
-        damping: 25,
-      },
+      transition: { type: "spring" as const, stiffness: 300, damping: 25 },
     },
   }
 
@@ -128,10 +102,7 @@ export default function ProductGrid({
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-center gap-4 max-w-screen-2xl mx-auto">
-          <motion.div
-            className="flex-1 relative"
-            whileFocus={{ scale: 1.02 }}
-          >
+          <div className="flex-1 relative">
             <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" weight="bold" />
             <input
               type="text"
@@ -140,52 +111,35 @@ export default function ProductGrid({
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-12 pl-12 pr-4 rounded-full bg-background/80 backdrop-blur-lg text-foreground placeholder:text-muted-foreground border border-input focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all shadow-sm"
             />
-          </motion.div>
-          <motion.div
-            className="hidden md:flex items-center gap-2 text-muted-foreground text-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <span>¿Necesitas ayuda?</span>
-            <span className="font-semibold text-foreground">Llámanos</span>
-          </motion.div>
+          </div>
         </div>
       </motion.div>
 
       <motion.div
-        className="w-full bg-card border-b"
+        className="w-full bg-card border-b border-border"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.4 }}
       >
         <div className="flex gap-2 overflow-x-auto px-6 py-4 max-w-screen-2xl mx-auto">
-          <motion.button
+          <Button
+            variant={selectedCategory === "ALL" ? "default" : "secondary"}
+            size="sm"
+            className="rounded-full shrink-0"
             onClick={() => setSelectedCategory("ALL")}
-            className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-              selectedCategory === "ALL"
-                ? "bg-gray-800 text-white shadow-lg shadow-gray-900/30 border border-gray-700"
-                : "bg-secondary text-secondary-foreground hover:bg-accent"
-            }`}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
           >
             Todos
-          </motion.button>
+          </Button>
           {categories.map((cat) => (
-            <motion.button
+            <Button
               key={cat.id}
+              variant={selectedCategory === cat.id ? "default" : "secondary"}
+              size="sm"
+              className="rounded-full shrink-0"
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-                selectedCategory === cat.id
-                  ? "bg-gray-800 text-white shadow-lg shadow-gray-900/30 border border-gray-700"
-                  : "bg-secondary text-secondary-foreground hover:bg-accent"
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
             >
               {cat.name}
-            </motion.button>
+            </Button>
           ))}
         </div>
       </motion.div>
@@ -196,16 +150,11 @@ export default function ProductGrid({
             initial={{ opacity: 0, y: -50, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -50, scale: 0.8 }}
-            className="fixed top-24 right-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3"
+            className="fixed top-24 right-6 bg-green-600 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3"
           >
-            <motion.div
-              className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 500 }}
-            >
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
               <Check className="w-5 h-5" weight="bold" />
-            </motion.div>
+            </div>
             <span className="font-medium">{toastMessage}</span>
           </motion.div>
         )}
@@ -224,17 +173,13 @@ export default function ProductGrid({
               if (el) productRefs.current.set(product.id, el)
             }}
             data-product-id={product.id}
-            className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col hover:shadow-2xl hover:border-gray-600 transition-all duration-300 cursor-pointer"
+            className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col hover:shadow-2xl hover:border-foreground/20 transition-all duration-300 cursor-pointer"
             variants={itemVariants}
             whileHover={{ y: -8 }}
             layout
             onClick={() => router.push(`/products/${product.id}`)}
           >
-            <motion.div
-              className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300"
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.3 }}
-            >
+            <div className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
               {product.image_url ? (
                 <Image
                   src={product.image_url}
@@ -253,89 +198,56 @@ export default function ProductGrid({
               )}
 
               {product.hasVariants && (
-                <motion.div
-                  className="absolute top-3 left-3 bg-gray-800 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md border border-gray-700"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  whileHover={{ scale: 1.1 }}
-                >
+                <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full shadow-md">
                   Variantes
-                </motion.div>
+                </div>
               )}
 
-              <motion.div
-                className="absolute bottom-3 right-3"
-                initial={{ opacity: 0, scale: 0 }}
-                whileHover={{ opacity: 1, scale: 1 }}
-              >
-                <div className="w-11 h-11 bg-gray-800 rounded-full flex items-center justify-center shadow-xl border border-gray-700">
-                  <MagnifyingGlass className="w-5 h-5 text-white" weight="bold" />
+              <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="w-11 h-11 bg-primary rounded-full flex items-center justify-center shadow-xl border border-border">
+                  <MagnifyingGlass className="w-5 h-5 text-primary-foreground" weight="bold" />
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              />
-            </motion.div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
 
             <div className="p-4 flex flex-col flex-grow">
               <div className="flex-grow">
-                <motion.h3
-                  className="font-bold text-card-foreground group-hover:text-foreground transition-colors duration-200 line-clamp-2 text-sm leading-tight mb-2"
-                  whileHover={{ x: 5 }}
-                >
+                <h3 className="font-bold text-card-foreground group-hover:text-foreground transition-colors duration-200 line-clamp-2 text-sm leading-tight mb-2">
                   {product.name}
-                </motion.h3>
+                </h3>
                 <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{product.description}</p>
               </div>
 
-              <motion.div
-                className="flex items-center gap-1 mb-3"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1 }}
-              >
+              <div className="flex items-center gap-1 mb-3">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star key={star} className="w-3 h-3 fill-yellow-400 text-yellow-400" weight="fill" />
                 ))}
                 <span className="text-xs text-muted-foreground ml-1">(128)</span>
-              </motion.div>
+              </div>
 
               <div className="flex items-end justify-between">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                >
-                  <span className="text-xl font-bold text-foreground">
-                    {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(product.price)}
-                  </span>
-                </motion.div>
+                <span className="text-xl font-bold text-foreground">
+                  {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(product.price)}
+                </span>
 
-                <motion.button
+                <Button
+                  variant={product.hasVariants ? "secondary" : "default"}
+                  size="sm"
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
                     handleAddToCart(product)
                   }}
-                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                    product.hasVariants
-                      ? "bg-secondary text-secondary-foreground hover:bg-gray-800 hover:text-white hover:border-gray-700"
-                      : "bg-gray-800 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 border border-gray-700"
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                 >
-                  <span className="flex items-center gap-1">
-                    {product.hasVariants ? (
-                      "Ver"
-                    ) : (
-                      <>
-                        <Plus className="w-4 h-4" weight="bold" />
-                        Agregar
-                      </>
-                    )}
-                  </span>
-                </motion.button>
+                  {product.hasVariants ? "Ver" : (
+                    <>
+                      <Plus className="w-4 h-4" weight="bold" />
+                      Agregar
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
           </motion.div>
