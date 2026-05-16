@@ -1,19 +1,20 @@
-"use client"
+"use client";
 
-import { useState, useCallback } from "react"
-import { useCart } from "@/components/providers/CartProvider"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Input } from "@/components/ui/input"
+import { useState, useCallback } from "react";
+import { useCart } from "@/components/providers/CartProvider";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import QuantitySelector from "@/components/products/QuantitySelector";
 
 type Props = {
-  productId: string
-  productName: string
-  price: number
-  imageUrl?: string
-  stock: number
-  variantId?: string
-  skuCode?: string
-}
+  productId: string;
+  productName: string;
+  price: number;
+  imageUrl?: string;
+  stock: number;
+  variantId?: string;
+  skuCode?: string;
+};
 
 export default function AddToCartButton({
   productId,
@@ -24,20 +25,16 @@ export default function AddToCartButton({
   variantId,
   skuCode,
 }: Props) {
-  const { addItem } = useCart()
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [quantity, setQuantity] = useState(1)
-
-  const handleQuantityChange = useCallback((value: number) => {
-    setQuantity(Math.max(1, Math.min(value, stock)))
-  }, [stock])
+  const { addItem } = useCart();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   const handleAddToCart = useCallback(async () => {
-    if (stock === 0) return
+    if (stock === 0) return;
 
-    setError(null)
-    setLoading(true)
+    setError(null);
+    setLoading(true);
     try {
       const result = await addItem({
         id: variantId || productId,
@@ -47,55 +44,55 @@ export default function AddToCartButton({
         price,
         imageUrl,
         sku_code: skuCode,
-      })
+      });
       if (!result.success && result.error) {
-        setError(result.error)
-        setTimeout(() => setError(null), 4000)
+        setError(result.error);
+        setTimeout(() => setError(null), 4000);
       } else {
-        setQuantity(1)
+        setQuantity(1);
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [addItem, productId, variantId, productName, price, imageUrl, skuCode, quantity, stock])
+  }, [
+    addItem,
+    productId,
+    variantId,
+    productName,
+    price,
+    imageUrl,
+    skuCode,
+    stock,
+  ]);
 
   if (stock === 0) {
     return (
-      <button
-        disabled
-        className="w-full bg-muted text-muted-foreground py-4 rounded-xl font-bold text-lg cursor-not-allowed"
-      >
+      <Button disabled className="w-full py-6 text-lg font-bold">
         Agotado
-      </button>
-    )
+      </Button>
+    );
   }
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        <label className="text-sm font-medium text-foreground">Cantidad:</label>
-        <Input
-          type="number"
-          min={1}
-          max={stock}
-          value={quantity}
-          onChange={(e) => handleQuantityChange(parseInt(e.target.value, 10) || 1)}
-          className="w-20 text-center"
-        />
-        <span className="text-sm text-muted-foreground">de {stock} disponibles</span>
-      </div>
+      <QuantitySelector
+        quantity={quantity}
+        maxStock={stock}
+        onQuantityChange={setQuantity}
+      />
       {error ? (
         <Alert variant="destructive" className="py-2">
           <AlertDescription className="text-sm">{error}</AlertDescription>
         </Alert>
       ) : null}
-      <button
+      <Button
         onClick={handleAddToCart}
+        variant="ghost"
         disabled={loading}
-        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 py-4 rounded-xl font-bold text-lg transition shadow-sm"
+        className="w-full py-6 text-lg font-bold shadow-sm"
       >
         {loading ? "Agregando..." : "Añadir al carrito"}
-      </button>
+      </Button>
     </div>
-  )
+  );
 }

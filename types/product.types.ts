@@ -59,3 +59,26 @@ export type Category = {
   name: string
   description?: string
 }
+
+export type SKU = {
+  id: string
+  product_id: string
+  sku_code: string
+  price_override: number | null
+  stock: number
+  active: boolean
+  option_values: string[]
+}
+
+export type RelatedProduct = {
+  id: string
+  name: string
+  price: number
+  image_url: string | null
+}
+
+export type GalleryImage = {
+  id?: string
+  url: string
+  alt?: string | null
+}

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import ProductVariantSelector from '@/components/products/ProductVariantSelector'
+import type { SKU, OptionDef } from '@/types/product.types'
 
 const mockAddItem = vi.fn()
 vi.mock('@/components/providers/CartProvider', () => ({
@@ -9,14 +10,14 @@ vi.mock('@/components/providers/CartProvider', () => ({
   }),
 }))
 
-const mockSkus = [
+const mockSkus: SKU[] = [
   { id: 'sku-1', product_id: 'prod-1', sku_code: 'ROJO-S', price_override: 12000, stock: 5, active: true, option_values: ['Rojo', 'S'] },
   { id: 'sku-2', product_id: 'prod-1', sku_code: 'ROJO-M', price_override: 12000, stock: 3, active: true, option_values: ['Rojo', 'M'] },
   { id: 'sku-3', product_id: 'prod-1', sku_code: 'AZUL-S', price_override: 15000, stock: 0, active: true, option_values: ['Azul', 'S'] },
   { id: 'sku-4', product_id: 'prod-1', sku_code: 'AZUL-M', price_override: 15000, stock: 8, active: true, option_values: ['Azul', 'M'] },
 ]
 
-const mockOptions = [
+const mockOptions: OptionDef[] = [
   { name: 'Color', values: ['Rojo', 'Azul'] },
   { name: 'Talle', values: ['S', 'M'] },
 ]
@@ -318,6 +319,11 @@ describe('ProductVariantSelector', () => {
           productName="Test Product"
         />
       )
+
+      await waitFor(() => {})
+
+      fireEvent.click(screen.getByRole('button', { name: 'Rojo' }))
+      fireEvent.click(screen.getByRole('button', { name: 'S' }))
 
       await waitFor(() => {
         expect(screen.getByText(/SKU: ROJO-S/)).toBeInTheDocument()
