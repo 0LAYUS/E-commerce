@@ -3,7 +3,7 @@
 import { useCart } from "@/components/providers/CartProvider"
 import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { createOrder } from "@/lib/actions/checkoutActions"
+import { createOrder } from "@/features/orders/actions/checkoutActions"
 import { getWompiIntegritySignature } from "@/lib/actions/wompiActions"
 import { createClient } from "@/lib/supabase/client"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
@@ -190,7 +190,7 @@ export default function CheckoutPage() {
       const amountInCents = Math.round(grandTotal) * 100
       const integritySignature = await getWompiIntegritySignature(orderId, amountInCents, "COP")
 
-      const widgetConfig: Record<string, any> = {
+      const widgetConfig: Record<string, unknown> = {
         currency: "COP",
         amountInCents,
         reference: orderId,
@@ -206,7 +206,7 @@ export default function CheckoutPage() {
         widgetConfig.signature = { integrity: integritySignature }
       }
 
-      const checkout = new (window as any).WidgetCheckout(widgetConfig)
+      const checkout = new ((window as unknown) as { WidgetCheckout: new (config: Record<string, unknown>) => { open: (callback: (result: WompiResult) => void) => void } }).WidgetCheckout(widgetConfig)
 
       checkout.open(async (result: WompiResult) => {
         const transaction = result.transaction

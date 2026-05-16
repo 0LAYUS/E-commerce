@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { resetPasswordForEmail } from "@/lib/actions/authActions";
+import { resetPasswordForEmail } from "@/features/auth/actions/authActions";
 
 export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);

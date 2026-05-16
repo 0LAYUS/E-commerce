@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/lib/supabase/admin"
+﻿import { createAdminClient } from "@/lib/supabase/admin"
 import { CartValidationResult, ValidatedCartItem } from "@/types/cart.types"
 
 export type CartValidationItem = {
@@ -66,7 +66,7 @@ export async function validateCartItems(items: CartValidationItem[]): Promise<Ca
   }
 
 
-  // Cleanup PENDING orders older than timeout (huérfanas sin respuesta Wompi)
+  // Cleanup PENDING orders older than timeout (hu├®rfanas sin respuesta Wompi)
   try {
     const cutoffTime = new Date(Date.now() - PENDING_TIMEOUT_MINUTES * 60 * 1000).toISOString()
 

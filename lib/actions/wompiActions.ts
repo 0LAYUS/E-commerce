@@ -1,4 +1,4 @@
-"use server"
+﻿"use server"
 
 import crypto from "crypto"
 
@@ -7,7 +7,7 @@ import crypto from "crypto"
  * Se calcula en el servidor con la llave de integridad (SECRETA).
  * Formato: SHA256(reference + amountInCents + currency + integritySecret)
  *
- * Documentación: https://docs.wompi.co/docs/en/widget#4-generate-signature
+ * Documentaci├│n: https://docs.wompi.co/docs/en/widget#4-generate-signature
  */
 export async function getWompiIntegritySignature(
   reference: string,
@@ -18,8 +18,8 @@ export async function getWompiIntegritySignature(
 
   if (!integritySecret || integritySecret.startsWith("test_integrity_REEMPLAZAR")) {
     // En desarrollo sin llaves reales, devolvemos un placeholder
-    // El widget en sandbox puede funcionar sin firma, pero en producción es obligatoria
-    console.warn("[Wompi] WOMPI_INTEGRITY_SECRET no configurado. La firma de integridad es requerida en producción.")
+    // El widget en sandbox puede funcionar sin firma, pero en producci├│n es obligatoria
+    console.warn("[Wompi] WOMPI_INTEGRITY_SECRET no configurado. La firma de integridad es requerida en producci├│n.")
     return ""
   }
 

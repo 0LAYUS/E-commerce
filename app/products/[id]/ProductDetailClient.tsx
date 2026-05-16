@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion"
 import Link from "next/link"
-import Image from "next/image"
 import { ArrowLeft } from "@phosphor-icons/react"
 import ProductVariantSelector from "@/components/products/ProductVariantSelector"
 import AddToCartButton from "@/components/products/AddToCartButton"

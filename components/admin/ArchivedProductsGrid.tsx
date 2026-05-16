@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, RotateCcw, X } from "lucide-react"
-import { unarchiveProduct } from "@/lib/actions/productActions"
+import { unarchiveProduct } from "@/features/products/actions/productActions"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 
 type ArchivedProduct = {

@@ -1,4 +1,4 @@
-import { getOrders } from "@/lib/actions/orderActions"
+import { getOrders } from "@/features/orders/actions/orderActions"
 import { OrdersFilters } from "@/components/admin/OrdersFilters"
 import { OrdersTable } from "@/components/admin/OrdersTable"
 import { OrdersPagination } from "@/components/admin/OrdersPagination"

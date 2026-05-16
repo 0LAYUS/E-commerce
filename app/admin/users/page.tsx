@@ -1,4 +1,4 @@
-import { getAllUsers, updateUserRole } from "@/lib/actions/authActions"
+import { getAllUsers, updateUserRole } from "@/features/auth/actions/authActions"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"

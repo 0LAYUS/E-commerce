@@ -1,4 +1,4 @@
-"use server"
+﻿"use server"
 
 import { createClient } from "@/lib/supabase/server"
 import { signLicenseRequest } from "@/lib/license/sign-request"
@@ -51,14 +51,14 @@ async function obtenerMensajeLicencia(): Promise<MensajeResponse | null> {
     if (!data.blocked) return null
 
     let title = "LICENCIA INACTIVA"
-    let description = data.message || " Comunícate con PRIGMA para más información."
+    let description = data.message || " Comun├¡cate con PRIGMA para m├ís informaci├│n."
 
     if (data.status === "suspended") {
       title = "PAGO NO REGISTRADO"
-      description = data.message || "Tu licencia se encuentra suspendida. Comunícate con PRIGMA para renovar tu servicio."
+      description = data.message || "Tu licencia se encuentra suspendida. Comun├¡cate con PRIGMA para renovar tu servicio."
     } else if (data.status === "cancelled") {
       title = "LICENCIA CANCELADA"
-      description = data.message || "Tu licencia ha sido cancelada. Comunícate con PRIGMA para más información."
+      description = data.message || "Tu licencia ha sido cancelada. Comun├¡cate con PRIGMA para m├ís informaci├│n."
     }
 
     return { title, description, status: data.status }

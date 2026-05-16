@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { Package, User, MapPin, CreditCard, AlertTriangle, RotateCcw } from "lucide-react"
-import { updateOrderStatus, rollbackOrderStock, markOrderAsError } from "@/lib/actions/orderActions"
+import { updateOrderStatus, rollbackOrderStock, markOrderAsError } from "@/features/orders/actions/orderActions"
 import type { OrderWithRelations, OrderStatus } from "@/types/order.types"
 
 interface OrderDetailsCardProps {

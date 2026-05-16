@@ -10,7 +10,7 @@ async function getProductsData() {
 
   // Obtener stock efectivo de productos con variantes (mismo patrón que admin)
   const productIds = products?.map(p => p.id) || []
-  let variantStockMap: Record<string, number> = {}
+  const variantStockMap = {} as Record<string, number>
   if (productIds.length > 0) {
     const { data: variantAggregates } = await supabase
       .from('product_skus')

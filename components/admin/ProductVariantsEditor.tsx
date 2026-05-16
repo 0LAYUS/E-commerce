@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { Plus, X, ChevronDown, ChevronUp, MoreVertical, Archive, Trash2 } from "lucide-react"
-import { updateVariant, hasVariantSales, archiveVariant, deleteVariant, replaceVariantImages } from "@/lib/actions/productActions"
+import { updateVariant, hasVariantSales, archiveVariant, deleteVariant, replaceVariantImages } from "@/features/products/actions/productActions"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 
 type OptionDef = {

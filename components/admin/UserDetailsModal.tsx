@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { X, Calendar, DollarSign, ShoppingBag } from "lucide-react"
-import { getUserDetails } from "@/lib/actions/authActions"
+import { getUserDetails } from "@/features/auth/actions/authActions"
 
 interface UserDetails {
   id: string

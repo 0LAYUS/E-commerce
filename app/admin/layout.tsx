@@ -8,7 +8,7 @@ import { LicenseOverlay } from "@/components/license/LicenseOverlay"
 import type { MensajeResponse } from "@/types/license.types"
 import { Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { logout } from "@/lib/actions/authActions"
+import { logout } from "@/features/auth/actions/authActions"
 
 const MENSAJE_BLOQUEADO: MensajeResponse = {
   title: "PAGO NO REGISTRADO",

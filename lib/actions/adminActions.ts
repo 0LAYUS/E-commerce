@@ -1,4 +1,4 @@
-"use server"
+﻿"use server"
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
@@ -135,7 +135,7 @@ export async function updateCategory(formData: FormData) {
 // ============================================
 
 /**
- * Delete category — only allowed if no active products exist.
+ * Delete category ÔÇö only allowed if no active products exist.
  * Returns { success: true } or { error: string } if blocked.
  */
 export async function deleteCategory(id: string): Promise<{ success: boolean; error?: string }> {
@@ -146,7 +146,7 @@ export async function deleteCategory(id: string): Promise<{ success: boolean; er
   if (productCount > 0) {
     return {
       success: false,
-      error: `No puedes eliminar esta categoría porque tiene ${productCount} producto${productCount > 1 ? "s" : ""} activo${productCount > 1 ? "s" : ""}. Primero debes eliminar o mover los productos.`,
+      error: `No puedes eliminar esta categor├¡a porque tiene ${productCount} producto${productCount > 1 ? "s" : ""} activo${productCount > 1 ? "s" : ""}. Primero debes eliminar o mover los productos.`,
     }
   }
 
@@ -158,7 +158,7 @@ export async function deleteCategory(id: string): Promise<{ success: boolean; er
 }
 
 // ============================================
-// DASHBOARD METRICS (Phase 2) — Consolidated
+// DASHBOARD METRICS (Phase 2) ÔÇö Consolidated
 // ============================================
 
 export interface DashboardMetrics {
@@ -462,17 +462,17 @@ export async function createShippingZone(formData: FormData) {
     throw new Error("El nombre de la zona es requerido")
   }
   if (name.length > 100) {
-    throw new Error("El nombre debe tener máximo 100 caracteres")
+    throw new Error("El nombre debe tener m├íximo 100 caracteres")
   }
 
   const cost = parseInt(costStr, 10)
   if (isNaN(cost) || cost < 0 || cost > 999999999) {
-    throw new Error("El costo debe ser un número entre 0 y 999,999,999")
+    throw new Error("El costo debe ser un n├║mero entre 0 y 999,999,999")
   }
 
   const freeThreshold = parseInt(freeThresholdStr, 10)
   if (isNaN(freeThreshold) || freeThreshold < 0 || freeThreshold > 999999999) {
-    throw new Error("El umbral de envío gratis debe ser un número entre 0 y 999,999,999")
+    throw new Error("El umbral de env├¡o gratis debe ser un n├║mero entre 0 y 999,999,999")
   }
 
   const supabase = await createClient()
@@ -493,17 +493,17 @@ export async function updateShippingZone(formData: FormData) {
     throw new Error("El nombre de la zona es requerido")
   }
   if (name.length > 100) {
-    throw new Error("El nombre debe tener máximo 100 caracteres")
+    throw new Error("El nombre debe tener m├íximo 100 caracteres")
   }
 
   const cost = parseInt(costStr, 10)
   if (isNaN(cost) || cost < 0 || cost > 999999999) {
-    throw new Error("El costo debe ser un número entre 0 y 999,999,999")
+    throw new Error("El costo debe ser un n├║mero entre 0 y 999,999,999")
   }
 
   const freeThreshold = parseInt(freeThresholdStr, 10)
   if (isNaN(freeThreshold) || freeThreshold < 0 || freeThreshold > 999999999) {
-    throw new Error("El umbral de envío gratis debe ser un número entre 0 y 999,999,999")
+    throw new Error("El umbral de env├¡o gratis debe ser un n├║mero entre 0 y 999,999,999")
   }
 
   const supabase = await createClient()

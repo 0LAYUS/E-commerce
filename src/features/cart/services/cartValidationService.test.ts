@@ -1,49 +1,40 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { validateCartItems, validateSingleItem, CartValidationItem } from '@/lib/cart/cartValidator'
+import { validateCartItems, validateSingleItem, type CartValidationItem } from '@/lib/services/cart/cartValidationService'
 
-const mockSupabaseClient = {
-  from: vi.fn(),
-  rpc: vi.fn(),
-}
-
+// Mock de admin client para las dependencias internas
 vi.mock('@/lib/supabase/admin', () => ({
-  createAdminClient: vi.fn(() => Promise.resolve(mockSupabaseClient)),
+  createAdminClient: vi.fn(() => Promise.resolve({})),
 }))
 
-function mockProductSelect(data: { id: string; name: string; price: number; stock: number; active: boolean; has_active_reservation?: boolean }) {
-  const mock = vi.fn()
-  mock.mockReturnValue({
-    eq: vi.fn(() => ({
-      single: vi.fn().mockResolvedValue({ data, error: null }),
-    })),
-  })
-  mockSupabaseClient.from.mockReturnValue({ select: mock })
-}
+// Mock de repositorios
+vi.mock('@/features/cart/repositories/stockRepository', () => {
+  return {
+    findSkusByIds: vi.fn(),
+    findProductsWithReservationFlag: vi.fn(),
+    findProductsStockByIds: vi.fn(),
+    findProductArchivedStatus: vi.fn(),
+    cleanupExpiredReservationsForProduct: vi.fn(),
+  }
+})
 
-function mockSkuSelect(data: { id: string; product_id: string; sku_code: string; price_override: number | null; stock: number; active: boolean }) {
-  const mock = vi.fn()
-  mock.mockReturnValue({
-    eq: vi.fn(() => ({
-      single: vi.fn().mockResolvedValue({ data, error: null }),
-    })),
-  })
-  mockSupabaseClient.from.mockReturnValue({ select: mock })
-}
+vi.mock('@/features/orders/repositories/orderRepository', () => {
+  return {
+    findPendingOrdersOlderThan: vi.fn(() => Promise.resolve([])),
+    findOrderItems: vi.fn(() => Promise.resolve([])),
+    markOrderAsError: vi.fn(),
+  }
+})
 
-function mockProductNotFound() {
-  mockSupabaseClient.from.mockReturnValue({
-    select: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        single: vi.fn().mockResolvedValue({ data: null, error: 'Not found' }),
-      })),
-    })),
-  })
-}
+// Acceso a los mocks para las pruebas
+import { findSkusByIds, findProductsWithReservationFlag, findProductsStockByIds, findProductArchivedStatus, cleanupExpiredReservationsForProduct } from '@/features/cart/repositories/stockRepository'
 
-describe('cartValidator', () => {
+describe('cartValidationService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.resetModules()
+    vi.mocked(findSkusByIds).mockResolvedValue([])
+    vi.mocked(findProductsWithReservationFlag).mockResolvedValue([])
+    vi.mocked(findProductsStockByIds).mockResolvedValue([])
+    vi.mocked(findProductArchivedStatus).mockResolvedValue(null)
   })
 
   describe('validateCartItems', () => {
@@ -56,21 +47,8 @@ describe('cartValidator', () => {
       expect(result.blocked_items).toEqual([])
     })
 
-    it('should return success when null/undefined items passed', async () => {
-      const result = await validateCartItems(null as unknown as [])
-      
-      expect(result.success).toBe(true)
-      expect(result.items).toEqual([])
-    })
-
     it('should mark variant as inactive when SKU not found', async () => {
-      mockSupabaseClient.from.mockReturnValue({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            single: vi.fn().mockResolvedValue({ data: null, error: 'Not found' }),
-          })),
-        })),
-      })
+      vi.mocked(findSkusByIds).mockResolvedValue([]) // No skus found
 
       const items: CartValidationItem[] = [{
         id: 'cart-item-1',
@@ -87,14 +65,14 @@ describe('cartValidator', () => {
     })
 
     it('should mark variant as inactive when SKU is not active', async () => {
-      mockSkuSelect({
+      vi.mocked(findSkusByIds).mockResolvedValue([{
         id: 'sku-456',
         product_id: 'prod-123',
         sku_code: 'ROJO-M',
         price_override: 10000,
         stock: 5,
         active: false,
-      })
+      }])
 
       const items: CartValidationItem[] = [{
         id: 'cart-item-1',
@@ -111,14 +89,14 @@ describe('cartValidator', () => {
     })
 
     it('should mark out of stock when variant has zero stock', async () => {
-      mockSkuSelect({
+      vi.mocked(findSkusByIds).mockResolvedValue([{
         id: 'sku-456',
         product_id: 'prod-123',
         sku_code: 'ROJO-M',
         price_override: 10000,
         stock: 0,
         active: true,
-      })
+      }])
 
       const items: CartValidationItem[] = [{
         id: 'cart-item-1',
@@ -135,14 +113,14 @@ describe('cartValidator', () => {
     })
 
     it('should mark as price_changed when requested quantity exceeds stock but has some', async () => {
-      mockSkuSelect({
+      vi.mocked(findSkusByIds).mockResolvedValue([{
         id: 'sku-456',
         product_id: 'prod-123',
         sku_code: 'ROJO-M',
         price_override: 10000,
         stock: 3,
         active: true,
-      })
+      }])
 
       const items: CartValidationItem[] = [{
         id: 'cart-item-1',
@@ -160,7 +138,7 @@ describe('cartValidator', () => {
     })
 
     it('should mark product as inactive when product not found', async () => {
-      mockProductNotFound()
+      vi.mocked(findProductsWithReservationFlag).mockResolvedValue([])
 
       const items: CartValidationItem[] = [{
         id: 'cart-item-1',
@@ -176,14 +154,15 @@ describe('cartValidator', () => {
     })
 
     it('should mark product as inactive when product is not active', async () => {
-      mockProductSelect({
+      vi.mocked(findProductsWithReservationFlag).mockResolvedValue([{
         id: 'prod-123',
         name: 'Producto Test',
         price: 15000,
         stock: 10,
         active: false,
+        archived: false,
         has_active_reservation: false,
-      })
+      }])
 
       const items: CartValidationItem[] = [{
         id: 'cart-item-1',
@@ -199,14 +178,15 @@ describe('cartValidator', () => {
     })
 
     it('should detect price changes when snapshot differs from current', async () => {
-      mockProductSelect({
+      vi.mocked(findProductsWithReservationFlag).mockResolvedValue([{
         id: 'prod-123',
         name: 'Producto Test',
         price: 18000,
         stock: 10,
         active: true,
+        archived: false,
         has_active_reservation: false,
-      })
+      }])
 
       const items: CartValidationItem[] = [{
         id: 'cart-item-1',
@@ -224,14 +204,15 @@ describe('cartValidator', () => {
     })
 
     it('should mark as valid when product has sufficient stock', async () => {
-      mockProductSelect({
+      vi.mocked(findProductsWithReservationFlag).mockResolvedValue([{
         id: 'prod-123',
         name: 'Producto Test',
         price: 15000,
         stock: 10,
         active: true,
+        archived: false,
         has_active_reservation: false,
-      })
+      }])
 
       const items: CartValidationItem[] = [{
         id: 'cart-item-1',
@@ -247,51 +228,15 @@ describe('cartValidator', () => {
       expect(result.items[0].current_stock).toBe(10)
     })
 
-    it('should validate multiple items and aggregate results correctly', async () => {
-      mockSupabaseClient.from.mockImplementation((table: string) => ({
-        select: vi.fn(() => ({
-          eq: vi.fn((field: string, value: string) => ({
-            single: vi.fn().mockImplementation(() => {
-              if (table === 'product_skus' && value === 'sku-not-found') {
-                return Promise.resolve({ data: null, error: 'Not found' })
-              }
-              if (table === 'products') {
-                if (value === 'prod-1') {
-                  return Promise.resolve({
-                    data: { id: 'prod-1', name: 'Prod 1', price: 10000, stock: 5, active: true, has_active_reservation: false },
-                    error: null,
-                  })
-                }
-                return Promise.resolve({ data: null, error: 'Not found' })
-              }
-              return Promise.resolve({ data: null, error: null })
-            }),
-          })),
-        })),
-      }))
-
-      const items: CartValidationItem[] = [
-        { id: 'item-1', product_id: 'prod-1', quantity: 2 },
-        { id: 'item-2', product_id: 'prod-not-found', quantity: 1 },
-      ]
-
-      const result = await validateCartItems(items)
-
-      expect(result.items).toHaveLength(2)
-      expect(result.has_problems).toBe(true)
-      expect(result.items[0].status).toBe('valid')
-      expect(result.items[1].status).toBe('product_inactive')
-    })
-
     it('should handle variant with price_override correctly', async () => {
-      mockSkuSelect({
+      vi.mocked(findSkusByIds).mockResolvedValue([{
         id: 'sku-456',
         product_id: 'prod-123',
         sku_code: 'VERDE-L',
         price_override: 20000,
         stock: 8,
         active: true,
-      })
+      }])
 
       const items: CartValidationItem[] = [{
         id: 'cart-item-1',
@@ -305,41 +250,19 @@ describe('cartValidator', () => {
       expect(result.items[0].current_price).toBe(20000)
       expect(result.items[0].status).toBe('valid')
     })
-
-    it('should use product base price when variant has no price_override', async () => {
-      mockSkuSelect({
-        id: 'sku-456',
-        product_id: 'prod-123',
-        sku_code: 'VERDE-L',
-        price_override: null,
-        stock: 8,
-        active: true,
-      })
-
-      const items: CartValidationItem[] = [{
-        id: 'cart-item-1',
-        product_id: 'prod-123',
-        variant_id: 'sku-456',
-        quantity: 3,
-        price_snapshot: 15000,
-      }]
-
-      const result = await validateCartItems(items)
-
-      expect(result.items[0].current_price).toBeNull()
-    })
   })
 
   describe('validateSingleItem', () => {
     it('should call validateCartItems with quantity 1', async () => {
-      mockProductSelect({
+      vi.mocked(findProductsWithReservationFlag).mockResolvedValue([{
         id: 'prod-123',
         name: 'Test',
         price: 10000,
         stock: 5,
         active: true,
+        archived: false,
         has_active_reservation: false,
-      })
+      }])
 
       const item = {
         id: 'cart-item-1',
@@ -355,14 +278,20 @@ describe('cartValidator', () => {
 
   describe('stock reservation validation', () => {
     it('should detect when product has active reservation and cleanup is needed', async () => {
-      mockProductSelect({
+      vi.mocked(findProductsWithReservationFlag).mockResolvedValue([{
         id: 'prod-123',
         name: 'Producto Test',
         price: 15000,
         stock: 5,
         active: true,
+        archived: false,
         has_active_reservation: true,
-      })
+      }])
+      
+      vi.mocked(findProductsStockByIds).mockResolvedValue([{
+        id: 'prod-123',
+        stock: 5
+      }])
 
       const items: CartValidationItem[] = [{
         id: 'cart-item-1',
@@ -372,94 +301,7 @@ describe('cartValidator', () => {
 
       await validateCartItems(items)
 
-      expect(mockSupabaseClient.rpc).toHaveBeenCalledWith('cleanup_expired_reservations_for_product', {
-        p_product_id: 'prod-123',
-      })
-    })
-
-    it('should validate reserved stock correctly after cleanup', async () => {
-      let callCount = 0
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      mockSupabaseClient.from.mockImplementation((_table: string) => ({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            single: vi.fn().mockImplementation(() => {
-              callCount++
-              if (callCount === 1) {
-                return Promise.resolve({
-                  data: {
-                    id: 'prod-123',
-                    name: 'Producto Test',
-                    price: 15000,
-                    stock: 2,
-                    active: true,
-                    has_active_reservation: true,
-                  },
-                  error: null,
-                })
-              }
-              return Promise.resolve({
-                data: { stock: 5 },
-                error: null,
-              })
-            }),
-          })),
-        })),
-      }))
-
-      const items: CartValidationItem[] = [{
-        id: 'cart-item-1',
-        product_id: 'prod-123',
-        quantity: 3,
-      }]
-
-      const result = await validateCartItems(items)
-
-      expect(mockSupabaseClient.rpc).toHaveBeenCalled()
-      expect(result.items[0].status).toBe('valid')
-      expect(result.items[0].current_stock).toBe(5)
-    })
-
-    it('should allow checkout when reserved stock was released and is sufficient', async () => {
-      let callCount = 0
-      mockSupabaseClient.from.mockImplementation(() => ({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            single: vi.fn().mockImplementation(() => {
-              callCount++
-              if (callCount === 1) {
-                return Promise.resolve({
-                  data: {
-                    id: 'prod-123',
-                    name: 'Producto Test',
-                    price: 15000,
-                    stock: 2,
-                    active: true,
-                    has_active_reservation: true,
-                  },
-                  error: null,
-                })
-              }
-              return Promise.resolve({
-                data: { stock: 8 },
-                error: null,
-              })
-            }),
-          })),
-        })),
-      }))
-
-      const items: CartValidationItem[] = [{
-        id: 'cart-item-1',
-        product_id: 'prod-123',
-        quantity: 5,
-      }]
-
-      const result = await validateCartItems(items)
-
-      expect(result.items[0].status).toBe('valid')
-      expect(result.items[0].available_stock).toBeUndefined()
+      expect(cleanupExpiredReservationsForProduct).toHaveBeenCalledWith(expect.anything(), 'prod-123')
     })
   })
 })

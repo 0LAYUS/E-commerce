@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { updateProfile } from "@/lib/actions/profileActions";
+import { updateProfile } from "@/features/profile/actions/profileActions";
 
 type ProfileData = {
   first_name?: string | null
