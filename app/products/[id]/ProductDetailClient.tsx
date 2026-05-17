@@ -10,40 +10,7 @@ import RelatedProductsCarousel from "@/components/products/RelatedProductsCarous
 import ProductImageGallery from "@/components/products/ProductImageGallery"
 import { useMemo, useState } from "react"
 
-type Product = {
-  id: string
-  name: string
-  description: string
-  price: number
-  stock: number
-  image_url: string
-  categories?: { name: string }
-}
-
-import type { OptionDef } from "@/types/product.types"
-
-type SKU = {
-  id: string
-  product_id: string
-  sku_code: string
-  price_override: number | null
-  stock: number
-  active: boolean
-  option_values: string[]
-}
-
-type ProductImage = {
-  id: string
-  url: string
-  alt?: string | null
-}
-
-type VariantImage = {
-  id: string
-  sku_id: string
-  url: string
-  alt?: string | null
-}
+import type { Product, SKU, ProductImage, VariantImage, OptionDef } from "@/types/product.types"
 
 type Props = {
   product: Product

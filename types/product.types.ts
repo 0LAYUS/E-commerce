@@ -82,3 +82,18 @@ export type GalleryImage = {
   url: string
   alt?: string | null
 }
+
+export type POSVariant = {
+  id: string
+  sku_code: string | null
+  price_override: number | null
+  stock: number
+  active: boolean
+  option_values?: string[]
+}
+
+export type POSProduct = Product & {
+  image_url: string | null
+  category?: { id: string; name: string } | null
+  variants: POSVariant[]
+}

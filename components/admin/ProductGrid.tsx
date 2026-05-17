@@ -9,17 +9,7 @@ import ProductVariantsEditor from "./ProductVariantsEditor"
 import ToggleSwitch from "@/components/ui/ToggleSwitch"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 
-type Product = {
-  id: string
-  name: string
-  description: string
-  price: number
-  stock: number
-  category_id: string
-  image_url: string
-  active?: boolean
-  categories?: { name: string }
-}
+import type { Product } from "@/types/product.types"
 
 type ImageItem = {
   id: string

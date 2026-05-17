@@ -10,27 +10,7 @@ import CartPOS, { CartItem } from "./components/CartPOS"
 import PaymentModal from "./components/PaymentModal"
 import ReceiptModal from "./components/ReceiptModal"
 
-type Product = {
-  id: string
-  name: string
-  price: number
-  stock: number
-  image_url: string | null
-  category?: { id: string; name: string } | null
-  variants: {
-    id: string
-    sku_code: string | null
-    price_override: number | null
-    stock: number
-    active: boolean
-    option_values?: string[]
-  }[]
-}
-
-type Category = {
-  id: string
-  name: string
-}
+import type { POSProduct, Category } from "@/types/product.types"
 
 type SaleResponse = {
   id: string
@@ -49,7 +29,7 @@ export default function POSPage() {
 const pathname = usePathname()
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/")
 
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<POSProduct[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>("")
   const [searchQuery, setSearchQuery] = useState("")
@@ -103,7 +83,7 @@ const pathname = usePathname()
     loadProducts(searchQuery, categoryId)
   }, [loadProducts, searchQuery])
 
-  const handleSelectProduct = useCallback((product: Product) => {
+  const handleSelectProduct = useCallback((product: POSProduct) => {
     const existingItem = cart.find(
       (item) => item.product_id === product.id && item.variant_id === null
     )
@@ -139,7 +119,7 @@ const pathname = usePathname()
     }
   }, [cart])
 
-  const handleSelectVariant = useCallback((product: Product, variant: Product["variants"][0]) => {
+  const handleSelectVariant = useCallback((product: POSProduct, variant: POSProduct["variants"][0]) => {
     const existingItem = cart.find((item) => item.variant_id === variant.id)
 
     if (existingItem) {

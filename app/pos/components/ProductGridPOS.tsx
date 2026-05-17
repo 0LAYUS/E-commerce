@@ -1,30 +1,12 @@
 "use client"
 
 import { Plus } from "lucide-react"
-
-type Variant = {
-  id: string
-  sku_code: string | null
-  price_override: number | null
-  stock: number
-  active: boolean
-  option_values?: string[]
-}
-
-type Product = {
-  id: string
-  name: string
-  price: number
-  stock: number
-  image_url: string | null
-  category?: { id: string; name: string } | null
-  variants: Variant[]
-}
+import type { POSProduct, POSVariant } from "@/types/product.types"
 
 type ProductGridProps = {
-  products: Product[]
-  onSelectProduct: (product: Product, variant?: Variant) => void
-  onSelectVariant: (product: Product, variant: Variant) => void
+  products: POSProduct[]
+  onSelectProduct: (product: POSProduct, variant?: POSVariant) => void
+  onSelectVariant: (product: POSProduct, variant: POSVariant) => void
 }
 
 export default function ProductGrid({ products, onSelectProduct, onSelectVariant }: ProductGridProps) {
