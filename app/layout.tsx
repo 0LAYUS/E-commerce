@@ -52,7 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased min-h-screen bg-background text-foreground flex flex-col`}>
+      <body className={`${geistSans.className} antialiased min-h-screen bg-background text-foreground`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -61,11 +61,7 @@ export default function RootLayout({
         >
           <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-white" />}>
             <CartProvider>
-              <Navbar />
-              <main className="flex-grow px-0">
-                {children}
-              </main>
-              <Footer />
+              {children}
             </CartProvider>
           </Suspense>
         </ThemeProvider>

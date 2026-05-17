@@ -5,22 +5,7 @@ import { useState, useEffect } from "react"
 import HeroCarousel from "@/components/layout/HeroCarousel"
 import ProductGrid from "@/components/products/ProductGrid"
 
-type Category = {
-  id: string
-  name: string
-}
-
-type Product = {
-  id: string
-  name: string
-  description: string
-  price: number
-  category_id: string
-  image_url: string
-  stock?: number
-  effective_stock?: number
-  hasVariants?: boolean
-}
+import type { Product, Category } from "@/types/product.types"
 
 export default function HomeContent({ categories, products }: { categories: Category[], products: Product[] }) {
   const [carouselItems, setCarouselItems] = useState<Array<{

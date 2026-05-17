@@ -95,11 +95,11 @@ function AdminContent({ children }: { children: React.ReactNode }) {
         <div className="p-4 border-t border-border">
           <form action={logout}>
             <Button
+              variant="destructive"
               type="submit"
-              variant="ghost"
-              className="w-full justify-start text-muted-foreground hover:text-destructive"
+              className="w-full justify-start "
             >
-              <SignOut className="w-5 h-5 mr-3" />
+              <SignOut className="w-5 h-5 mr-3 text-center" />
               Salir
             </Button>
           </form>

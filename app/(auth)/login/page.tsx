@@ -1,17 +1,17 @@
 "use client";
 
-import { login } from "@/lib/actions/authActions"
-import Link from "next/link"
-import { useSearchParams } from "next/navigation"
-import { Suspense } from "react"
-import { motion } from "framer-motion"
-import { ShoppingBag, Eye, EyeSlash } from "@phosphor-icons/react"
-import { useState } from "react"
+import { login } from "@/lib/actions/authActions";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { motion } from "framer-motion";
+import { ShoppingBag, Eye, EyeSlash } from "@phosphor-icons/react";
+import { useState } from "react";
 
 function LoginForm() {
-  const searchParams = useSearchParams()
-  const error = searchParams.get("error")
-  const [showPassword, setShowPassword] = useState(false)
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <motion.div
@@ -30,8 +30,12 @@ function LoginForm() {
             <ShoppingBag className="w-6 h-6 text-white" weight="fill" />
           </motion.div>
         </Link>
-        <h2 className="text-3xl font-bold tracking-tight text-card-foreground">Bienvenido de vuelta</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Ingresa a tu cuenta para continuar</p>
+        <h2 className="text-3xl font-bold tracking-tight text-card-foreground">
+          Bienvenido de vuelta
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ingresa a tu cuenta para continuar
+        </p>
       </div>
 
       {error && (
@@ -47,7 +51,10 @@ function LoginForm() {
       <form action={login} className="mt-8 space-y-6">
         <div className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-card-foreground mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-card-foreground mb-2"
+            >
               Correo electrónico
             </label>
             <input
@@ -61,7 +68,10 @@ function LoginForm() {
             />
           </div>
           <div className="relative">
-            <label htmlFor="password" className="block text-sm font-medium text-card-foreground mb-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-card-foreground mb-2"
+            >
               Contraseña
             </label>
             <input
@@ -85,7 +95,10 @@ function LoginForm() {
             </button>
           </div>
           <div className="flex justify-end mt-2">
-            <Link href="/forgot-password" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hover:underline">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-gray-500 hover:text-gray-900 transition-colors hover:underline"
+            >
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
@@ -105,12 +118,15 @@ function LoginForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         ¿No tienes una cuenta?{" "}
-        <Link href="/register" className="font-medium text-foreground hover:text-gray-400 transition-colors">
+        <Link
+          href="/register"
+          className="font-medium text-foreground hover:text-gray-400 transition-colors"
+        >
           Regístrate aquí
         </Link>
       </p>
     </motion.div>
-  )
+  );
 }
 
 export default function LoginPage() {
@@ -120,9 +136,15 @@ export default function LoginPage() {
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-800/20 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-700/10 rounded-full blur-3xl" />
       </div>
-      <Suspense fallback={<div className="w-full max-w-md p-10 text-center text-muted-foreground">Cargando...</div>}>
+      <Suspense
+        fallback={
+          <div className="w-full max-w-md p-10 text-center text-muted-foreground">
+            Cargando...
+          </div>
+        }
+      >
         <LoginForm />
       </Suspense>
     </div>
-  )
+  );
 }
