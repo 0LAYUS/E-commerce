@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server"
 import { getShippingZones } from "@/lib/actions/adminActions"
 import ShippingZonesGrid from "@/components/admin/ShippingZonesGrid"
 
