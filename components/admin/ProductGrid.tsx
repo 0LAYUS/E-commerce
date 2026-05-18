@@ -13,6 +13,7 @@ import {
 } from "@/lib/actions/productActions"
 import ProductVariantsEditor from "./ProductVariantsEditor"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
+import { Button } from "@/components/ui/button"
 import { ProductCard } from "@/components/admin/ProductCard"
 import { ProductFormModal } from "@/components/admin/ProductFormModal"
 import { useProductImages } from "@/hooks/useProductImages"
@@ -189,7 +190,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
   }
 
   return (
-    <div className="flex flex-col h-screen px-4 py-4 overflow-hidden">
+    <div className="flex flex-col min-h-screen px-4 py-4 overflow-hidden">
       <div className="flex justify-between items-center mb-4 shrink-0">
         <h1 className="text-2xl font-extrabold text-foreground flex items-center gap-3">
           <Link href="/admin" className="text-muted-foreground hover:text-foreground transition">
@@ -198,18 +199,14 @@ export default function ProductGrid({ products, categories }: { products: Produc
           Gestionar Productos
         </h1>
         <div className="flex gap-3">
-          <Link
-            href="/admin/products/archived"
-            className="border border-input hover:bg-accent px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition"
-          >
-            <Archive className="w-4 h-4" /> Ver Archivados
-          </Link>
-          <button
-            onClick={openNewModal}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm transition"
-          >
+          <Button variant="outline" asChild>
+            <Link href="/admin/products/archived">
+              <Archive className="w-4 h-4" /> Ver Archivados
+            </Link>
+          </Button>
+          <Button onClick={openNewModal}>
             <Plus className="w-4 h-4" /> Nuevo Producto
-          </button>
+          </Button>
         </div>
       </div>
 

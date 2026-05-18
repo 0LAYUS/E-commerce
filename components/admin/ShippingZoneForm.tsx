@@ -2,6 +2,8 @@
 
 import { X } from "lucide-react"
 import { createShippingZone, updateShippingZone } from "@/lib/actions/adminActions"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import type { ShippingZone } from "@/types/cart.types"
 
 type ShippingZoneFormProps = {
@@ -46,10 +48,7 @@ export default function ShippingZoneForm({
           <h2 className="text-xl font-extrabold text-card-foreground">
             {editingZone ? "Editar Zona" : "Nueva Zona de Envío"}
           </h2>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition p-1 bg-secondary rounded-full hover:bg-accent"
-          >
+          <button onClick={onClose} className="p-1 transition" title="Cerrar">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -60,24 +59,22 @@ export default function ShippingZoneForm({
 
             <div>
               <label className="block text-sm font-semibold text-card-foreground mb-1.5">Nombre de la Zona</label>
-              <input
+              <Input
                 name="name"
                 defaultValue={editingZone?.name}
                 required
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Ej: Nacional, Bogotá, Medellín..."
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-card-foreground mb-1.5">Costo de Envío (COP)</label>
-              <input
+              <Input
                 name="cost"
                 type="number"
                 min="0"
                 defaultValue={editingZone?.cost ?? 0}
                 required
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="15000"
               />
             </div>
@@ -86,12 +83,11 @@ export default function ShippingZoneForm({
               <label className="block text-sm font-semibold text-card-foreground mb-1.5">
                 Monto Mínimo para Envío Gratis (COP)
               </label>
-              <input
+              <Input
                 name="free_threshold"
                 type="number"
                 min="0"
                 defaultValue={editingZone?.free_threshold ?? 0}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="0 = siempre se cobra envío"
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -116,13 +112,9 @@ export default function ShippingZoneForm({
             )}
 
             <div className="pt-4 border-t border-border mt-2">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3.5 rounded-lg font-bold transition shadow-sm disabled:opacity-50"
-              >
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? "Guardando..." : editingZone ? "Actualizar Zona" : "Crear Zona"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

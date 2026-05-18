@@ -2,6 +2,8 @@
 
 import Image from "next/image"
 import { X, Upload } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import ToggleSwitch from "@/components/ui/ToggleSwitch"
 import type { Product } from "@/types/product.types"
 
@@ -59,7 +61,7 @@ export function ProductFormModal({
           <h2 className="text-xl font-extrabold text-card-foreground">
             {editingProduct ? "Editar Producto" : "Nuevo Producto"}
           </h2>
-          <button onClick={onClose} className="p-1 bg-secondary rounded-full hover:bg-accent transition">
+          <button onClick={onClose} className="p-1 transition" title="Cerrar">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -68,11 +70,10 @@ export function ProductFormModal({
           {editingProduct && <input type="hidden" name="active" value={productActive ? "true" : "false"} />}
           <div>
             <label className="block text-sm font-semibold text-card-foreground mb-1.5">Nombre</label>
-            <input
+            <Input
               name="name"
               defaultValue={editingProduct?.name}
               required
-              className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
           {editingProduct && (
@@ -97,12 +98,11 @@ export function ProductFormModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-card-foreground mb-1.5">Precio base</label>
-              <input
+              <Input
                 type="number"
                 name="price"
                 defaultValue={editingProduct?.price}
                 required
-                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
             <div>
@@ -126,7 +126,7 @@ export function ProductFormModal({
             <label className="block text-sm font-semibold text-card-foreground mb-1.5">
               {hasVariants ? "Stock total" : "Stock"}
             </label>
-            <input
+            <Input
               type="number"
               name="stock"
               value={stockValue}
@@ -144,22 +144,16 @@ export function ProductFormModal({
               }}
               required={!hasVariants}
               readOnly={hasVariants}
-              className={`w-full h-10 rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${
-                hasVariants ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-background"
-              }`}
+              className={hasVariants ? "bg-muted text-muted-foreground cursor-not-allowed" : ""}
             />
             {hasVariants && <p className="text-xs text-muted-foreground mt-1">Stock calculado desde variantes activas</p>}
           </div>
           <div>
             <label className="block text-sm font-semibold text-card-foreground mb-1.5">Imagenes</label>
             <div className="flex flex-wrap items-center gap-3 mb-3">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-input rounded-md text-sm font-semibold bg-card shadow-sm hover:bg-accent transition"
-              >
+              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
                 <Upload className="w-4 h-4" /> Agregar imagenes
-              </button>
+              </Button>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -211,13 +205,9 @@ export function ProductFormModal({
             variantsEditor
           )}
           <div className="pt-4 border-t border-border">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3.5 rounded-lg font-bold transition shadow-sm disabled:opacity-50"
-            >
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Guardando..." : editingProduct ? "Actualizar Producto" : "Crear Producto"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

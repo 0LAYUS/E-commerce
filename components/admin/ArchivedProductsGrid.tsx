@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, RotateCcw, X } from "lucide-react"
 import { unarchiveProduct } from "@/lib/actions/productActions"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
+import { Button } from "@/components/ui/button"
+import { formatPrice } from "@/lib/format"
 
 type ArchivedProduct = {
   id: string
@@ -56,12 +58,11 @@ export default function ArchivedProductsGrid({ products }: { products: ArchivedP
           </Link>
           Productos Archivados
         </h1>
-        <Link
-          href="/admin/products"
-          className="text-sm text-muted-foreground hover:text-foreground transition flex items-center gap-2"
-        >
-          <X className="w-4 h-4" /> Cerrar
-        </Link>
+        <Button variant="ghost" asChild>
+          <Link href="/admin/products">
+            <X className="w-4 h-4" /> Cerrar
+          </Link>
+        </Button>
       </div>
 
       {/* Info banner */}
@@ -95,17 +96,18 @@ export default function ArchivedProductsGrid({ products }: { products: ArchivedP
               </div>
 
               <div className="font-extrabold text-primary text-xl mb-4">
-                {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0 }).format(p.price)}
+                {formatPrice(p.price)}
               </div>
 
-              <button
+              <Button
+                variant="outline"
+                className="w-full"
                 onClick={() => openUnarchiveConfirm(p.id, p.name)}
                 disabled={unarchivingId === p.id}
-                className="w-full flex justify-center items-center gap-2 py-2 border border-input rounded-lg text-sm font-bold hover:bg-accent transition disabled:opacity-50"
               >
                 <RotateCcw className="w-4 h-4" />
                 {unarchivingId === p.id ? "Restaurando..." : "Restaurar"}
-              </button>
+              </Button>
             </div>
           </div>
         ))}

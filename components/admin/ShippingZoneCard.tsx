@@ -2,6 +2,7 @@
 
 import { Truck, Pencil, Trash2 } from "lucide-react"
 import { formatPrice } from "@/lib/format"
+import { Button } from "@/components/ui/button"
 import type { ShippingZone } from "@/types/cart.types"
 
 type ShippingZoneCardProps = {
@@ -21,13 +22,13 @@ export default function ShippingZoneCard({ zone, onEdit, onDelete }: ShippingZon
         <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
           <Truck className="w-5 h-5" />
         </div>
-        <div className="flex gap-1.5 text-muted-foreground">
-          <button onClick={() => onEdit(zone)} className="hover:text-foreground transition p-1" title="Editar">
+        <div className="flex gap-0.5 text-muted-foreground">
+          <Button variant="ghost" size="icon-xs" onClick={() => onEdit(zone)} title="Editar">
             <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={() => onDelete(zone.id, zone.name)} className="hover:text-destructive transition p-1" title="Eliminar">
+          </Button>
+          <Button variant="ghost" size="icon-xs" onClick={() => onDelete(zone.id, zone.name)} className="hover:text-destructive" title="Eliminar">
             <Trash2 className="w-3.5 h-3.5" />
-          </button>
+          </Button>
         </div>
       </div>
 

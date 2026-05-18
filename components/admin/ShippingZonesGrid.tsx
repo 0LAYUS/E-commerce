@@ -2,14 +2,17 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ArrowLeft, Plus } from "lucide-react"
 import { deleteShippingZone } from "@/lib/actions/adminActions"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
+import { Button } from "@/components/ui/button"
 import ShippingZoneCard from "@/components/admin/ShippingZoneCard"
 import ShippingZoneForm from "@/components/admin/ShippingZoneForm"
 import type { ShippingZone } from "@/types/cart.types"
 
 export default function ShippingZonesGrid({ zones }: { zones: ShippingZone[] }) {
+  const router = useRouter()
   const [zonesList, setZonesList] = useState(zones)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingZone, setEditingZone] = useState<ShippingZone | null>(null)
@@ -37,7 +40,7 @@ export default function ShippingZonesGrid({ zones }: { zones: ShippingZone[] }) 
 
   const handleFormSuccess = () => {
     closeModal()
-    window.location.reload()
+    router.refresh()
   }
 
   const handleFormError = (title: string, description: string) => {
@@ -65,7 +68,7 @@ export default function ShippingZonesGrid({ zones }: { zones: ShippingZone[] }) 
   }
 
   return (
-    <div className="flex flex-col h-screen px-4 py-4 overflow-hidden">
+    <div className="flex flex-col min-h-screen px-4 py-4 overflow-hidden">
       <div className="flex justify-between items-center mb-4 shrink-0">
         <h1 className="text-2xl font-extrabold text-foreground flex items-center gap-3">
           <Link href="/admin" className="text-muted-foreground hover:text-foreground transition" title="Volver al panel">
@@ -73,12 +76,9 @@ export default function ShippingZonesGrid({ zones }: { zones: ShippingZone[] }) 
           </Link>
           Zonas de Envío
         </h1>
-        <button
-          onClick={openNewModal}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm transition"
-        >
+        <Button onClick={openNewModal}>
           <Plus className="w-4 h-4" /> Nueva Zona
-        </button>
+        </Button>
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto">

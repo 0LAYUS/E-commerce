@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { ArrowLeft, Tag, Pencil, Trash2, Plus, X } from 'lucide-react';
 import { createCategory, updateCategory, deleteCategory } from '@/lib/actions/adminActions';
 import { AlertDialog, ConfirmDialog } from '@/components/ui/modal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type Category = {
   id: string
@@ -79,7 +81,7 @@ export default function CategoryGrid({ categories }: { categories: Category[] })
   };
 
   return (
-    <div className="flex flex-col h-screen px-4 py-4 overflow-hidden">
+    <div className="flex flex-col min-h-screen px-4 py-4 overflow-hidden">
       {/* HEADER */}
       <div className="flex justify-between items-center mb-4 shrink-0">
         <h1 className="text-2xl font-extrabold text-foreground flex items-center gap-3">
@@ -88,9 +90,9 @@ export default function CategoryGrid({ categories }: { categories: Category[] })
           </Link>
           Gestionar Categorías
         </h1>
-        <button onClick={openNewModal} className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm transition">
+        <Button onClick={openNewModal}>
           <Plus className="w-4 h-4" /> Nueva Categoría
-        </button>
+        </Button>
       </div>
 
       {/* GRID */}
@@ -101,13 +103,13 @@ export default function CategoryGrid({ categories }: { categories: Category[] })
               <div className="w-12 h-12 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                 <Tag className="w-6 h-6" />
               </div>
-              <div className="flex gap-2 text-muted-foreground">
-                <button onClick={() => openEditModal(c)} className="hover:text-foreground transition p-1.5" title="Editar">
+              <div className="flex gap-1 text-muted-foreground">
+                <Button variant="ghost" size="icon-xs" onClick={() => openEditModal(c)} className="hover:text-foreground transition" title="Editar">
                   <Pencil className="w-4 h-4" />
-                </button>
-                <button onClick={() => openDeleteConfirm(c.id, c.name)} className="hover:text-destructive transition p-1.5" title="Eliminar">
+                </Button>
+                <Button variant="ghost" size="icon-xs" onClick={() => openDeleteConfirm(c.id, c.name)} className="hover:text-destructive transition" title="Eliminar">
                   <Trash2 className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
             <h3 className="text-sm font-bold text-card-foreground mb-1 line-clamp-1">{c.name}</h3>
@@ -132,7 +134,7 @@ export default function CategoryGrid({ categories }: { categories: Category[] })
               <h2 className="text-xl font-extrabold text-card-foreground">
                 {editingCategory ? 'Editar Categoría' : 'Añadir Nueva Categoría'}
               </h2>
-              <button onClick={closeModal} className="text-muted-foreground hover:text-foreground transition p-1 bg-secondary rounded-full hover:bg-accent">
+              <button onClick={closeModal} className="p-1 transition" title="Cerrar">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -143,11 +145,10 @@ export default function CategoryGrid({ categories }: { categories: Category[] })
 
                 <div>
                   <label className="block text-sm font-semibold text-card-foreground mb-1.5">Nombre de la Categoría</label>
-                  <input
+                  <Input
                     name="name"
                     defaultValue={editingCategory?.name}
                     required
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="Ej: Electrónica, Ropa, Hogar..."
                   />
                 </div>
@@ -164,13 +165,9 @@ export default function CategoryGrid({ categories }: { categories: Category[] })
                 </div>
 
                 <div className="pt-4 border-t border-border mt-2">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-3.5 rounded-lg font-bold transition shadow-sm disabled:opacity-50"
-                  >
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? "Guardando..." : "Guardar Categoría"}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>
