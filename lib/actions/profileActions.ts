@@ -5,10 +5,12 @@ import { revalidatePath } from "next/cache";
 
 export async function updateProfile(formData: FormData) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("No autenticado");
+    return { success: false, message: "No autenticado" };
   }
 
   const firstName = formData.get("first_name") as string;
@@ -17,32 +19,28 @@ export async function updateProfile(formData: FormData) {
   const address = formData.get("address") as string;
   const password = formData.get("password") as string;
 
-  // Actualizar perfil en tabla "profiles"
-  const updates: Record<string, string> = {};
-  if (firstName) updates.first_name = firstName;
-  if (lastName) updates.last_name = lastName;
-  if (phone) updates.phone = phone;
-  if (address) updates.address = address;
+  const updates: Record<string, string | null> = {
+    id: user.id,
+    email: user.email,
+    first_name: firstName ?? null,
+    last_name: lastName ?? null,
+    phone: phone ?? null,
+    address: address ?? null,
+  };
 
-  if (Object.keys(updates).length > 0) {
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .update(updates)
-      .eq("id", user.id);
+  const { error: profileError } = await supabase.from("profiles").upsert(updates, { onConflict: "id" });
 
-    if (profileError) {
-      throw new Error("Error al actualizar información básica: " + profileError.message);
-    }
+  if (profileError) {
+    return { success: false, message: "Error al actualizar información básica: " + profileError.message };
   }
 
-  // Actualizar contraseña si se envió una nueva
   if (password && password.trim() !== "") {
     const { error: authError } = await supabase.auth.updateUser({
-      password: password
+      password: password,
     });
 
     if (authError) {
-      throw new Error("Error al actualizar la contraseña: " + authError.message);
+      return { success: false, message: "Error al actualizar la contraseña: " + authError.message };
     }
   }
 
