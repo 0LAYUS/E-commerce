@@ -1,3 +1,6 @@
+import { Tag, Package, ShoppingCart } from "lucide-react"
+import { MetricCard } from "@/components/admin/MetricCard"
+
 type StoreSummaryCardsProps = {
   categoriesCount: number | null
   productsCount: number | null
@@ -7,18 +10,21 @@ type StoreSummaryCardsProps = {
 export default function StoreSummaryCards({ categoriesCount, productsCount, ordersCount }: StoreSummaryCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div className="bg-[var(--bg-surface)] p-6 rounded-xl shadow-sm border">
-        <h3 className="text-[var(--text-muted)] font-medium">Categorías Activas</h3>
-        <p className="text-3xl font-bold text-[var(--text-primary)] mt-2">{categoriesCount || 0}</p>
-      </div>
-      <div className="bg-[var(--bg-surface)] p-6 rounded-xl shadow-sm border">
-        <h3 className="text-[var(--text-muted)] font-medium">Total Productos</h3>
-        <p className="text-3xl font-bold text-[var(--text-primary)] mt-2">{productsCount || 0}</p>
-      </div>
-      <div className="bg-[var(--bg-surface)] p-6 rounded-xl shadow-sm border">
-        <h3 className="text-[var(--text-muted)] font-medium">Total Órdenes</h3>
-        <p className="text-3xl font-bold text-[var(--text-primary)] mt-2">{ordersCount || 0}</p>
-      </div>
+      <MetricCard
+        title="Categorías Activas"
+        value={categoriesCount || 0}
+        icon={<Tag className="w-5 h-5" />}
+      />
+      <MetricCard
+        title="Total Productos"
+        value={productsCount || 0}
+        icon={<Package className="w-5 h-5" />}
+      />
+      <MetricCard
+        title="Total Órdenes"
+        value={ordersCount || 0}
+        icon={<ShoppingCart className="w-5 h-5" />}
+      />
     </div>
   )
 }
