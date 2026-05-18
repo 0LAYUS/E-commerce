@@ -1,17 +1,14 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { Shield, User, MoreVertical, Search, Eye, Loader2 } from "lucide-react"
+import { useState } from "react"
+import { Search, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { UserDetailsModal } from "./UserDetailsModal"
-
-type UserType = {
-  id: string
-  email: string
-  role: "cliente" | "administrador"
-  created_at: string
-  orderCount: number
-}
+import UserTableRow from "./UserTableRow"
+import { useUserList } from "@/hooks/useUserList"
+import { ROLE_FILTER_LABELS } from "@/lib/constants/users"
+import type { UserType } from "@/types/user.types"
+import type { FilterRole } from "@/types/admin.types"
 
 type UserManagementProps = {
   initialUsers: UserType[]
@@ -19,69 +16,26 @@ type UserManagementProps = {
   updateUserRole: (userId: string, role: "cliente" | "administrador") => Promise<void>
 }
 
-type FilterRole = "all" | "administrador" | "cliente"
-
 export default function UserManagement({
   initialUsers,
   totalUsers,
   updateUserRole,
 }: UserManagementProps) {
-  const [users, setUsers] = useState<UserType[]>(initialUsers)
-  const [displayedCount, setDisplayedCount] = useState(initialUsers.length)
-  const [totalFromServer, setTotalFromServer] = useState(totalUsers)
-  const [loading, setLoading] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
   const [updating, setUpdating] = useState<string | null>(null)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [filterRole, setFilterRole] = useState<FilterRole>("all")
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
 
-  const LIMIT = 50
-
-  const [debouncedSearch, setDebouncedSearch] = useState("")
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 300)
-    return () => clearTimeout(timer)
-  }, [search])
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true)
-      setDisplayedCount(0)
-      setUsers([])
-
-      try {
-        const params = new URLSearchParams()
-        params.set("limit", String(LIMIT))
-        params.set("offset", "0")
-        if (filterRole !== "all") params.set("role", filterRole)
-        if (debouncedSearch) params.set("search", debouncedSearch)
-
-        const res = await fetch(`/api/users?${params.toString()}`)
-        const data = await res.json()
-
-        if (data.users) {
-          setUsers(data.users)
-          setDisplayedCount(data.users.length)
-          setTotalFromServer(data.total)
-        }
-      } catch (err) {
-        console.error("Error fetching users:", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchUsers()
-  }, [debouncedSearch, filterRole])
-
-  const displayedUsers = useMemo(() => {
-    return users.filter((user) => {
-      const matchesRole = filterRole === "all" || user.role === filterRole
-      return matchesRole
-    })
-  }, [users, filterRole])
+  const {
+    setUsers,
+    totalFromServer,
+    loading,
+    loadingMore,
+    displayedUsers,
+    hasMore,
+    loadMore,
+  } = useUserList(initialUsers, totalUsers, search, filterRole)
 
   const handleRoleChange = async (userId: string, newRole: "cliente" | "administrador") => {
     setUpdating(userId)
@@ -98,33 +52,7 @@ export default function UserManagement({
     }
   }
 
-  const loadMore = async () => {
-    if (loadingMore || displayedCount >= totalFromServer) return
-
-    setLoadingMore(true)
-    try {
-      const offset = displayedCount
-      const params = new URLSearchParams()
-      params.set("limit", String(LIMIT))
-      params.set("offset", String(offset))
-      if (filterRole !== "all") params.set("role", filterRole)
-      if (debouncedSearch) params.set("search", debouncedSearch)
-
-      const res = await fetch(`/api/users?${params.toString()}`)
-      const data = await res.json()
-
-      if (data.users) {
-        setUsers((prev) => [...prev, ...data.users])
-        setDisplayedCount((prev) => prev + data.users.length)
-      }
-    } catch (err) {
-      console.error("Error loading more users:", err)
-    } finally {
-      setLoadingMore(false)
-    }
-  }
-
-  const hasMore = displayedCount < totalFromServer
+  const filterOptions: FilterRole[] = ["all", "administrador", "cliente"]
 
   return (
     <div className="space-y-4">
@@ -142,7 +70,7 @@ export default function UserManagement({
         </div>
 
         <div className="flex gap-2">
-          {(["all", "administrador", "cliente"] as FilterRole[]).map((role) => (
+          {filterOptions.map((role) => (
             <button
               key={role}
               onClick={() => setFilterRole(role)}
@@ -153,7 +81,7 @@ export default function UserManagement({
                   : "bg-muted text-muted-foreground hover:text-foreground"
               )}
             >
-              {role === "all" ? "Todos" : role === "administrador" ? "Admin" : "Cliente"}
+              {ROLE_FILTER_LABELS[role]}
             </button>
           ))}
         </div>
@@ -173,91 +101,15 @@ export default function UserManagement({
           </thead>
           <tbody>
             {displayedUsers.map((user) => (
-              <tr key={user.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition">
-                <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-primary/10 text-primary rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4" />
-                    </div>
-                    <span className="font-medium text-foreground truncate max-w-[150px]">
-                      {user.email.split("@")[0]}
-                    </span>
-                  </div>
-                </td>
-                <td className="p-4 text-muted-foreground truncate max-w-[180px]">
-                  {user.email}
-                </td>
-                <td className="p-4">
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-                      user.role === "administrador"
-                        ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                        : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                    )}
-                  >
-                    {user.role === "administrador" ? <Shield className="w-3 h-3" /> : null}
-                    {user.role === "administrador" ? "Admin" : "Cliente"}
-                  </span>
-                </td>
-                <td className="p-4 text-muted-foreground">
-                  {user.orderCount}
-                </td>
-                <td className="p-4 text-muted-foreground">
-                  {new Date(user.created_at).toLocaleDateString("es-CO", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </td>
-                <td className="p-4">
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setSelectedUserId(user.id)}
-                      className="p-2 text-muted-foreground hover:text-foreground transition"
-                      title="Ver detalles"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <div className="relative">
-                      <button
-                        onClick={() => setOpenMenu(openMenu === user.id ? null : user.id)}
-                        disabled={updating === user.id}
-                        className="p-2 text-muted-foreground hover:text-foreground transition disabled:opacity-50"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-
-                      {openMenu === user.id && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-10"
-                            onClick={() => setOpenMenu(null)}
-                          />
-                          <div className="absolute right-0 top-full mt-1 w-48 bg-card border border-border rounded-lg shadow-lg z-20 py-1">
-                            <button
-                              onClick={() => handleRoleChange(user.id, "administrador")}
-                              disabled={updating === user.id || user.role === "administrador"}
-                              className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted/50 transition disabled:opacity-50 flex items-center gap-2"
-                            >
-                              <Shield className="w-4 h-4 text-purple-500" />
-                              Hacer administrador
-                            </button>
-                            <button
-                              onClick={() => handleRoleChange(user.id, "cliente")}
-                              disabled={updating === user.id || user.role === "cliente"}
-                              className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted/50 transition disabled:opacity-50 flex items-center gap-2"
-                            >
-                              <User className="w-4 h-4 text-gray-500" />
-                              Hacer cliente
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </td>
-              </tr>
+              <UserTableRow
+                key={user.id}
+                user={user}
+                isMenuOpen={openMenu === user.id}
+                isUpdating={updating === user.id}
+                onToggleMenu={() => setOpenMenu(openMenu === user.id ? null : user.id)}
+                onRoleChange={handleRoleChange}
+                onViewDetails={setSelectedUserId}
+              />
             ))}
             {displayedUsers.length === 0 && (
               <tr>

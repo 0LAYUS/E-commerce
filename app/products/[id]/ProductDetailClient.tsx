@@ -2,13 +2,13 @@
 
 import { motion } from "framer-motion"
 import Link from "next/link"
-import Image from "next/image"
 import { ArrowLeft } from "@phosphor-icons/react"
 import ProductVariantSelector from "@/components/products/ProductVariantSelector"
 import AddToCartButton from "@/components/products/AddToCartButton"
 import RelatedProductsCarousel from "@/components/products/RelatedProductsCarousel"
 import ProductImageGallery from "@/components/products/ProductImageGallery"
 import { useMemo, useState } from "react"
+import { formatPrice, formatStockLabel } from "@/lib/format"
 
 import type { Product, SKU, ProductImage, VariantImage, OptionDef } from "@/types/product.types"
 
@@ -53,12 +53,6 @@ export default function ProductDetailClient({
   }, [productImages, product.image_url, product.name, selectedSkuId, variantImages])
 
   const primaryImageUrl = activeImages[0]?.url
-
-  const formatStockLabel = (stock: number) => {
-    if (stock <= 0) return "Agotado"
-    if (stock < 5) return `Ultimas ${stock} unidades`
-    return `${stock} unidades`
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -125,11 +119,7 @@ export default function ProductDetailClient({
               transition={{ delay: 0.6 }}
             >
               <span className="text-4xl font-extrabold text-foreground">
-                {new Intl.NumberFormat("es-CO", {
-                  style: "currency",
-                  currency: "COP",
-                  minimumFractionDigits: 0,
-                }).format(basePrice)}
+                {formatPrice(basePrice)}
               </span>
             </motion.div>
 

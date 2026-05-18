@@ -7,7 +7,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
       {/* Sidebar */}
       <div className="w-full md:w-64 bg-card shadow-sm border-b md:border-b-0 md:border-r border-border shrink-0">
         <div className="p-6 border-b border-border hidden md:block">
-          <h2 className="text-xl font-bold text-card-foreground">Panel de Control</h2>
+          <h2 className="text-xl font-bold text-card-foreground">Mi Cuenta</h2>
         </div>
         <nav className="flex md:flex-col gap-2 p-4 overflow-x-auto md:overflow-visible">
           <Link
@@ -27,8 +27,8 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
         </nav>
       </div>
 
-      {/* Contenido Principal */}
-      <div className="flex-1 p-8 overflow-auto">
+      {/* Main Content */}
+      <div className="flex-1 p-6 md:p-8 overflow-auto">
         {children}
       </div>
     </div>

@@ -29,6 +29,41 @@
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 98%;
 
+    /* ────────────── SEMANTIC / STATUS ────────────── */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+    --success-muted: 142 76% 96%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 15%;
+    --warning-muted: 38 92% 95%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 98%;
+    --info-muted: 217 91% 95%;
+
+    /* ────────────── SEMANTIC COLORS (dark) ────────────── */
+    --color-success: 142 70% 45%;
+    --color-warning: 38 92% 50%;
+    --color-danger: 0 62% 50%;
+    --color-info: 217 91% 60%;
+    --color-purple: 271 81% 65%;
+    --color-gray: 215 16% 63%;
+    --color-purple-light: 271 81% 70%;
+    --color-gray-light: 215 16% 65%;
+    --bg-success: 142 70% 15%;
+    --bg-warning: 38 92% 15%;
+    --bg-danger: 0 62% 15%;
+    --bg-info: 217 91% 15%;
+    --bg-purple: 271 81% 15%;
+    --bg-gray: 215 16% 15%;
+    --bg-purple-dark: 271 81% 25%;
+    --bg-gray-dark: 215 16% 22%;
+    --text-primary: 0 0% 98%;
+    --text-secondary: 0 0% 75%;
+    --text-muted: 0 0% 63%;
+    --bg-surface: 220 20% 10%;
+    --bg-surface-muted: 215 28% 14%;
+    --border-subtle: 215 25% 20%;
+
     /* ────────────── BORDERS / INPUTS ────────────── */
     --border: 215 25% 20%;
     --input: 215 25% 20%;
@@ -59,6 +94,41 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
+
+    /* ────────────── SEMANTIC / STATUS ────────────── */
+    --success: 142 72% 29%;
+    --success-foreground: 0 0% 98%;
+    --success-muted: 142 76% 96%;
+    --warning: 38 92% 45%;
+    --warning-foreground: 0 0% 15%;
+    --warning-muted: 38 92% 95%;
+    --info: 217 91% 55%;
+    --info-foreground: 0 0% 98%;
+    --info-muted: 217 91% 95%;
+
+    /* ────────────── SEMANTIC COLORS (light) ────────────── */
+    --color-success: 142 76% 36%;
+    --color-warning: 38 92% 50%;
+    --color-danger: 0 72% 51%;
+    --color-info: 217 91% 60%;
+    --color-purple: 271 81% 56%;
+    --color-gray: 215 16% 47%;
+    --color-purple-light: 271 81% 70%;
+    --color-gray-light: 215 16% 65%;
+    --bg-success: 142 76% 93%;
+    --bg-warning: 38 92% 90%;
+    --bg-danger: 0 72% 94%;
+    --bg-info: 217 91% 93%;
+    --bg-purple: 271 81% 93%;
+    --bg-gray: 215 16% 91%;
+    --bg-purple-dark: 271 81% 20%;
+    --bg-gray-dark: 215 16% 18%;
+    --text-primary: 220 15% 15%;
+    --text-secondary: 220 10% 35%;
+    --text-muted: 220 10% 45%;
+    --bg-surface: 0 0% 100%;
+    --bg-surface-muted: 210 20% 97%;
+    --border-subtle: 220 13% 91%;
 
     /* ────────────── BORDERS / INPUTS ────────────── */
     --border: 220 13% 91%;
