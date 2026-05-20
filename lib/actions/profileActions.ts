@@ -21,7 +21,7 @@ export async function updateProfile(formData: FormData) {
 
   const updates: Record<string, string | null> = {
     id: user.id,
-    email: user.email,
+    email: user.email ?? null,
     first_name: firstName ?? null,
     last_name: lastName ?? null,
     phone: phone ?? null,
