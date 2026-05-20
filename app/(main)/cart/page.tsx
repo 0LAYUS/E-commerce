@@ -70,20 +70,20 @@ export default function CartPage() {
       <h1 className="text-3xl font-extrabold text-foreground mb-8">Mi Carrito</h1>
 
       {isValidating && (
-        <Alert className="mb-6 bg-[var(--bg-info)] border-[var(--color-info)]/30">
-          <Info className="h-4 w-4 text-[var(--color-info)]" />
-          <AlertTitle className="text-[var(--color-info)]">Validando carrito...</AlertTitle>
-          <AlertDescription className="text-[var(--color-info)]">
+        <Alert className="mb-6 bg-info-muted border-info/30">
+          <Info className="h-4 w-4 text-info" />
+          <AlertTitle className="text-info">Validando carrito...</AlertTitle>
+          <AlertDescription className="text-info">
             Verificando disponibilidad de productos.
           </AlertDescription>
         </Alert>
       )}
 
       {priceChangedItems.length > 0 && (
-        <Alert className="mb-6 bg-[var(--bg-warning)] border-[var(--color-warning)]/30">
-          <TrendingUp className="h-4 w-4 text-[var(--color-warning)]" />
-          <AlertTitle className="text-[var(--color-warning)]">Precios actualizados</AlertTitle>
-          <AlertDescription className="text-[var(--color-warning)]">
+        <Alert className="mb-6 bg-warning-muted border-warning/30">
+          <TrendingUp className="h-4 w-4 text-warning" />
+          <AlertTitle className="text-warning">Precios actualizados</AlertTitle>
+          <AlertDescription className="text-warning">
             <ul className="mt-2 space-y-1">
               {priceChangedItems.map((change, idx) => (
                 <li key={idx} className="flex items-center gap-2">
@@ -91,9 +91,9 @@ export default function CartPage() {
                   <span className="text-sm">
                     {formatPrice(change.oldPrice)}
                     {change.increased ? (
-                      <TrendingUp className="inline w-3 h-3 mx-1 text-[var(--color-danger)]" />
+                      <TrendingUp className="inline w-3 h-3 mx-1 text-destructive" />
                     ) : (
-                      <TrendingDown className="inline w-3 h-3 mx-1 text-[var(--color-success)]" />
+                      <TrendingDown className="inline w-3 h-3 mx-1 text-success" />
                     )}
                     {formatPrice(change.newPrice)}
                   </span>

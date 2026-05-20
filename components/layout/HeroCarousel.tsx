@@ -131,7 +131,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
               >
                 <Link
                   href={`/products/${currentItem.id}`}
-                  className="inline-flex items-center gap-2 bg-white text-gray-900 px-6 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-semibold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                 >
                   Ver producto
                   <ArrowRight className="w-4 h-4" />

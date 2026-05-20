@@ -89,8 +89,8 @@ export default function AdminPOSCashupPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 bg-info-muted rounded-full flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-info" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Ventas en Efectivo</p>
@@ -102,8 +102,8 @@ export default function AdminPOSCashupPage() {
 
         <div className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-muted-foreground" />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Efectivo Físico</p>
@@ -115,16 +115,16 @@ export default function AdminPOSCashupPage() {
 
         <div className="bg-card rounded-xl border p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${!declaredAmount || parseFloat(declaredAmount) >= todayExpected ? 'bg-green-100' : 'bg-red-100'}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${!declaredAmount || parseFloat(declaredAmount) >= todayExpected ? 'bg-success-muted' : 'bg-danger-muted'}`}>
               {(parseFloat(declaredAmount) || 0) >= todayExpected ? (
-                <CheckCircle className="w-5 h-5 text-green-600" />
+                <CheckCircle className="w-5 h-5 text-success" />
               ) : (
-                <AlertCircle className="w-5 h-5 text-red-600" />
+                <AlertCircle className="w-5 h-5 text-danger" />
               )}
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Diferencia</p>
-              <p className={`text-xl font-bold ${!declaredAmount ? 'text-muted-foreground' : parseFloat(declaredAmount) >= todayExpected ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-xl font-bold ${!declaredAmount ? 'text-muted-foreground' : parseFloat(declaredAmount) >= todayExpected ? 'text-success' : 'text-danger'}`}>
                 {declaredAmount ? formatPrice(parseFloat(declaredAmount) - todayExpected) : "—"}
               </p>
             </div>
@@ -138,12 +138,12 @@ export default function AdminPOSCashupPage() {
 
         {result ? (
           <div className="space-y-4">
-            <div className={`p-4 rounded-xl ${result.difference === 0 ? "bg-green-50" : result.difference > 0 ? "bg-blue-50" : "bg-red-50"}`}>
+            <div className={`p-4 rounded-xl ${result.difference === 0 ? "bg-success-muted" : result.difference > 0 ? "bg-info-muted" : "bg-danger-muted"}`}>
               <div className="flex items-center gap-3 mb-2">
                 {result.difference === 0 ? (
-                  <CheckCircle className="w-6 h-6 text-green-600" />
+                  <CheckCircle className="w-6 h-6 text-success" />
                 ) : (
-                  <AlertCircle className="w-6 h-6 text-orange-600" />
+                  <AlertCircle className="w-6 h-6 text-warning" />
                 )}
                 <p className="font-bold text-lg">
                   {result.difference === 0 ? "Caja cuadrada" : result.difference > 0 ? "Sobrante" : "Faltante"}

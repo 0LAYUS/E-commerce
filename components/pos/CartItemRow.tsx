@@ -31,7 +31,7 @@ export function CartItemRow({ item, onUpdateQuantity, onRemoveItem }: CartItemRo
               </span>
             )}
             {item.bogo_applied && (
-              <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs px-1 rounded">
+              <span className="ml-2 bg-warning-muted text-warning text-xs px-1 rounded">
                 2x1
               </span>
             )}

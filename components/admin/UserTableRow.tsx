@@ -43,8 +43,8 @@ export default function UserTableRow({
           className={cn(
             "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
             user.role === "administrador"
-              ? "bg-[var(--bg-purple)] text-[var(--color-purple)] dark:bg-[var(--bg-purple-dark)] dark:text-[var(--color-purple-light)]"
-              : "bg-[var(--bg-gray)] text-[var(--color-gray)] dark:bg-[var(--bg-gray-dark)] dark:text-[var(--color-gray-light)]"
+              ? "bg-purple-muted text-purple"
+              : "bg-muted text-muted-foreground"
           )}
         >
           {user.role === "administrador" ? <Shield className="w-3 h-3" /> : null}

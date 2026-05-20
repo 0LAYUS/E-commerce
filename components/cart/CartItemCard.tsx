@@ -83,7 +83,7 @@ export default function CartItemCard({
               <span className="text-lg font-bold text-muted-foreground line-through">
                 {formatPrice(statusInfo?.original_price || 0)}
               </span>
-              <span className={`text-lg font-bold ${statusInfo?.price_increased ? "text-[var(--color-destructive)]" : "text-[var(--color-success)]"}`}>
+              <span className={`text-lg font-bold ${statusInfo?.price_increased ? "text-destructive" : "text-success"}`}>
                 {formatPrice(statusInfo?.current_price || 0)}
               </span>
             </>
@@ -97,7 +97,7 @@ export default function CartItemCard({
             </span>
           )}
           {isPriceChanged && statusInfo?.available_stock && (
-            <span className="text-sm text-[var(--color-warning)] bg-[var(--bg-warning)] px-2 py-0.5 rounded">
+            <span className="text-sm text-warning bg-warning-muted px-2 py-0.5 rounded">
               Stock: {statusInfo.available_stock}
             </span>
           )}

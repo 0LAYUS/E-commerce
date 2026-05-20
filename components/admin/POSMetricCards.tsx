@@ -47,10 +47,10 @@ export default function POSMetricCards({ summary }: POSMetricCardsProps) {
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Efectivo Recibido
           </CardTitle>
-          <DollarSign className="w-4 h-4 text-[var(--color-success)]" />
+          <DollarSign className="w-4 h-4 text-success" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-[var(--color-success)]">
+          <div className="text-2xl font-bold text-success">
             {formatPrice(summary?.efectivo_cash_in || 0)}
           </div>
           <p className="text-xs text-muted-foreground">

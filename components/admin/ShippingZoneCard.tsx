@@ -51,7 +51,7 @@ export default function ShippingZoneCard({ zone, onEdit, onDelete }: ShippingZon
         <span
           className={`text-xs font-semibold px-2 py-1 rounded ${
             zone.active
-              ? "bg-[var(--bg-success)] text-[var(--color-success)]"
+              ? "bg-success-muted text-success"
               : "bg-muted text-muted-foreground"
           }`}
         >

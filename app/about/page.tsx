@@ -91,8 +91,8 @@ export default function AboutPage() {
         <h2 className="text-2xl font-extrabold text-card-foreground mb-6 text-center">Nuestros Valores</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/50 border border-border">
-            <div className="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center mb-4 border border-gray-700">
-              <ShieldCheck className="w-7 h-7 text-white" weight="fill" />
+            <div className="w-14 h-14 bg-secondary rounded-full flex items-center justify-center mb-4 border border-border">
+              <ShieldCheck className="w-7 h-7 text-primary-foreground" weight="fill" />
             </div>
             <h3 className="text-lg font-semibold text-card-foreground mb-2">Confianza y Seguridad</h3>
             <p className="text-sm text-muted-foreground">
@@ -100,8 +100,8 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/50 border border-border">
-            <div className="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center mb-4 border border-gray-700">
-              <TruckIcon className="w-7 h-7 text-white" weight="fill" />
+            <div className="w-14 h-14 bg-secondary rounded-full flex items-center justify-center mb-4 border border-border">
+              <TruckIcon className="w-7 h-7 text-primary-foreground" weight="fill" />
             </div>
             <h3 className="text-lg font-semibold text-card-foreground mb-2">Envío Rápido</h3>
             <p className="text-sm text-muted-foreground">
@@ -109,8 +109,8 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="flex flex-col items-center text-center p-4 rounded-xl bg-secondary/50 border border-border">
-            <div className="w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center mb-4 border border-gray-700">
-              <Trophy className="w-7 h-7 text-white" weight="fill" />
+            <div className="w-14 h-14 bg-secondary rounded-full flex items-center justify-center mb-4 border border-border">
+              <Trophy className="w-7 h-7 text-primary-foreground" weight="fill" />
             </div>
             <h3 className="text-lg font-semibold text-card-foreground mb-2">Calidad Garantizada</h3>
             <p className="text-sm text-muted-foreground">
@@ -181,8 +181,8 @@ export default function AboutPage() {
       >
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center border border-gray-700">
-              <MapPin className="w-8 h-8 text-white" weight="fill" />
+            <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center border border-border">
+              <MapPin className="w-8 h-8 text-primary-foreground" weight="fill" />
             </div>
             <div>
               <h3 className="font-extrabold text-card-foreground">Ubicación</h3>
@@ -190,8 +190,8 @@ export default function AboutPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center border border-gray-700">
-              <Calendar className="w-8 h-8 text-white" weight="fill" />
+            <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center border border-border">
+              <Calendar className="w-8 h-8 text-primary-foreground" weight="fill" />
             </div>
             <div>
               <h3 className="font-extrabold text-card-foreground">Horario</h3>
@@ -215,7 +215,7 @@ export default function AboutPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8 + i * 0.1 }}
           >
-            <item.icon className="w-8 h-8 text-gray-400 mx-auto mb-2" weight="fill" />
+            <item.icon className="w-8 h-8 text-muted-foreground mx-auto mb-2" weight="fill" />
             <p className="text-3xl font-extrabold text-card-foreground">{item.stat}</p>
             <p className="text-sm text-muted-foreground">{item.label}</p>
           </motion.div>
@@ -225,7 +225,7 @@ export default function AboutPage() {
       <div className="flex justify-center">
         <Link
           href="/"
-          className="bg-gray-800 text-white hover:bg-gray-700 px-6 py-3 rounded-xl font-medium transition-all border border-gray-700 shadow-lg"
+          className="bg-secondary text-primary-foreground hover:bg-accent px-6 py-3 rounded-xl font-medium transition-all border border-border shadow-lg"
         >
           Ver Productos
         </Link>
@@ -235,10 +235,10 @@ export default function AboutPage() {
         href="https://wa.me/573001234567"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 w-14 h-14 bg-green-600 hover:bg-green-500 rounded-full flex items-center justify-center shadow-lg transition-all z-50"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-success hover:bg-success/90 rounded-full flex items-center justify-center shadow-lg transition-all z-50"
         aria-label="Contactar por WhatsApp"
       >
-        <ChatCircle className="w-7 h-7 text-white" weight="fill" />
+        <ChatCircle className="w-7 h-7 text-success-foreground" weight="fill" />
       </a>
     </div>
   )

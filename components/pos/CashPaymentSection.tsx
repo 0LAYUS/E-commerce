@@ -81,9 +81,9 @@ export function CashPaymentSection({ total, amountReceived, onChange }: CashPaym
       </div>
 
       {parsedAmount >= total && (
-        <div className="text-center p-4 bg-[var(--bg-success)] rounded-xl">
+        <div className="text-center p-4 bg-success-muted rounded-xl">
           <p className="text-sm text-muted-foreground">Vuelto</p>
-          <p className="text-3xl font-extrabold text-[var(--color-success)]">{formatPrice(changeAmount)}</p>
+          <p className="text-3xl font-extrabold text-success">{formatPrice(changeAmount)}</p>
         </div>
       )}
     </div>
@@ -134,11 +134,11 @@ export function SplitPaymentSection({ total, splitPayments, onChange }: SplitPay
       </div>
 
       {totalSplit === 0 ? null : (
-        <div className={`text-center p-3 rounded-xl ${diff >= 0 ? "bg-[var(--bg-success)]" : "bg-[var(--bg-danger)]"}`}>
+        <div className={`text-center p-3 rounded-xl ${diff >= 0 ? "bg-success-muted" : "bg-danger-muted"}`}>
           <p className="text-sm text-muted-foreground">
             {diff >= 0 ? "Exceso" : "Faltante"}
           </p>
-          <p className={`text-xl font-extrabold ${diff >= 0 ? "text-[var(--color-success)]" : "text-[var(--color-danger)]"}`}>
+          <p className={`text-xl font-extrabold ${diff >= 0 ? "text-success" : "text-danger"}`}>
             {formatPrice(Math.abs(diff))}
           </p>
         </div>

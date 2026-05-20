@@ -50,7 +50,7 @@ export default function UserRoleMenu({
                 disabled={isUpdating || user.role === "administrador"}
                 className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted/50 transition disabled:opacity-50 flex items-center gap-2"
               >
-                <Shield className="w-4 h-4 text-[var(--color-purple)]" />
+                <Shield className="w-4 h-4 text-purple" />
                 Hacer administrador
               </button>
               <button
