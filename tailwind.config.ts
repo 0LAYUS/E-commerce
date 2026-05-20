@@ -41,6 +41,33 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        // Semantic status colors
+        success: "hsl(var(--color-success))",
+        warning: "hsl(var(--color-warning))",
+        info: "hsl(var(--color-info))",
+        danger: "hsl(var(--color-danger))",
+        // Custom colors
+        purple: {
+          DEFAULT: "hsl(var(--color-purple))",
+          light: "hsl(var(--color-purple-light))",
+          dark: "hsl(var(--bg-purple-dark))",
+        },
+        gray: {
+          DEFAULT: "hsl(var(--color-gray))",
+          light: "hsl(var(--color-gray-light))",
+          dark: "hsl(var(--bg-gray-dark))",
+        },
+        // Surface tokens
+        text: {
+          primary: "hsl(var(--text-primary))",
+          secondary: "hsl(var(--text-secondary))",
+          muted: "hsl(var(--text-muted))",
+        },
+        surface: {
+          DEFAULT: "hsl(var(--bg-surface))",
+          muted: "hsl(var(--bg-surface-muted))",
+        },
+        borderSubtle: "hsl(var(--border-subtle))",
       },
       borderRadius: {
         lg: "var(--radius)",

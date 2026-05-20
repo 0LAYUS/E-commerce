@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider as NextThemeProvider } from "next-themes";
 import { Suspense } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { CartProvider } from "@/components/providers/CartProvider";
+import { ThemeVariables } from "@/components/theme-provider";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -53,18 +54,20 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${geistSans.className} antialiased min-h-screen bg-background text-foreground`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-white" />}>
-            <CartProvider>
-              {children}
-            </CartProvider>
-          </Suspense>
-        </ThemeProvider>
+        <ThemeVariables>
+          <NextThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-white" />}>
+              <CartProvider>
+                {children}
+              </CartProvider>
+            </Suspense>
+          </NextThemeProvider>
+        </ThemeVariables>
       </body>
     </html>
   );

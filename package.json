@@ -1,6 +1,8 @@
 {
   "private": true,
   "scripts": {
+    "generate:theme": "npx tsx scripts/generate-theme.mjs",
+    "prebuild": "npm run generate:theme",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
