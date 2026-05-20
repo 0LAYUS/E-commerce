@@ -1,6 +1,7 @@
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";
+import noHardcodedColors from "./eslint/no-hardcoded-colors.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,6 +14,19 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     ignores: [".next/**", "node_modules/**", "*.config.js"],
+  },
+  // Custom rule: prevent hardcoded Tailwind color classes (warn during migration)
+  {
+    plugins: {
+      custom: {
+        rules: {
+          "no-hardcoded-colors": noHardcodedColors,
+        },
+      },
+    },
+    rules: {
+      "custom/no-hardcoded-colors": "warn",
+    },
   },
 ];
 
