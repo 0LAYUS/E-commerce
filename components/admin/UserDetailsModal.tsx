@@ -62,12 +62,12 @@ export function UserDetailsModal({ userId, onClose }: UserDetailsModalProps) {
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      APPROVED: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-      PENDING: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-      DECLINED: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-      ERROR: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+      APPROVED: "bg-success-muted text-success dark:bg-success/20 dark:text-success",
+      PENDING: "bg-warning-muted text-warning dark:bg-warning/20 dark:text-warning",
+      DECLINED: "bg-danger-muted text-danger dark:bg-danger/20 dark:text-danger",
+      ERROR: "bg-danger-muted text-danger dark:bg-danger/20 dark:text-danger",
     }
-    const className = styles[status as keyof typeof styles] ?? "bg-gray-100 text-gray-700"
+    const className = styles[status as keyof typeof styles] ?? "bg-muted text-muted-foreground"
     return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${className}`}>{status}</span>
   }
 

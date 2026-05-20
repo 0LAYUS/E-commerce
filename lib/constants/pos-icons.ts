@@ -3,8 +3,8 @@ import type { PaymentMethod } from "@/types/pos.types"
 import type { ComponentType, SVGProps } from "react"
 
 export const PAYMENT_METHOD_ICONS: Record<PaymentMethod, { icon: ComponentType<SVGProps<SVGSVGElement>>; colorClass: string; bgClass: string }> = {
-  efectivo: { icon: DollarSign, colorClass: "text-[var(--color-success)]", bgClass: "bg-[var(--bg-success)]" },
-  tarjeta: { icon: CreditCard, colorClass: "text-[var(--color-info)]", bgClass: "bg-[var(--bg-info)]" },
-  transferencia: { icon: Smartphone, colorClass: "text-[var(--color-purple)]", bgClass: "bg-[var(--bg-purple)]" },
-  mixto: { icon: TrendingUp, colorClass: "text-[var(--color-warning)]", bgClass: "bg-[var(--bg-warning)]" },
+  efectivo: { icon: DollarSign, colorClass: "text-success", bgClass: "bg-success-muted" },
+  tarjeta: { icon: CreditCard, colorClass: "text-info", bgClass: "bg-info-muted" },
+  transferencia: { icon: Smartphone, colorClass: "text-muted-foreground", bgClass: "bg-muted" },
+  mixto: { icon: TrendingUp, colorClass: "text-warning", bgClass: "bg-warning-muted" },
 }

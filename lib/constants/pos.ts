@@ -4,26 +4,26 @@ export const PAYMENT_METHODS = [
   {
     key: "efectivo" as PaymentMethod,
     label: "Efectivo",
-    iconColor: "text-green-600",
-    iconBg: "bg-green-100",
+    iconColor: "text-success",
+    iconBg: "bg-success-muted",
   },
   {
     key: "tarjeta" as PaymentMethod,
     label: "Tarjeta",
-    iconColor: "text-blue-600",
-    iconBg: "bg-blue-100",
+    iconColor: "text-info",
+    iconBg: "bg-info-muted",
   },
   {
     key: "transferencia" as PaymentMethod,
     label: "Transferencia",
-    iconColor: "text-purple-600",
-    iconBg: "bg-purple-100",
+    iconColor: "text-muted-foreground",
+    iconBg: "bg-muted",
   },
   {
     key: "mixto" as PaymentMethod,
     label: "Mixto",
-    iconColor: "text-orange-600",
-    iconBg: "bg-orange-100",
+    iconColor: "text-warning",
+    iconBg: "bg-warning-muted",
   },
 ]
 
