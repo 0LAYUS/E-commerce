@@ -23,7 +23,7 @@ function LoginForm() {
       <div className="text-center">
         <Link href="/" className="inline-flex items-center gap-2 mb-6">
           <motion.div
-            className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center shadow-lg border border-gray-700"
+            className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center shadow-lg border border-border"
             whileHover={{ rotate: [0, -10, 10, 0] }}
             transition={{ duration: 0.5 }}
           >
@@ -63,7 +63,7 @@ function LoginForm() {
               type="email"
               autoComplete="email"
               required
-              className="w-full rounded-xl border border-input bg-background px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600 transition-colors"
+              className="w-full rounded-xl border border-input bg-background px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
               placeholder="tu@correo.com"
             />
           </div>
@@ -80,7 +80,7 @@ function LoginForm() {
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               required
-              className="w-full rounded-xl border border-input bg-background px-4 py-3 pr-12 text-card-foreground placeholder:text-muted-foreground focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600 transition-colors"
+              className="w-full rounded-xl border border-input bg-background px-4 py-3 pr-12 text-card-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
             />
             <button
               type="button"
@@ -97,7 +97,7 @@ function LoginForm() {
           <div className="flex justify-end mt-2">
             <Link
               href="/forgot-password"
-              className="text-sm text-gray-500 hover:text-gray-900 transition-colors hover:underline"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors hover:underline"
             >
               ¿Olvidaste tu contraseña?
             </Link>
@@ -107,7 +107,7 @@ function LoginForm() {
         <div>
           <motion.button
             type="submit"
-            className="w-full rounded-xl bg-gray-800 px-4 py-3 text-sm font-bold text-white shadow-lg hover:bg-gray-700 transition-all border border-gray-700"
+            className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-lg hover:bg-primary/90 transition-all border border-border"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -120,7 +120,7 @@ function LoginForm() {
         ¿No tienes una cuenta?{" "}
         <Link
           href="/register"
-          className="font-medium text-foreground hover:text-gray-400 transition-colors"
+          className="font-medium text-foreground hover:text-primary transition-colors"
         >
           Regístrate aquí
         </Link>
@@ -133,8 +133,8 @@ export default function LoginPage() {
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-800/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-700/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-muted/10 rounded-full blur-3xl" />
       </div>
       <Suspense
         fallback={

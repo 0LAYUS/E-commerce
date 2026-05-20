@@ -24,7 +24,7 @@ function RegisterForm() {
       <div className="text-center">
         <Link href="/" className="inline-flex items-center gap-2 mb-6">
           <motion.div
-            className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center shadow-lg border border-gray-700"
+            className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center shadow-lg border border-border"
             whileHover={{ rotate: [0, -10, 10, 0] }}
             transition={{ duration: 0.5 }}
           >
@@ -71,7 +71,7 @@ function RegisterForm() {
                 name="first_name"
                 type="text"
                 required
-                className="w-full rounded-xl border border-input bg-background px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600 transition-colors"
+                className="w-full rounded-xl border border-input bg-background px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
                 placeholder="Tu nombre"
               />
             </div>
@@ -84,7 +84,7 @@ function RegisterForm() {
                 name="last_name"
                 type="text"
                 required
-                className="w-full rounded-xl border border-input bg-background px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600 transition-colors"
+                className="w-full rounded-xl border border-input bg-background px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
                 placeholder="Tu apellido"
               />
             </div>
@@ -99,7 +99,7 @@ function RegisterForm() {
               type="email"
               autoComplete="email"
               required
-              className="w-full rounded-xl border border-input bg-background px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600 transition-colors"
+              className="w-full rounded-xl border border-input bg-background px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
               placeholder="tu@correo.com"
             />
           </div>
@@ -113,7 +113,7 @@ function RegisterForm() {
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
               required
-              className="w-full rounded-xl border border-input bg-background px-4 py-3 pr-12 text-card-foreground placeholder:text-muted-foreground focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600 transition-colors"
+              className="w-full rounded-xl border border-input bg-background px-4 py-3 pr-12 text-card-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
             />
             <button
               type="button"
@@ -137,7 +137,7 @@ function RegisterForm() {
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
               required
-              className="w-full rounded-xl border border-input bg-background px-4 py-3 pr-12 text-card-foreground placeholder:text-muted-foreground focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600 transition-colors"
+              className="w-full rounded-xl border border-input bg-background px-4 py-3 pr-12 text-card-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
             />
           </div>
         </div>
@@ -145,7 +145,7 @@ function RegisterForm() {
         <div>
           <motion.button
             type="submit"
-            className="w-full rounded-xl bg-gray-800 px-4 py-3 text-sm font-bold text-white shadow-lg hover:bg-gray-700 transition-all border border-gray-700"
+            className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-lg hover:bg-primary/90 transition-all border border-border"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -156,7 +156,7 @@ function RegisterForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         ¿Ya tienes cuenta?{" "}
-        <Link href="/login" className="font-medium text-foreground hover:text-gray-400 transition-colors">
+          <Link href="/login" className="font-medium text-foreground hover:text-primary transition-colors">
           Inicia sesión aquí
         </Link>
       </p>
@@ -168,8 +168,8 @@ export default function RegisterPage() {
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-800/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-700/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-muted/10 rounded-full blur-3xl" />
       </div>
       <Suspense fallback={<div className="w-full max-w-md p-10 text-center text-muted-foreground">Cargando...</div>}>
         <RegisterForm />
