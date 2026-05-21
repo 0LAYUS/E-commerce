@@ -46,19 +46,19 @@
   .light {
     --background: 113 40% 25%;
     --foreground: 43 37% 96%;
-    --card: 43 37% 96%;
-    --card-foreground: 113 40% 25%;
+    --card: 113 40% 25%;
+    --card-foreground: 66 70% 61%;
     --muted: 144 35% 75%;
     --muted-foreground: 112 22% 35%;
     --border: 144 35% 75%;
-    --input: 144 35% 75%;
+    --input: 43 37% 96%;
     --ring: 66 70% 61%;
-    --primary: 113 40% 25%;
-    --primary-foreground: 43 37% 96%;
-    --secondary: 177 41% 91%;
+    --primary: 66 70% 61%;
+    --primary-foreground: 113 40% 25%;
+    --secondary: 66 70% 61%;
     --secondary-foreground: 113 40% 25%;
-    --accent: 113 40% 25%;
-    --accent-foreground: 43 37% 96%;
+    --accent: 144 35% 75%;
+    --accent-foreground: 113 40% 25%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 43 37% 96%;
     --color-success: 66 70% 61%;
