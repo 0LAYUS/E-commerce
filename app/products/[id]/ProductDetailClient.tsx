@@ -159,7 +159,7 @@ export default function ProductDetailClient({
               >
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm text-muted-foreground">Stock disponible</span>
-                  <span className={`text-xl font-bold ${product.stock > 0 ? "text-green-500" : "text-destructive"}`}>
+                  <span className={`text-xl font-bold ${product.stock > 0 ? "text-success" : "text-destructive"}`}>
                     {formatStockLabel(product.stock)}
                   </span>
                 </div>

@@ -212,7 +212,7 @@ export default function ProductVariantsEditor({
             className={`w-12 h-6 rounded-full transition-colors relative ${hasVariants ? "bg-primary" : "bg-muted"}`}
           >
             <div
-              className={`w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-transform ${
+              className={`w-5 h-5 rounded-full bg-primary-foreground shadow absolute top-0.5 transition-transform ${
                 hasVariants ? "translate-x-6" : "translate-x-0.5"
               }`}
             />

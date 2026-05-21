@@ -101,7 +101,7 @@ export default function CartPOS({
                 <span>{formatPrice(subtotal)}</span>
               </div>
               {discount_amount > 0 && (
-                <div className="flex justify-between text-green-600">
+                <div className="flex justify-between text-success">
                   <span>Descuento</span>
                   <span>-{formatPrice(discount_amount)}</span>
                 </div>

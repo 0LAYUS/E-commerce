@@ -17,7 +17,7 @@ export default function ToggleSwitch({ checked, onChange, disabled = false }: To
       } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
     >
       <div
-        className={`w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-transform ${
+        className={`w-5 h-5 rounded-full bg-primary-foreground shadow absolute top-0.5 transition-transform ${
           checked ? "translate-x-6" : "translate-x-0.5"
         }`}
       />

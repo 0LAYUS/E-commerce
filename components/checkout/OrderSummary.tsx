@@ -35,7 +35,7 @@ export function OrderSummary({ items, total, shippingCost, selectedZone, itemSta
                 {item.name} x {item.quantity}
                 {item.sku_code && <span className="text-xs ml-2 text-muted-foreground/70">({item.sku_code})</span>}
                 {hasPriceChange && (
-                  <span className="ml-2 text-amber-600 text-xs">
+                  <span className="ml-2 text-warning text-xs">
                     {status?.price_increased ? "▲" : "▼"} precio
                   </span>
                 )}

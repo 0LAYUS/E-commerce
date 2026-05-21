@@ -198,7 +198,7 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(!mobileOpen)}
               >
                 {mobileOpen ? (
-                  <X className="w-6 h-6 text-text-white" weight="bold" />
+                  <X className="w-6 h-6 text-card-foreground" weight="bold" />
                 ) : (
                   <List className="w-6 h-6" weight="bold" />
                 )}

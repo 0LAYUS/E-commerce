@@ -17,7 +17,7 @@ export default function ProductSearch({
   return (
     <div className="relative">
       <MagnifyingGlass
-        className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-800"
+        className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"
         weight="bold"
       />
       <Input

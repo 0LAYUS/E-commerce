@@ -203,7 +203,7 @@ export default function AdminPOSOffersPage() {
                   }`}
                 >
                   <div
-                    className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition ${
+                    className={`w-5 h-5 bg-primary-foreground rounded-full shadow absolute top-0.5 transition ${
                       offer.active ? "right-0.5" : "left-0.5"
                     }`}
                   />

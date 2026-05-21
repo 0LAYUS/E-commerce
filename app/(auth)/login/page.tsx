@@ -27,7 +27,7 @@ function LoginForm() {
             whileHover={{ rotate: [0, -10, 10, 0] }}
             transition={{ duration: 0.5 }}
           >
-            <ShoppingBag className="w-6 h-6 text-white" weight="fill" />
+            <ShoppingBag className="w-6 h-6 text-secondary-foreground" weight="fill" />
           </motion.div>
         </Link>
         <h2 className="text-3xl font-bold tracking-tight text-card-foreground">

@@ -174,7 +174,7 @@ export default function ProductVariantSelector({
             <span className="text-sm text-muted-foreground mb-1 block">
               {selectedSku ? "Stock" : "Stock disponible"}
             </span>
-            <span className={`text-xl font-bold ${currentStock > 0 || !selectedSku ? "text-green-600" : "text-destructive"}`}>
+            <span className={`text-xl font-bold ${currentStock > 0 || !selectedSku ? "text-success" : "text-destructive"}`}>
               {selectedSku ? formatStockLabel(currentStock) : formatStockLabel(totalStock)}
             </span>
           </div>

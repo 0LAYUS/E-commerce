@@ -26,7 +26,7 @@ export function CartItemRow({ item, onUpdateQuantity, onRemoveItem }: CartItemRo
           <p className="text-xs text-muted-foreground mt-1">
             {formatPrice(item.unit_price)} c/u
             {item.discount_pct > 0 && (
-              <span className="ml-2 text-green-600 font-medium">
+              <span className="ml-2 text-success font-medium">
                 -{item.discount_pct}%
               </span>
             )}

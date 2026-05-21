@@ -74,7 +74,7 @@ export function UserDetailsModal({ userId, onClose }: UserDetailsModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-foreground/50" onClick={onClose} />
 
       {/* Modal */}
       <div className="relative w-full max-w-2xl max-h-[90vh] mx-4 bg-card rounded-xl border shadow-lg overflow-hidden flex flex-col">

@@ -142,16 +142,16 @@ export default function ReceiptModal({ isOpen, onClose, sale, onNewSale }: Recei
 
         <div className="p-6 space-y-6">
           <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-success-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-3xl">✓</span>
             </div>
-            <p className="text-3xl font-extrabold text-green-600">{formatPrice(sale.total)}</p>
+            <p className="text-3xl font-extrabold text-success">{formatPrice(sale.total)}</p>
             <p className="text-muted-foreground mt-1">Venta procesada exitosamente</p>
           </div>
 
           <div
             ref={receiptRef}
-            className="bg-white text-black p-4 rounded-lg font-mono text-sm max-h-64 overflow-auto"
+            className="bg-surface text-foreground p-4 rounded-lg font-mono text-sm max-h-64 overflow-auto"
           >
             <div className="text-center bold text-base mb-2">RECIBO DE VENTA</div>
             <div className="text-center text-xs mb-2">{formatDate(sale.created_at)}</div>
@@ -167,7 +167,7 @@ export default function ReceiptModal({ isOpen, onClose, sale, onNewSale }: Recei
                   <span>{formatPrice(item.subtotal)}</span>
                 </div>
                 {item.discount_pct > 0 && (
-                  <div className="text-green-600 text-xs">
+                  <div className="text-success text-xs">
                     Descuento {item.discount_pct}% aplicado
                   </div>
                 )}
@@ -180,7 +180,7 @@ export default function ReceiptModal({ isOpen, onClose, sale, onNewSale }: Recei
               <span>{formatPrice(sale.subtotal)}</span>
             </div>
             {sale.discount_amount > 0 && (
-              <div className="flex justify-between text-green-600">
+              <div className="flex justify-between text-success">
                 <span>Descuento</span>
                 <span>-{formatPrice(sale.discount_amount)}</span>
               </div>

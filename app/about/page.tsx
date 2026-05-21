@@ -37,9 +37,9 @@ export default function AboutPage() {
             unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
-            <div className="p-6 text-white">
+            <div className="p-6 text-primary-foreground">
               <h2 className="text-2xl font-extrabold">Nuestra Historia</h2>
-              <p className="text-white/80 mt-1 flex items-center gap-2">
+              <p className="text-primary-foreground/80 mt-1 flex items-center gap-2">
                 <Storefront className="w-4 h-4" />
                 Desde 2020 conectando a Colombia
               </p>
