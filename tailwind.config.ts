@@ -47,16 +47,7 @@ export default {
         info: "hsl(var(--color-info))",
         danger: "hsl(var(--color-danger))",
         // Custom colors
-        purple: {
-          DEFAULT: "hsl(var(--color-purple))",
-          light: "hsl(var(--color-purple-light))",
-          dark: "hsl(var(--bg-purple-dark))",
-        },
-        gray: {
-          DEFAULT: "hsl(var(--color-gray))",
-          light: "hsl(var(--color-gray-light))",
-          dark: "hsl(var(--bg-gray-dark))",
-        },
+        purple: "hsl(var(--color-purple))",
         // Surface tokens
         text: {
           primary: "hsl(var(--text-primary))",

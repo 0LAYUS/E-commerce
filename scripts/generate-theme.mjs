@@ -4,7 +4,7 @@
  * Run: npm run generate:theme
  */
 
-import { readFileSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { themeConfig, lightTheme } from "../lib/theme.config.ts";
@@ -59,12 +59,14 @@ function flatten(obj, prefix = "") {
 
 function configKeyToCSSVar(key) {
   const mapping = {
+    // Brand — botones, links, acentos
     "brand.primary": "--primary",
     "brand.primaryForeground": "--primary-foreground",
     "brand.secondary": "--secondary",
     "brand.secondaryForeground": "--secondary-foreground",
     "brand.accent": "--accent",
     "brand.accentForeground": "--accent-foreground",
+    // Surfaces — fondos, tarjetas, bordes
     "surfaces.background": "--background",
     "surfaces.foreground": "--foreground",
     "surfaces.card": "--card",
@@ -74,6 +76,7 @@ function configKeyToCSSVar(key) {
     "surfaces.border": "--border",
     "surfaces.input": "--input",
     "surfaces.ring": "--ring",
+    // Semantic — status colors (éxito, advertencia, info, peligro)
     "semantic.destructive": "--destructive",
     "semantic.destructiveForeground": "--destructive-foreground",
     "semantic.success": "--color-success",
@@ -85,18 +88,11 @@ function configKeyToCSSVar(key) {
     "semantic.info": "--color-info",
     "semantic.infoForeground": "--info-foreground",
     "semantic.infoMuted": "--bg-info",
+    "semantic.danger": "--color-danger",
+    "semantic.dangerForeground": "--danger-foreground",
+    "semantic.dangerMuted": "--bg-danger",
+    // Custom — colores extra (purple para método transferencia en POS)
     "custom.purple": "--color-purple",
-    "custom.purpleLight": "--color-purple-light",
-    "custom.purpleDark": "--bg-purple-dark",
-    "custom.gray": "--color-gray",
-    "custom.grayLight": "--color-gray-light",
-    "custom.grayDark": "--bg-gray-dark",
-    "typography.textPrimary": "--text-primary",
-    "typography.textSecondary": "--text-secondary",
-    "typography.textMuted": "--text-muted",
-    "typography.bgSurface": "--bg-surface",
-    "typography.bgSurfaceMuted": "--bg-surface-muted",
-    "typography.borderSubtle": "--border-subtle",
   };
   return mapping[key] || null;
 }

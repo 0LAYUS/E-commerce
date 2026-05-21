@@ -4,20 +4,25 @@
  * Edit this file to change your store's appearance.
  * All colors use HEX format (e.g., "#2a2a2a" or "#fff").
  *
+ * Palette:
+ *   #2D5A27 — Verde oscuro (fondo principal, brand, hover botones)
+ *   #A8D5BA — Verde menta (bordes, inputs, acentos sutiles)
+ *   #E0F2F1 — Azul menta claro (fondos sutiles, badges)
+ *   #F9F7F2 — Crema (texto principal, cards en dark mode)
+ *   #D4E157 — Lima (success, highlights, ring)
+ *
  * Structure:
  * - brand: Main brand colors (buttons, links, accents)
  * - surfaces: Page backgrounds, cards, borders
- * - semantic: Status colors (success, warning, info, destructive)
- * - custom: Extra colors for special features (purple, gray variants)
- * - typography: Text and surface-specific tokens
+ * - semantic: Status colors (success, warning, info, destructive, danger)
+ * - custom: Extra colors for special features
  * - borderRadius: Global border radius
  *
  * lightTheme overrides can be added for light mode.
+ * Values not overridden in lightTheme fall back to dark theme.
+ *
+ * Theme detection: automatic via next-themes (enableSystem in app/layout.tsx)
  */
-
-export interface ThemeSection {
-  [key: string]: string;
-}
 
 export interface ThemeConfig {
   brand: {
@@ -51,85 +56,119 @@ export interface ThemeConfig {
     info: string;
     infoForeground: string;
     infoMuted: string;
+    danger: string;
+    dangerForeground: string;
+    dangerMuted: string;
   };
   custom: {
     purple: string;
-    purpleLight: string;
-    purpleDark: string;
-    gray: string;
-    grayLight: string;
-    grayDark: string;
-  };
-  typography: {
-    textPrimary: string;
-    textSecondary: string;
-    textMuted: string;
-    bgSurface: string;
-    bgSurfaceMuted: string;
-    borderSubtle: string;
   };
   borderRadius: string;
 }
 
 // ─────────────────────────────────────────────
 // DARK THEME (default)
+// Fondo: verde oscuro #2D5A27
 // ─────────────────────────────────────────────
 
 export const themeConfig: ThemeConfig = {
+  // ── BRAND ──────────────────────────────────
   brand: {
-    primary: "#572364",
-    primaryForeground: "#ffffff",
-    secondary: "#374151",
-    secondaryForeground: "#f9fafb",
-    accent: "#404040",
-    accentForeground: "#ffffff",
+    // bg-primary, text-primary, border-primary, ring-primary
+    // → Botones principales, CTA, links de navegación
+    primary: "#2D5A27",
+
+    // text-primary-foreground, bg-primary-foreground
+    // → Texto sobre fondos primarios (botones, iconos, toggles)
+    primaryForeground: "#F9F7F2",
+
+    // bg-secondary, text-secondary
+    // → Fondos secundarios: badges, icon containers, table headers
+    secondary: "#A8D5BA",
+
+    // text-secondary-foreground
+    // → Texto sobre fondos secundarios
+    secondaryForeground: "#2D5A27",
+
+    // bg-accent — VERDE OSCURO (hover de botones, mismo que background)
+    // → Texto crema sobre verde oscuro = legible
+    accent: "#2D5A27",
+
+    // text-accent-foreground — CREMA (texto sobre hover verde oscuro)
+    accentForeground: "#F9F7F2",
   },
+
+  // ── SURFACES ───────────────────────────────
   surfaces: {
-    background: "#572364",
-    foreground: "#f9fafb",
-    card: "#1a1d27",
-    cardForeground: "#f9fafb",
-    muted: "#374151",
-    mutedForeground: "#a1a1aa",
-    border: "#3f3f46",
-    input: "#3f3f46",
-    ring: "#2a2a2a",
+    // bg-background — VERDE OSCURO (fondo de toda la página)
+    background: "#2D5A27",
+
+    // text-foreground — CREMA (texto principal)
+    foreground: "#F9F7F2",
+
+    // bg-card — CREMA (tarjetas sobre fondo oscuro)
+    card: "#F9F7F2",
+
+    // text-card-foreground — VERDE OSCURO (texto sobre cards crema)
+    cardForeground: "#2D5A27",
+
+    // bg-muted — VERDE MENTA (fondos sutiles, placeholders, toggle off)
+    muted: "#A8D5BA",
+
+    // text-muted-foreground — VERDE OSCURO SUAVE (texto secundario)
+    mutedForeground: "#4a6b45",
+
+    // border-border — VERDE MENTA (bordes generales)
+    border: "#A8D5BA",
+
+    // border-input, bg-input — VERDE MENTA (inputs)
+    input: "#A8D5BA",
+
+    // ring-ring — LIMA (focus rings)
+    ring: "#D4E157",
   },
+
+  // ─ SEMANTIC ───────────────────────────────
   semantic: {
     destructive: "#dc2626",
-    destructiveForeground: "#f9fafb",
-    success: "#22c55e",
-    successForeground: "#f9fafb",
-    successMuted: "#dcfce7",
-    warning: "#f59e0b",
-    warningForeground: "#1c1917",
-    warningMuted: "#fef3c7",
-    info: "#3b82f6",
-    infoForeground: "#f9fafb",
-    infoMuted: "#dbeafe",
+    destructiveForeground: "#F9F7F2",
+
+    // success — LIMA
+    success: "#D4E157",
+    successForeground: "#2D5A27",
+    // successMuted — AZUL MENTA CLARO
+    successMuted: "#E0F2F1",
+
+    // warning — LIMA
+    warning: "#D4E157",
+    warningForeground: "#2D5A27",
+    // warningMuted — AZUL MENTA CLARO
+    warningMuted: "#E0F2F1",
+
+    // info — VERDE MENTA
+    info: "#A8D5BA",
+    infoForeground: "#2D5A27",
+    // infoMuted — AZUL MENTA CLARO
+    infoMuted: "#E0F2F1",
+
+    danger: "#dc2626",
+    dangerForeground: "#F9F7F2",
+    dangerMuted: "#fecaca",
   },
+
+  // ── CUSTOM ─────────────────────────────────
   custom: {
-    purple: "#a855f7",
-    purpleLight: "#c084fc",
-    purpleDark: "#4c1d95",
-    gray: "#a1a1aa",
-    grayLight: "#a3a3a3",
-    grayDark: "#374151",
+    // purple — VERDE MENTA (método transferencia en admin POS)
+    purple: "#A8D5BA",
   },
-  typography: {
-    textPrimary: "#f9fafb",
-    textSecondary: "#c4c4c4",
-    textMuted: "#a1a1aa",
-    bgSurface: "#1a1d27",
-    bgSurfaceMuted: "#374151",
-    borderSubtle: "#3f3f46",
-  },
+
   borderRadius: "0.75rem",
 };
 
 // ─────────────────────────────────────────────
 // LIGHT THEME (overrides only)
 // Values not specified here fall back to dark theme.
+// Fondo también verde oscuro para consistencia.
 // ─────────────────────────────────────────────
 
 export const lightTheme: Partial<ThemeConfig> & {
@@ -137,54 +176,43 @@ export const lightTheme: Partial<ThemeConfig> & {
   brand?: Partial<ThemeConfig["brand"]>;
   semantic?: Partial<ThemeConfig["semantic"]>;
   custom?: Partial<ThemeConfig["custom"]>;
-  typography?: Partial<ThemeConfig["typography"]>;
 } = {
   surfaces: {
-    background: "#572364",
-    foreground: "#1c1917",
-    card: "#ffffff",
-    cardForeground: "#1c1917",
-    muted: "#f3f4f6",
-    mutedForeground: "#737373",
-    border: "#572364",
-    input: "#572364",
-    ring: "#2a2a2a",
+    background: "#2D5A27",
+    foreground: "#F9F7F2",
+    card: "#2D5A27",
+    cardForeground: "#d4e157",
+    muted: "#A8D5BA",
+    mutedForeground: "#ffff",
+    border: "#A8D5BA",
+    input: "#F9F7F2",
+    ring: "#D4E157",
   },
   brand: {
-    primary: "#572364",
-    primaryForeground: "#ffffff",
-    secondary: "#f3f4f6",
-    secondaryForeground: "#1c1917",
-    accent: "#4d4d4d",
-    accentForeground: "#ffffff",
+    primary: "#D4E157",
+    primaryForeground: "#2D5A27",
+    secondary: "#D4E157",
+    secondaryForeground: "#2D5A27",
+    accent: "#A8D5BA",
+    accentForeground: "#2D5A27",
   },
   semantic: {
-    destructive: "#ef4444",
-    destructiveForeground: "#f9fafb",
-    success: "#16a34a",
-    successForeground: "#f9fafb",
-    successMuted: "#dcfce7",
-    warning: "#d97706",
-    warningForeground: "#1c1917",
-    warningMuted: "#fef3c7",
-    info: "#2563eb",
-    infoForeground: "#f9fafb",
-    infoMuted: "#dbeafe",
+    destructive: "#dc2626",
+    destructiveForeground: "#F9F7F2",
+    success: "#D4E157",
+    successForeground: "#2D5A27",
+    successMuted: "#E0F2F1",
+    warning: "#D4E157",
+    warningForeground: "#2D5A27",
+    warningMuted: "#E0F2F1",
+    info: "#A8D5BA",
+    infoForeground: "#2D5A27",
+    infoMuted: "#E0F2F1",
+    danger: "#dc2626",
+    dangerForeground: "#F9F7F2",
+    dangerMuted: "#fecaca",
   },
   custom: {
-    purple: "#9333ea",
-    purpleLight: "#c084fc",
-    purpleDark: "#4c1d95",
-    gray: "#737373",
-    grayLight: "#a3a3a3",
-    grayDark: "#374151",
-  },
-  typography: {
-    textPrimary: "#1c1917",
-    textSecondary: "#575757",
-    textMuted: "#737373",
-    bgSurface: "#ffffff",
-    bgSurfaceMuted: "#f7f8fa",
-    borderSubtle: "#e5e7eb",
+    purple: "#A8D5BA",
   },
 };

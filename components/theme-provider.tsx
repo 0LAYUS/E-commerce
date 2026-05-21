@@ -10,7 +10,7 @@ function hexToHSL(hex: string): string {
   const b = parseInt(hex.substring(4, 6), 16) / 255;
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
-  let h = 0, s = 0, l = (max + min) / 2;
+  let h = 0, s = 0; const l = (max + min) / 2;
   if (max === min) {
     h = s = 0;
   } else {
@@ -47,12 +47,14 @@ function flatten(obj: Record<string, unknown>, prefix = ""): Record<string, stri
 
 function configKeyToCSSVar(key: string): string | null {
   const mapping: Record<string, string> = {
+    // Brand — botones, links, acentos
     "brand.primary": "--primary",
     "brand.primaryForeground": "--primary-foreground",
     "brand.secondary": "--secondary",
     "brand.secondaryForeground": "--secondary-foreground",
     "brand.accent": "--accent",
     "brand.accentForeground": "--accent-foreground",
+    // Surfaces — fondos, tarjetas, bordes
     "surfaces.background": "--background",
     "surfaces.foreground": "--foreground",
     "surfaces.card": "--card",
@@ -62,6 +64,7 @@ function configKeyToCSSVar(key: string): string | null {
     "surfaces.border": "--border",
     "surfaces.input": "--input",
     "surfaces.ring": "--ring",
+    // Semantic — status colors
     "semantic.destructive": "--destructive",
     "semantic.destructiveForeground": "--destructive-foreground",
     "semantic.success": "--color-success",
@@ -73,18 +76,11 @@ function configKeyToCSSVar(key: string): string | null {
     "semantic.info": "--color-info",
     "semantic.infoForeground": "--info-foreground",
     "semantic.infoMuted": "--bg-info",
+    "semantic.danger": "--color-danger",
+    "semantic.dangerForeground": "--danger-foreground",
+    "semantic.dangerMuted": "--bg-danger",
+    // Custom — colores extra
     "custom.purple": "--color-purple",
-    "custom.purpleLight": "--color-purple-light",
-    "custom.purpleDark": "--bg-purple-dark",
-    "custom.gray": "--color-gray",
-    "custom.grayLight": "--color-gray-light",
-    "custom.grayDark": "--bg-gray-dark",
-    "typography.textPrimary": "--text-primary",
-    "typography.textSecondary": "--text-secondary",
-    "typography.textMuted": "--text-muted",
-    "typography.bgSurface": "--bg-surface",
-    "typography.bgSurfaceMuted": "--bg-surface-muted",
-    "typography.borderSubtle": "--border-subtle",
   };
   return mapping[key] || null;
 }

@@ -58,10 +58,10 @@ export default function RootLayout({
           <NextThemeProvider
             attribute="class"
             defaultTheme="light"
-            enableSystem={false}
+            enableSystem
             disableTransitionOnChange
           >
-            <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-white" />}>
+            <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-card" />}>
               <CartProvider>
                 {children}
               </CartProvider>
