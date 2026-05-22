@@ -5,11 +5,17 @@
  * All colors use HEX format (e.g., "#2a2a2a" or "#fff").
  *
  * Palette:
- *   #2D5A27 — Verde oscuro (fondo principal, brand, hover botones)
- *   #A8D5BA — Verde menta (bordes, inputs, acentos sutiles)
- *   #E0F2F1 — Azul menta claro (fondos sutiles, badges)
- *   #F9F7F2 — Crema (texto principal, cards en dark mode)
- *   #D4E157 — Lima (success, highlights, ring)
+ *   #0b231c — Verde noche profundo
+ *   #153f31 — Verde bosque oscuro
+ *   #194c3a — Verde esmeralda profundo
+ *   #1d5f48 — Verde hoja
+ *   #247758 — Verde vibrante
+ *   #34956e — Verde fresco
+ *   #56b18a — Verde suave
+ *   #81caa8 — Verde menta claro
+ *   #b7e3cc — Verde crema
+ *   #daf1e4 — Verde agua
+ *   #f0f9f4 — Crema claro
  *
  * Structure:
  * - brand: Main brand colors (buttons, links, accents)
@@ -76,90 +82,90 @@ export const themeConfig: ThemeConfig = {
   brand: {
     // bg-primary, text-primary, border-primary, ring-primary
     // → Botones principales, CTA, links de navegación
-    primary: "#2D5A27",
+    primary: "#194c3a",
 
     // text-primary-foreground, bg-primary-foreground
     // → Texto sobre fondos primarios (botones, iconos, toggles)
-    primaryForeground: "#F9F7F2",
+    primaryForeground: "#f0f9f4",
 
     // bg-secondary, text-secondary
     // → Fondos secundarios: badges, icon containers, table headers
-    secondary: "#A8D5BA",
+    secondary: "#247758",
 
     // text-secondary-foreground
     // → Texto sobre fondos secundarios
-    secondaryForeground: "#2D5A27",
+    secondaryForeground: "#f0f9f4",
 
-    // bg-accent — VERDE OSCURO (hover de botones, mismo que background)
-    // → Texto crema sobre verde oscuro = legible
-    accent: "#2D5A27",
+    // bg-accent — VERDE SUAVE
+    // → Texto crema sobre acento natural
+    accent: "#56b18a",
 
-    // text-accent-foreground — CREMA (texto sobre hover verde oscuro)
-    accentForeground: "#F9F7F2",
+    // text-accent-foreground — OSCURO PROFUNDO
+    accentForeground: "#0b231c",
   },
 
   // ── SURFACES ───────────────────────────────
   surfaces: {
-    // bg-background — VERDE OSCURO (fondo de toda la página)
-    background: "#2D5A27",
+    // bg-background — VERDE NOCHE PROFUNDO (fondo de toda la página)
+    background: "#0b231c",
 
-    // text-foreground — CREMA (texto principal)
-    foreground: "#F9F7F2",
+    // text-foreground — CREMA CLARO (texto principal)
+    foreground: "#f0f9f4",
 
-    // bg-card — CREMA (tarjetas sobre fondo oscuro)
-    card: "#F9F7F2",
+    // bg-card — VERDE BOSQUE OSCURO (tarjetas sobre fondo oscuro)
+    card: "#153f31",
 
-    // text-card-foreground — VERDE OSCURO (texto sobre cards crema)
-    cardForeground: "#2D5A27",
+    // text-card-foreground — CREMA CLARO (texto sobre cards)
+    cardForeground: "#f0f9f4",
 
-    // bg-muted — VERDE MENTA (fondos sutiles, placeholders, toggle off)
-    muted: "#A8D5BA",
+    // bg-muted — VERDE HOJA (fondos sutiles, placeholders, toggle off)
+    muted: "#1d5f48",
 
-    // text-muted-foreground — VERDE OSCURO SUAVE (texto secundario)
-    mutedForeground: "#4a6b45",
+    // text-muted-foreground — VERDE AGUA CLARO (texto secundario)
+    mutedForeground: "#daf1e4",
 
-    // border-border — VERDE MENTA (bordes generales)
-    border: "#A8D5BA",
+    // border-border — VERDE VIBRANTE (bordes generales)
+    border: "#247758",
 
-    // border-input, bg-input — VERDE MENTA (inputs)
-    input: "#A8D5BA",
+    // border-input, bg-input — VERDE ESMERALDA PROFUNDO (inputs)
+    input: "#194c3a",
 
-    // ring-ring — LIMA (focus rings)
-    ring: "#D4E157",
+    // ring-ring — VERDE MENTA CLARO (focus rings)
+    ring: "#81caa8",
   },
 
   // ─ SEMANTIC ───────────────────────────────
   semantic: {
     destructive: "#dc2626",
-    destructiveForeground: "#F9F7F2",
+    destructiveForeground: "#f0f9f4",
 
-    // success — LIMA
-    success: "#D4E157",
-    successForeground: "#2D5A27",
-    // successMuted — AZUL MENTA CLARO
-    successMuted: "#E0F2F1",
+    // success — VERDE SUAVE
+    success: "#56b18a",
+    successForeground: "#0b231c",
+    // successMuted — VERDE AGUA
+    successMuted: "#daf1e4",
 
-    // warning — LIMA
-    warning: "#D4E157",
-    warningForeground: "#2D5A27",
-    // warningMuted — AZUL MENTA CLARO
-    warningMuted: "#E0F2F1",
+    // warning — VERDE VIBRANTE
+    warning: "#247758",
+    warningForeground: "#f0f9f4",
+    // warningMuted — VERDE CREMA
+    warningMuted: "#b7e3cc",
 
-    // info — VERDE MENTA
-    info: "#A8D5BA",
-    infoForeground: "#2D5A27",
-    // infoMuted — AZUL MENTA CLARO
-    infoMuted: "#E0F2F1",
+    // info — VERDE MENTA CLARO
+    info: "#81caa8",
+    infoForeground: "#0b231c",
+    // infoMuted — VERDE AGUA
+    infoMuted: "#daf1e4",
 
     danger: "#dc2626",
-    dangerForeground: "#F9F7F2",
+    dangerForeground: "#f0f9f4",
     dangerMuted: "#fecaca",
   },
 
   // ── CUSTOM ─────────────────────────────────
   custom: {
-    // purple — VERDE MENTA (método transferencia en admin POS)
-    purple: "#A8D5BA",
+    // purple — TONO VERDE FRESCO (método transferencia en admin POS)
+    purple: "#34956e",
   },
 
   borderRadius: "0.75rem",
@@ -178,41 +184,41 @@ export const lightTheme: Partial<ThemeConfig> & {
   custom?: Partial<ThemeConfig["custom"]>;
 } = {
   surfaces: {
-    background: "#2D5A27",
-    foreground: "#F9F7F2",
-    card: "#2D5A27",
-    cardForeground: "#d4e157",
-    muted: "#A8D5BA",
-    mutedForeground: "#ffff",
-    border: "#A8D5BA",
-    input: "#F9F7F2",
-    ring: "#D4E157",
+    background: "#f0f9f4",
+    foreground: "#0b231c",
+    card: "#daf1e4",
+    cardForeground: "#0b231c",
+    muted: "#b7e3cc",
+    mutedForeground: "#153f31",
+    border: "#81caa8",
+    input: "#ffffff",
+    ring: "#247758",
   },
   brand: {
-    primary: "#D4E157",
-    primaryForeground: "#2D5A27",
-    secondary: "#D4E157",
-    secondaryForeground: "#2D5A27",
-    accent: "#A8D5BA",
-    accentForeground: "#2D5A27",
+    primary: "#247758",
+    primaryForeground: "#f0f9f4",
+    secondary: "#34956e",
+    secondaryForeground: "#f0f9f4",
+    accent: "#81caa8",
+    accentForeground: "#0b231c",
   },
   semantic: {
     destructive: "#dc2626",
-    destructiveForeground: "#F9F7F2",
-    success: "#D4E157",
-    successForeground: "#2D5A27",
-    successMuted: "#E0F2F1",
-    warning: "#D4E157",
-    warningForeground: "#2D5A27",
-    warningMuted: "#E0F2F1",
-    info: "#A8D5BA",
-    infoForeground: "#2D5A27",
-    infoMuted: "#E0F2F1",
+    destructiveForeground: "#f0f9f4",
+    success: "#56b18a",
+    successForeground: "#0b231c",
+    successMuted: "#daf1e4",
+    warning: "#34956e",
+    warningForeground: "#0b231c",
+    warningMuted: "#b7e3cc",
+    info: "#81caa8",
+    infoForeground: "#0b231c",
+    infoMuted: "#daf1e4",
     danger: "#dc2626",
-    dangerForeground: "#F9F7F2",
+    dangerForeground: "#f0f9f4",
     dangerMuted: "#fecaca",
   },
   custom: {
-    purple: "#A8D5BA",
+    purple: "#34956e",
   },
 };

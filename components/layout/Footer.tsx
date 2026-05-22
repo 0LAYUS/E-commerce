@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ShoppingBag, EnvelopeSimple, Phone, MapPin, FacebookLogo, InstagramLogo, TwitterLogo, YoutubeLogo, PaperPlaneTilt, Heart } from "@phosphor-icons/react"
+import { ShoppingBag, EnvelopeSimple, Phone, MapPin, FacebookLogo, InstagramLogo, TwitterLogo, YoutubeLogo, PaperPlaneTilt } from "@phosphor-icons/react"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
