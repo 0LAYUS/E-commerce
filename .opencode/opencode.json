@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "command": {
+    "commit": {
+      "template": ".opencode/commands/commit.md",
+      "description": "Hace commits siguiendo reglas en español",
+      "agent": "build"
+    }
+  }
+}
