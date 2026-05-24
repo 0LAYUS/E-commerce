@@ -233,6 +233,20 @@ export default function Navbar() {
                   );
                 })}
 
+                {user && role === "administrador" && (
+                  <motion.div whileTap={{ scale: 0.95 }} className="mt-2">
+                    <Button asChild variant="default" className="w-full">
+                      <Link
+                        href="/admin"
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <Shield className="w-5 h-5" weight="fill" />
+                        Admin
+                      </Link>
+                    </Button>
+                  </motion.div>
+                )}
+
                 {!user && (
                   <motion.div whileTap={{ scale: 0.95 }} className="mt-2">
                     <Button asChild variant="default" className="w-full">
