@@ -4,6 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import { ShieldCheck, TruckIcon, Trophy, Users, Package, Clock, ChatCircle, MapPin, Calendar, Storefront } from "@phosphor-icons/react"
+import { storeBranding } from "@/lib/constants/branding-store"
 
 export default function AboutPage() {
   return (
@@ -15,10 +16,10 @@ export default function AboutPage() {
         transition={{ duration: 0.5 }}
       >
         <h1 className="text-4xl font-extrabold tracking-tight text-card-foreground">
-          Sobre Nosotros
+          {storeBranding.about.heroTitle}
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Conoce la historia detrás de Store, tu tienda online de confianza en Colombia prigma.
+          {storeBranding.about.heroDescription}
         </p>
       </motion.div>
 
@@ -31,7 +32,7 @@ export default function AboutPage() {
         <div className="relative h-64 md:h-80 w-full">
           <Image
             src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&h=400&fit=crop"
-            alt="Store - Tienda online"
+            alt={`${storeBranding.name} - Tienda online`}
             fill
             className="object-cover"
             unoptimized
@@ -41,16 +42,14 @@ export default function AboutPage() {
               <h2 className="text-2xl font-extrabold">Nuestra Historia</h2>
               <p className="text-primary-foreground/80 mt-1 flex items-center gap-2">
                 <Storefront className="w-4 h-4" />
-                Desde 2020 conectando a Colombia
+                {storeBranding.about.storySubtitle}
               </p>
             </div>
           </div>
         </div>
         <div className="p-8">
           <p className="text-muted-foreground leading-relaxed">
-            Store nació en 2020 con la misión de ofrecer productos de calidad a precios accesibles para todos los colombianos.
-            Comenzamos como una pequeña tienda local y gracias a la confianza de nuestros clientes,
-            hoy somos una de las tiendas online más reconocidas del país, conectando a miles de personas con productos que necesitan.
+            {storeBranding.about.storyText}
           </p>
         </div>
       </motion.div>
@@ -64,8 +63,7 @@ export default function AboutPage() {
         >
           <h3 className="text-xl font-extrabold text-card-foreground mb-3">Nuestra Misión</h3>
           <p className="text-muted-foreground leading-relaxed">
-            Brindar acceso a productos de calidad a precios justos, facilitando la vida cotidiana de las familias colombianas
-            a través de una experiencia de compra segura, rápida y confiable.
+            {storeBranding.about.mission}
           </p>
         </motion.div>
         <motion.div
@@ -76,8 +74,7 @@ export default function AboutPage() {
         >
           <h3 className="text-xl font-extrabold text-card-foreground mb-3">Nuestra Visión</h3>
           <p className="text-muted-foreground leading-relaxed">
-            Ser la tienda online preferida de los colombianos, reconocidas por nuestra excelencia en atención al cliente,
-            innovación tecnológica y compromiso con la satisfacción del usuario.
+            {storeBranding.about.vision}
           </p>
         </motion.div>
       </div>
@@ -142,7 +139,7 @@ export default function AboutPage() {
               Nuestro Equipo
             </h3>
             <p className="text-muted-foreground text-sm">
-              Un equipo apasionado trabajando cada día para brindarte la mejor experiencia de compra online en Colombia.
+              {storeBranding.about.teamText}
             </p>
           </div>
         </motion.div>
@@ -155,7 +152,7 @@ export default function AboutPage() {
           <div className="relative h-48 w-full">
             <Image
               src="https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=600&h=200&fit=crop"
-              alt="Almacén Store"
+              alt={`Almacén ${storeBranding.name}`}
               fill
               className="object-cover"
               unoptimized
@@ -167,7 +164,7 @@ export default function AboutPage() {
               Nuestro Almacén
             </h3>
             <p className="text-muted-foreground text-sm">
-              Miles de productos listos para enviarte con la mayor brevedad posible.
+              {storeBranding.about.warehouseText}
             </p>
           </div>
         </motion.div>
@@ -186,7 +183,7 @@ export default function AboutPage() {
             </div>
             <div>
               <h3 className="font-extrabold text-card-foreground">Ubicación</h3>
-              <p className="text-muted-foreground text-sm">Bogotá, Colombia</p>
+              <p className="text-muted-foreground text-sm">{storeBranding.contact.city}, {storeBranding.contact.country}</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -195,7 +192,7 @@ export default function AboutPage() {
             </div>
             <div>
               <h3 className="font-extrabold text-card-foreground">Horario</h3>
-              <p className="text-muted-foreground text-sm">Lunes a Viernes 9am - 6pm</p>
+              <p className="text-muted-foreground text-sm">{storeBranding.contact.schedule}</p>
             </div>
           </div>
         </div>
@@ -203,10 +200,10 @@ export default function AboutPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { icon: Users, stat: "10K+", label: "Clientes" },
-          { icon: Package, stat: "5K+", label: "Productos" },
-          { icon: Clock, stat: "5+", label: "Años" },
-          { icon: ShieldCheck, stat: "100%", label: "Seguro" },
+          { icon: Users, stat: storeBranding.about.stats.clients, label: "Clientes" },
+          { icon: Package, stat: storeBranding.about.stats.products, label: "Productos" },
+          { icon: Clock, stat: storeBranding.about.stats.years, label: "Años" },
+          { icon: ShieldCheck, stat: storeBranding.about.stats.secure, label: "Seguro" },
         ].map((item, i) => (
           <motion.div
             key={item.label}
@@ -232,7 +229,7 @@ export default function AboutPage() {
       </div>
 
       <a
-        href="https://wa.me/573001234567"
+        href={`https://wa.me/${storeBranding.whatsapp}`}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 w-14 h-14 bg-success hover:bg-success/90 rounded-full flex items-center justify-center shadow-lg transition-all z-50"

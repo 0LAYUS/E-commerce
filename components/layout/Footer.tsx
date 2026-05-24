@@ -2,7 +2,10 @@
 
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ShoppingBag, EnvelopeSimple, Phone, MapPin, FacebookLogo, InstagramLogo, TwitterLogo, YoutubeLogo, PaperPlaneTilt } from "@phosphor-icons/react"
+import { EnvelopeSimple, Phone, MapPin, FacebookLogo, InstagramLogo, TwitterLogo, YoutubeLogo, PaperPlaneTilt } from "@phosphor-icons/react"
+import { storeBranding } from "@/lib/constants/branding-store"
+import { StoreLogo } from "@/components/branding/store-logo"
+import { StoreName } from "@/components/branding/store-name"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -33,16 +36,15 @@ export default function Footer() {
           >
             <Link href="/" className="flex items-center gap-2">
               <motion.div
-                className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center shadow-lg border border-border"
                 whileHover={{ rotate: [0, -10, 10, 0] }}
                 transition={{ duration: 0.5 }}
               >
-                <ShoppingBag className="w-5 h-5 text-primary-foreground" weight="fill" />
+                <StoreLogo size="sm" />
               </motion.div>
-              <span className="text-xl font-black text-card-foreground tracking-tight">Store</span>
+              <StoreName className="text-xl font-black text-card-foreground tracking-tight font-varela-round" />
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Tu tienda online favorita con los mejores productos y precios. Calidad garantizada y envíos a todo el país.
+              {storeBranding.about.tagline}
             </p>
             <motion.div
               className="flex gap-3 pt-2"
@@ -51,10 +53,10 @@ export default function Footer() {
               transition={{ delay: 0.4 }}
             >
               {[
-                { Icon: FacebookLogo, href: "#", label: "Facebook" },
-                { Icon: InstagramLogo, href: "#", label: "Instagram" },
-                { Icon: TwitterLogo, href: "#", label: "Twitter" },
-                { Icon: YoutubeLogo, href: "#", label: "Youtube" },
+                { Icon: FacebookLogo, href: storeBranding.social.facebook, label: "Facebook" },
+                { Icon: InstagramLogo, href: storeBranding.social.instagram, label: "Instagram" },
+                { Icon: TwitterLogo, href: storeBranding.social.twitter, label: "Twitter" },
+                { Icon: YoutubeLogo, href: storeBranding.social.youtube, label: "Youtube" },
               ].map((social, i) => (
                 <motion.a
                   key={i}
@@ -141,9 +143,9 @@ export default function Footer() {
             <h3 className="font-bold text-card-foreground text-lg">Contacto</h3>
             <div className="flex flex-col gap-4">
               {[
-                { Icon: MapPin, text: "Calle 123 #45-67, Bogotá, Colombia" },
-                { Icon: Phone, text: "+57 300 123 4567" },
-                { Icon: EnvelopeSimple, text: "contacto@store.com" },
+                { Icon: MapPin, text: `${storeBranding.contact.address}, ${storeBranding.contact.city}, ${storeBranding.contact.country}` },
+                { Icon: Phone, text: storeBranding.contact.phone },
+                { Icon: EnvelopeSimple, text: storeBranding.contact.email },
               ].map((item, i) => (
                 <motion.div
                   key={i}
@@ -201,7 +203,7 @@ export default function Footer() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
-              © {currentYear} Store. Todos los derechos reservados.
+              © {currentYear} {storeBranding.legal.copyrightName}. Todos los derechos reservados.
             </motion.p>
             <motion.div
               className="flex gap-6"

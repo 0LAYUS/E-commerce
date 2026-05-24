@@ -5,6 +5,7 @@ import { SignOut } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/lib/actions/authActions";
 import { SIDEBAR_ITEMS } from "@/lib/constants/admin";
+import { storeBranding } from "@/lib/constants/branding-store";
 import { SidebarLink } from "./sidebar-link";
 
 function isActive(pathname: string, href: string) {
@@ -18,7 +19,7 @@ export function AdminSidebar() {
   return (
     <div className="w-64 bg-card shadow-sm border-r border-border flex flex-col">
       <div className="p-6 border-b border-border">
-        <h2 className="text-xl font-bold text-card-foreground">Panel Admin</h2>
+        <h2 className="text-xl font-bold text-card-foreground">Panel Admin — {storeBranding.name}</h2>
       </div>
       <nav className="p-4 space-y-1 flex-1">
         {SIDEBAR_ITEMS.map((item) => (

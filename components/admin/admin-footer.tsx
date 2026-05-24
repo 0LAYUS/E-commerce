@@ -1,12 +1,13 @@
 import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DEVELOPER_CONTACT } from "@/lib/constants/admin";
+import { prigmaBranding } from "@/lib/constants/branding-prigma";
 
 export function AdminFooter() {
   return (
     <footer className="mt-8 pt-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
       <p className="text-sm text-muted-foreground">
-        &copy; {new Date().getFullYear()} Todos los derechos reservados
+        &copy; {new Date().getFullYear()} {prigmaBranding.company}. Todos los derechos reservados
       </p>
       <Button variant="outline" size="sm" asChild>
         <a

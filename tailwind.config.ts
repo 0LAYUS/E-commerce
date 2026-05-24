@@ -65,6 +65,10 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        montserrat: ["var(--font-montserrat)", "sans-serif"],
+        "varela-round": ["var(--font-varela-round)", "sans-serif"],
+      },
     },
   },
   plugins: [tailwindAnimate],

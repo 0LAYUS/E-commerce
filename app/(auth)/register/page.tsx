@@ -5,8 +5,9 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
 import { motion } from "framer-motion"
-import { ShoppingBag, Eye, EyeSlash } from "@phosphor-icons/react"
+import { Eye, EyeSlash } from "@phosphor-icons/react"
 import { useState } from "react"
+import { StoreLogo } from "@/components/branding/store-logo"
 
 function RegisterForm() {
   const searchParams = useSearchParams()
@@ -24,11 +25,10 @@ function RegisterForm() {
       <div className="text-center">
         <Link href="/" className="inline-flex items-center gap-2 mb-6">
           <motion.div
-            className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center shadow-lg border border-border"
             whileHover={{ rotate: [0, -10, 10, 0] }}
             transition={{ duration: 0.5 }}
           >
-            <ShoppingBag className="w-6 h-6 text-secondary-foreground" weight="fill" />
+            <StoreLogo size="lg" />
           </motion.div>
         </Link>
         <h2 className="text-3xl font-bold tracking-tight text-card-foreground">Crea tu cuenta</h2>

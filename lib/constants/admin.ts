@@ -10,11 +10,12 @@ import {
 } from "lucide-react";
 import type { MensajeResponse } from "@/types/license.types";
 import type { SidebarItem } from "@/types/admin.types";
+import { prigmaBranding } from "@/lib/constants/branding-prigma";
 
 export const MENSAJE_BLOQUEADO: MensajeResponse = {
   title: "PAGO NO REGISTRADO",
   description:
-    "Tu licencia se encuentra suspendida. Comunícate con PRIGMA para renovar tu servicio.",
+    `Tu licencia se encuentra suspendida. Comunícate con ${prigmaBranding.company} para renovar tu servicio.`,
   status: "suspended",
 };
 
@@ -31,6 +32,6 @@ export const SIDEBAR_ITEMS: readonly SidebarItem[] = [
 ];
 
 export const DEVELOPER_CONTACT = {
-  company: "PRIGMA",
-  email: "contacto@prigma.com",
+  company: prigmaBranding.company,
+  email: prigmaBranding.email,
 };

@@ -14,6 +14,8 @@ import {
   SignOut,
   Package,
 } from "@phosphor-icons/react";
+import { StoreLogo } from "@/components/branding/store-logo";
+import { StoreName } from "@/components/branding/store-name";
 import { logout } from "@/lib/actions/authActions";
 import { Button } from "@/components/ui/button";
 import CartIcon from "./CartIcon";
@@ -133,18 +135,12 @@ export default function Navbar() {
             <motion.div {...scaleHover}>
               <Link href="/" className="flex items-center gap-2">
                 <motion.div
-                  className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center shadow-lg border border-border"
                   whileHover={{ rotate: [0, -10, 10, 0] }}
                   transition={{ duration: 0.5 }}
                 >
-                  <ShoppingBag
-                    className="w-5 h-5 text-secondary-foreground"
-                    weight="fill"
-                  />
+                  <StoreLogo size="sm" />
                 </motion.div>
-                <span className="text-xl font-black text-card-foreground tracking-tight">
-                  Store
-                </span>
+                <StoreName className="text-xl font-black text-card-foreground tracking-tight font-varela-round" />
               </Link>
             </motion.div>
 

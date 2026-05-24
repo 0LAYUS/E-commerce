@@ -10,70 +10,70 @@
 
 @layer base {
   :root {
-    --primary: 113 40% 25%;
-    --primary-foreground: 43 37% 96%;
-    --secondary: 144 35% 75%;
-    --secondary-foreground: 113 40% 25%;
-    --accent: 113 40% 25%;
-    --accent-foreground: 43 37% 96%;
-    --background: 113 40% 25%;
-    --foreground: 43 37% 96%;
-    --card: 43 37% 96%;
-    --card-foreground: 113 40% 25%;
-    --muted: 144 35% 75%;
-    --muted-foreground: 112 22% 35%;
-    --border: 144 35% 75%;
-    --input: 144 35% 75%;
-    --ring: 66 70% 61%;
+    --primary: 159 50% 20%;
+    --primary-foreground: 147 43% 96%;
+    --secondary: 158 54% 30%;
+    --secondary-foreground: 147 43% 96%;
+    --accent: 154 37% 52%;
+    --accent-foreground: 162 52% 9%;
+    --background: 162 52% 9%;
+    --foreground: 147 43% 96%;
+    --card: 160 50% 16%;
+    --card-foreground: 147 43% 96%;
+    --muted: 159 53% 24%;
+    --muted-foreground: 146 45% 90%;
+    --border: 158 54% 30%;
+    --input: 159 50% 20%;
+    --ring: 152 41% 65%;
     --destructive: 0 72% 51%;
-    --destructive-foreground: 43 37% 96%;
-    --color-success: 66 70% 61%;
-    --success-foreground: 113 40% 25%;
-    --bg-success: 177 41% 91%;
-    --color-warning: 66 70% 61%;
-    --warning-foreground: 113 40% 25%;
-    --bg-warning: 177 41% 91%;
-    --color-info: 144 35% 75%;
-    --info-foreground: 113 40% 25%;
-    --bg-info: 177 41% 91%;
+    --destructive-foreground: 147 43% 96%;
+    --color-success: 154 37% 52%;
+    --success-foreground: 162 52% 9%;
+    --bg-success: 146 45% 90%;
+    --color-warning: 158 54% 30%;
+    --warning-foreground: 147 43% 96%;
+    --bg-warning: 149 44% 80%;
+    --color-info: 152 41% 65%;
+    --info-foreground: 162 52% 9%;
+    --bg-info: 146 45% 90%;
     --color-danger: 0 72% 51%;
-    --danger-foreground: 43 37% 96%;
+    --danger-foreground: 147 43% 96%;
     --bg-danger: 0 96% 89%;
-    --color-purple: 144 35% 75%;
+    --color-purple: 156 48% 39%;
     --radius: 0.75rem;
   }
 
   .light {
-    --background: 113 40% 25%;
-    --foreground: 43 37% 96%;
-    --card: 113 40% 25%;
-    --card-foreground: 66 70% 61%;
-    --muted: 144 35% 75%;
-    --muted-foreground: 112 22% 35%;
-    --border: 144 35% 75%;
-    --input: 43 37% 96%;
-    --ring: 66 70% 61%;
-    --primary: 66 70% 61%;
-    --primary-foreground: 113 40% 25%;
-    --secondary: 66 70% 61%;
-    --secondary-foreground: 113 40% 25%;
-    --accent: 144 35% 75%;
-    --accent-foreground: 113 40% 25%;
+    --background: 147 43% 96%;
+    --foreground: 162 52% 9%;
+    --card: 146 45% 90%;
+    --card-foreground: 162 52% 9%;
+    --muted: 149 44% 80%;
+    --muted-foreground: 160 50% 16%;
+    --border: 152 41% 65%;
+    --input: 0 0% 100%;
+    --ring: 158 54% 30%;
+    --primary: 158 54% 30%;
+    --primary-foreground: 147 43% 96%;
+    --secondary: 156 48% 39%;
+    --secondary-foreground: 147 43% 96%;
+    --accent: 152 41% 65%;
+    --accent-foreground: 162 52% 9%;
     --destructive: 0 72% 51%;
-    --destructive-foreground: 43 37% 96%;
-    --color-success: 66 70% 61%;
-    --success-foreground: 113 40% 25%;
-    --bg-success: 177 41% 91%;
-    --color-warning: 66 70% 61%;
-    --warning-foreground: 113 40% 25%;
-    --bg-warning: 177 41% 91%;
-    --color-info: 144 35% 75%;
-    --info-foreground: 113 40% 25%;
-    --bg-info: 177 41% 91%;
+    --destructive-foreground: 147 43% 96%;
+    --color-success: 154 37% 52%;
+    --success-foreground: 162 52% 9%;
+    --bg-success: 146 45% 90%;
+    --color-warning: 156 48% 39%;
+    --warning-foreground: 162 52% 9%;
+    --bg-warning: 149 44% 80%;
+    --color-info: 152 41% 65%;
+    --info-foreground: 162 52% 9%;
+    --bg-info: 146 45% 90%;
     --color-danger: 0 72% 51%;
-    --danger-foreground: 43 37% 96%;
+    --danger-foreground: 147 43% 96%;
     --bg-danger: 0 96% 89%;
-    --color-purple: 144 35% 75%;
+    --color-purple: 156 48% 39%;
   }
 }
 
@@ -83,5 +83,11 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-varela-round), sans-serif;
+  }
+  button, [role="button"] {
+    font-family: var(--font-varela-round), sans-serif;
   }
 }

@@ -62,6 +62,53 @@ Configured in `tsconfig.json`:
 - SOLID principles apply
 - Document non-obvious logic with comments
 
+## Branding System
+
+### Purpose
+The e-commerce supports two separate brand identities:
+
+- **PRIGMA** (the developer) — used in the license overlay, admin footer, and blocked messages. Everything related to the platform itself.
+- **Store Brand** (each client) — used in the navbar, footer, SEO metadata, about page, transactional emails, and admin sidebar title. This is the client-facing identity.
+
+This separation allows a single codebase to serve multiple clients, each with their own store branding, while PRIGMA's platform branding remains consistent.
+
+### Config Files
+
+- **`lib/constants/branding-store.ts`** — exports `storeBranding` object. Contains all client-facing data:
+  - `name`, `description`, `url`, `locale`
+  - `contact`: `phone`, `email`, `address`, `city`, `country`
+  - `whatsapp`
+  - `social`: links (Facebook, Instagram, TikTok, etc.)
+  - `legal`: `foundingYear`, `copyrightName`
+  - `assets`: `logo` (path to the store's logo image)
+  - `about`: `stats`, `story`, `tagline`, `mission`, `vision`
+  - All values are in Spanish (target clients are Colombian businesses).
+
+- **`lib/constants/branding-prigma.ts`** — exports `prigmaBranding` object. Contains all PRIGMA-specific data:
+  - `company`: name
+  - `email`, `whatsapp`
+  - `assets`: `logo` (path to PRIGMA's logo), `backgroundImage`
+  - `tagline`
+
+### Reusable Components (`components/branding/`)
+
+All branding components follow the same pattern: they read from their respective config by default, but every prop can be overridden.
+
+- **`<StoreLogo />`** — renders the store's logo via `next/image`. Reads `storeBranding.assets.logo` by default.
+  - Optional props: `src` (image path), `alt` (alt text), `size` (`"sm"` | `"md"` | `"lg"`), `className`.
+- **`<StoreName />`** — renders the store's name. Reads `storeBranding.name` by default.
+  - Optional props: `as` (renders as `span`, `h1`, `p`, etc.), `className`.
+  - Accepts `children` to override the name entirely.
+- **`<PrigmaLogo />`** — renders PRIGMA's logo via `next/image`. Reads `prigmaBranding.assets.logo` by default.
+  - Optional props: `src` (image path), `alt` (alt text), `size` (`"sm"` | `"md"` | `"lg"`), `className`.
+
+### Design Principle
+Components always read from their config by default, but ALL accept optional props for overrides. This keeps branding centralized (a single source of truth per identity) while still allowing per-instance customization where needed.
+
+### Rebranding Process
+- **New client**: edit `branding-store.ts` and replace images in `public/images/`. PRIGMA config stays untouched.
+- **PRIGMA rebrands**: edit `branding-prigma.ts` only. Store clients are unaffected.
+
 ## Key Flows
 - **Cart validation**: `POST /api/cart/validate` → stock + price checks
 - **Stock reservation**: `POST /api/cart/reserve` (15min hold on `/checkout`)
