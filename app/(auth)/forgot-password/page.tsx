@@ -26,16 +26,16 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md bg-card p-8 rounded-2xl shadow-xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Recuperar contraseña</h1>
-          <p className="text-gray-500 mt-2">Ingresa tu correo para enviarte un enlace mágico.</p>
+          <h1 className="text-3xl font-extrabold text-card-foreground tracking-tight">Recuperar contraseña</h1>
+          <p className="text-muted-foreground mt-2">Ingresa tu correo para enviarte un enlace mágico.</p>
         </div>
 
         {message && (
           <div className={`p-4 rounded-xl mb-6 text-sm ${
-            message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+            message.type === 'success' ? 'bg-success-muted text-success border border-success' : 'bg-danger-muted text-danger border border-danger'
           }`}>
             {message.text}
           </div>
@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-card-foreground mb-2">
               Correo electrónico
             </label>
             <input
@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
               name="email"
               type="email"
               required
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:bg-white transition-all"
+              className="w-full px-4 py-3 rounded-xl border border-input bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all"
               placeholder="tu@correo.com"
             />
           </div>
@@ -59,14 +59,14 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gray-900 text-white font-bold py-3 px-4 rounded-xl hover:bg-gray-800 focus:ring-4 focus:ring-gray-900/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-primary text-primary-foreground font-bold py-3 px-4 rounded-xl hover:bg-primary/90 focus:ring-4 focus:ring-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Enviando..." : "Enviar enlace de recuperación"}
           </button>
 
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p className="text-center text-sm text-muted-foreground mt-6">
             ¿Recordaste tu contraseña?{" "}
-            <Link href="/login" className="font-bold text-gray-900 hover:underline">
+            <Link href="/login" className="font-bold text-foreground hover:underline">
               Inicia sesión
             </Link>
           </p>

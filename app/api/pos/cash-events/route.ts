@@ -15,6 +15,8 @@ async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) 
   if (profile?.role !== "administrador") throw new Error("Forbidden")
 }
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()

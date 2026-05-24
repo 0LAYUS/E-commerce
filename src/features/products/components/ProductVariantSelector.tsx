@@ -2,19 +2,12 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useCart } from "@/shared/components/CartProvider"
-import type { OptionDef } from "@/features/products/types/product.types"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Input } from "@/components/ui/input"
-
-type SKU = {
-  id: string
-  product_id: string
-  sku_code: string
-  price_override: number | null
-  stock: number
-  active: boolean
-  option_values: string[]
-}
+import { Button } from "@/components/ui/button"
+import QuantitySelector from "./QuantitySelector"
+import PriceDisplay from "./PriceDisplay"
+import { formatStockLabel } from "@/lib/format"
+import type { OptionDef, SKU } from "@/features/products/types/product.types"
 
 type ProductVariantSelectorProps = {
   options: OptionDef[]
@@ -102,10 +95,6 @@ export default function ProductVariantSelector({
     }))
   }, [])
 
-  const handleQuantityChange = useCallback((value: number) => {
-    setQuantity(Math.max(1, Math.min(value, currentStock)))
-  }, [currentStock])
-
   const handleAddToCart = useCallback(async () => {
     if (currentStock === 0 || !selectedSku) return
 
@@ -129,13 +118,7 @@ export default function ProductVariantSelector({
     } finally {
       setLoading(false)
     }
-  }, [addItem, currentStock, selectedSku, productId, currentPrice, quantity, productName])
-
-  const formatStockLabel = (stock: number) => {
-    if (stock <= 0) return "Agotado"
-    if (stock < 5) return `Ultimas ${stock} unidades`
-    return `${stock} unidades`
-  }
+  }, [addItem, currentStock, selectedSku, productId, currentPrice, productName])
 
   if (availableOptions.length === 0) {
     return (
@@ -185,19 +168,13 @@ export default function ProductVariantSelector({
         <div className="flex items-end justify-between mb-4">
           <div>
             <span className="text-sm text-muted-foreground mb-1 block">Precio</span>
-            <span className="text-3xl font-extrabold text-primary">
-              {new Intl.NumberFormat("es-CO", {
-                style: "currency",
-                currency: "COP",
-                minimumFractionDigits: 0,
-              }).format(currentPrice)}
-            </span>
+            <PriceDisplay price={currentPrice} size="lg" className="text-primary font-extrabold" />
           </div>
           <div className="text-right">
             <span className="text-sm text-muted-foreground mb-1 block">
               {selectedSku ? "Stock" : "Stock disponible"}
             </span>
-            <span className={`text-xl font-bold ${currentStock > 0 || !selectedSku ? "text-green-600" : "text-destructive"}`}>
+            <span className={`text-xl font-bold ${currentStock > 0 || !selectedSku ? "text-success" : "text-destructive"}`}>
               {selectedSku ? formatStockLabel(currentStock) : formatStockLabel(totalStock)}
             </span>
           </div>
@@ -210,24 +187,19 @@ export default function ProductVariantSelector({
         ) : null}
 
         {selectedSku && currentStock > 0 ? (
-          <div className="flex items-center gap-3 mb-4">
-            <label className="text-sm font-medium text-foreground">Cantidad:</label>
-            <Input
-              type="number"
-              min={1}
-              max={currentStock}
-              value={quantity}
-              onChange={(e) => handleQuantityChange(parseInt(e.target.value, 10) || 1)}
-              className="w-20 text-center"
+          <div className="mb-4">
+            <QuantitySelector
+              quantity={quantity}
+              maxStock={currentStock}
+              onQuantityChange={setQuantity}
             />
-            <span className="text-sm text-muted-foreground">de {currentStock} disponibles</span>
           </div>
         ) : null}
 
-        <button
+        <Button
           onClick={handleAddToCart}
           disabled={!selectedSku || currentStock === 0 || loading}
-          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground py-4 rounded-xl font-bold text-lg transition shadow-sm"
+          className="w-full py-6 text-lg font-bold shadow-sm"
         >
           {loading
             ? "Agregando..."
@@ -236,7 +208,7 @@ export default function ProductVariantSelector({
               : currentStock === 0
                 ? "Agotado"
                 : "Añadir al carrito"}
-        </button>
+        </Button>
       </div>
     </div>
   )

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { DollarSign, CreditCard, Package } from "lucide-react"
+import { formatPrice } from "@/lib/format"
 import {
   calculatePeriodDates,
   getDashboardMetrics,
@@ -47,14 +48,6 @@ export function DashboardClient() {
     if (newCustomEnd !== undefined) setCustomEnd(newCustomEnd)
   }
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-
   return (
     <div className="space-y-6">
       <DashboardFilter
@@ -67,12 +60,12 @@ export function DashboardClient() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Ingresos Totales"
-          value={loading ? 0 : formatCurrency(data?.totalRevenue ?? 0)}
+          value={loading ? 0 : formatPrice(data?.totalRevenue ?? 0)}
           subtitle={
             loading
               ? undefined
               : data
-              ? `Online: ${formatCurrency(data.onlineRevenue)} | POS: ${formatCurrency(data.posRevenue)}`
+              ? `Online: ${formatPrice(data.onlineRevenue)} | POS: ${formatPrice(data.posRevenue)}`
               : undefined
           }
           icon={<DollarSign className="h-4 w-4" />}

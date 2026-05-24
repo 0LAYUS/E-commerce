@@ -1,6 +1,8 @@
 "use client"
 
 import Link from "next/link"
+import { formatPrice } from "@/lib/format"
+import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT } from "@/lib/constants/orders"
 import type { OrderWithRelations } from "@/features/orders/types/order.types"
 
 interface OrdersTableProps {
@@ -8,27 +10,12 @@ interface OrdersTableProps {
   isLoading?: boolean
 }
 
-const STATUS_STYLES = {
-  PENDING: "bg-yellow-50 text-yellow-700 border-yellow-200",
-  APPROVED: "bg-green-50 text-green-700 border-green-200",
-  DECLINED: "bg-orange-50 text-orange-700 border-orange-200",
-  ERROR: "bg-red-50 text-red-700 border-red-200",
-} as const
-
 const STATUS_LABELS = {
   PENDING: "Pendiente",
   APPROVED: "Aprobada",
   DECLINED: "Rechazada",
   ERROR: "Error",
 } as const
-
-function formatPrice(cents: number): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-  }).format(cents)
-}
 
 export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
   if (isLoading) {
@@ -124,7 +111,7 @@ export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
                 <td className="px-4 py-3">
                   <span
                     className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full border ${
-                      STATUS_STYLES[order.status] ?? "bg-gray-50 text-gray-700 border-gray-200"
+                      STATUS_BADGE_STYLES[order.status] ?? STATUS_BADGE_DEFAULT
                     }`}
                   >
                     {STATUS_LABELS[order.status] ?? order.status}

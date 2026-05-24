@@ -1,20 +1,15 @@
 "use client"
 
 import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { Package, User, MapPin, CreditCard, AlertTriangle, RotateCcw } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { ConfirmDialog } from "@/components/ui/modal"
+import { formatPrice } from "@/lib/format"
+import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT } from "@/lib/constants/orders"
 import { updateOrderStatus, rollbackOrderStock, markOrderAsError } from "@/features/orders/actions/orderActions"
 import type { OrderWithRelations, OrderStatus } from "@/features/orders/types/order.types"
-
-interface OrderDetailsCardProps {
-  order: OrderWithRelations
-}
-
-const STATUS_STYLES = {
-  PENDING: "bg-yellow-50 text-yellow-700 border-yellow-200",
-  APPROVED: "bg-green-50 text-green-700 border-green-200",
-  DECLINED: "bg-orange-50 text-orange-700 border-orange-200",
-  ERROR: "bg-red-50 text-red-700 border-red-200",
-} as const
 
 const STATUS_LABELS = {
   PENDING: "Pendiente",
@@ -22,14 +17,6 @@ const STATUS_LABELS = {
   DECLINED: "Rechazada",
   ERROR: "Error",
 } as const
-
-function formatPrice(cents: number): string {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0,
-  }).format(cents)
-}
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString("es-CO", {
@@ -41,29 +28,33 @@ function formatDate(dateString: string): string {
   })
 }
 
+interface OrderDetailsCardProps {
+  order: OrderWithRelations
+}
+
 export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
+  const router = useRouter()
+  const [rollbackConfirmOpen, setRollbackConfirmOpen] = useState(false)
+  const [errorConfirmOpen, setErrorConfirmOpen] = useState(false)
+
   async function handleStatusChange(newStatus: OrderStatus) {
     const formData = new FormData()
     formData.append("orderId", order.id)
     formData.append("status", newStatus)
     await updateOrderStatus(order.id, newStatus)
-    window.location.reload()
+    router.refresh()
   }
 
   async function handleRollback() {
-    if (!confirm("¿Estás seguro de que quieres restaurar el stock sin cambiar el estado?")) {
-      return
-    }
     await rollbackOrderStock(order.id)
-    window.location.reload()
+    setRollbackConfirmOpen(false)
+    router.refresh()
   }
 
   async function handleMarkAsError() {
-    if (!confirm("¿Marcar esta orden como ERROR y restaurar el stock?")) {
-      return
-    }
     await markOrderAsError(order.id)
-    window.location.reload()
+    setErrorConfirmOpen(false)
+    router.refresh()
   }
 
   return (
@@ -80,7 +71,7 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
         </div>
         <span
           className={`inline-flex px-3 py-1.5 text-sm font-medium rounded-full border ${
-            STATUS_STYLES[order.status] ?? "bg-gray-50 text-gray-700 border-gray-200"
+            STATUS_BADGE_STYLES[order.status] ?? STATUS_BADGE_DEFAULT
           }`}
         >
           {STATUS_LABELS[order.status] ?? order.status}
@@ -201,24 +192,39 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
           {/* Admin actions */}
           <div className="flex flex-wrap gap-3 pt-4 border-t">
             {order.status === "PENDING" && (
-              <button
-                onClick={handleMarkAsError}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
-              >
+              <Button variant="destructive" onClick={() => setErrorConfirmOpen(true)}>
                 <AlertTriangle className="w-4 h-4" />
                 Marcar como Error (con rollback)
-              </button>
+              </Button>
             )}
-            <button
-              onClick={handleRollback}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors text-sm font-medium"
-            >
+            <Button variant="outline" onClick={() => setRollbackConfirmOpen(true)}>
               <RotateCcw className="w-4 h-4" />
               Restaurar Stock (sin cambiar estado)
-            </button>
+            </Button>
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={rollbackConfirmOpen}
+        onClose={() => setRollbackConfirmOpen(false)}
+        onConfirm={handleRollback}
+        title="¿Restaurar stock?"
+        description="¿Estás seguro de que quieres restaurar el stock sin cambiar el estado?"
+        confirmText="Restaurar"
+        cancelText="Cancelar"
+      />
+
+      <ConfirmDialog
+        open={errorConfirmOpen}
+        onClose={() => setErrorConfirmOpen(false)}
+        onConfirm={handleMarkAsError}
+        title="¿Marcar como error?"
+        description="¿Marcar esta orden como ERROR y restaurar el stock?"
+        confirmText="Marcar error"
+        cancelText="Cancelar"
+        destructive
+      />
     </div>
   )
 }

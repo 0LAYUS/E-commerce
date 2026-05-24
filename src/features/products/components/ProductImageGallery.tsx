@@ -1,13 +1,9 @@
 "use client"
 
 import { useEffect, useMemo, useState, type TouchEvent } from "react"
+import Image from "next/image"
 import { ShoppingBag, CaretLeft, CaretRight } from "@phosphor-icons/react"
-
-export type GalleryImage = {
-  id?: string
-  url: string
-  alt?: string | null
-}
+import type { GalleryImage } from "@/types/product.types"
 
 type Props = {
   images: GalleryImage[]
@@ -75,12 +71,14 @@ export default function ProductImageGallery({ images, productName }: Props) {
           style={{ transform: `translateX(-${activeIndex * 100}%)` }}
         >
           {normalized.map((img, index) => (
-            <div key={img.id ?? `${img.url}-${index}`} className="h-full w-full shrink-0">
-              <img
+            <div key={img.id ?? `${img.url}-${index}`} className="h-full w-full shrink-0 relative">
+              <Image
                 src={img.url}
                 alt={img.alt || productName}
-                className="w-full h-full object-contain p-8"
+                fill
+                className="object-contain p-8"
                 draggable={false}
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
           ))}
@@ -107,9 +105,9 @@ export default function ProductImageGallery({ images, productName }: Props) {
         )}
         {normalized.length > 1 && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-            {normalized.map((img, index) => (
+            {normalized.map((_, index) => (
               <button
-                key={img.id ?? `${img.url}-${index}`}
+                key={index}
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 className={`h-2.5 w-2.5 rounded-full transition ${
@@ -129,14 +127,16 @@ export default function ProductImageGallery({ images, productName }: Props) {
               key={img.id ?? `${img.url}-${index}`}
               type="button"
               onClick={() => setActiveIndex(index)}
-              className={`aspect-square rounded-xl border overflow-hidden bg-card flex items-center justify-center transition ${
+              className={`aspect-square rounded-xl border overflow-hidden bg-card flex items-center justify-center relative transition ${
                 index === activeIndex ? "border-primary" : "border-border hover:border-primary/60"
               }`}
             >
-              <img
+              <Image
                 src={img.url}
                 alt={img.alt || productName}
-                className="w-full h-full object-contain p-2"
+                fill
+                className="object-contain p-2"
+                sizes="20vw"
               />
             </button>
           ))}

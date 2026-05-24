@@ -1,12 +1,19 @@
 import { Resend } from "resend"
+import { storeBranding } from "@/lib/constants/branding-store"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let _resend: Resend | null = null
+function getResend() {
+  if (!_resend && process.env.RESEND_API_KEY) {
+    _resend = new Resend(process.env.RESEND_API_KEY)
+  }
+  return _resend
+}
 
-const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Prigma Comercio"
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || storeBranding.name
 const siteUrl =
   process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+    : process.env.NEXT_PUBLIC_SITE_URL || storeBranding.url
 
 // -------------------------------------------------------
 // Tipos
@@ -200,6 +207,12 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
   const orderShortId = data.orderId.slice(0, 8).toUpperCase()
 
   try {
+    const resend = getResend()
+    if (!resend) {
+      console.warn("[Email] RESEND_API_KEY no configurado, omitiendo envío de email")
+      return
+    }
+
     const { error } = await resend.emails.send({
       from: `${siteName} <${fromEmail}>`,
       to: [data.customerEmail],

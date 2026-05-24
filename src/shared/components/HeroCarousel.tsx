@@ -65,7 +65,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div
-        className="relative w-full h-72 sm:h-80 md:h-96 rounded-3xl overflow-hidden shadow-2xl shadow-black/20"
+        className="relative w-full h-72 sm:h-80 md:h-96 rounded-3xl overflow-hidden shadow-2xl shadow-foreground/20"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
@@ -87,8 +87,8 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 priority={currentIndex === 0}
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                <span className="text-white/50 text-lg">Sin imagen</span>
+              <div className="w-full h-full bg-gradient-to-br from-muted to-card flex items-center justify-center">
+                <span className="text-muted-foreground/50 text-lg">Sin imagen</span>
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
@@ -103,7 +103,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="text-sm font-medium text-white/60 mb-2 uppercase tracking-wider"
+                className="text-sm font-medium text-primary-foreground/60 mb-2 uppercase tracking-wider"
               >
                 Producto destacado
               </motion.span>
@@ -111,7 +111,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 leading-tight"
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-3 leading-tight"
               >
                 {currentItem.title}
               </motion.h2>
@@ -119,7 +119,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="text-base sm:text-lg md:text-xl text-white/80 mb-6 line-clamp-2"
+                className="text-base sm:text-lg md:text-xl text-primary-foreground/80 mb-6 line-clamp-2"
               >
                 {currentItem.subtitle}
               </motion.p>
@@ -131,7 +131,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
               >
                 <Link
                   href={`/products/${currentItem.id}`}
-                  className="inline-flex items-center gap-2 bg-white text-gray-900 px-6 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full font-semibold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
                 >
                   Ver producto
                   <ArrowRight className="w-4 h-4" />
@@ -149,10 +149,10 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 e.stopPropagation()
                 prevSlide()
               }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/40 transition flex items-center justify-center border border-white/30"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-primary-foreground/20 backdrop-blur-md hover:bg-primary-foreground/40 transition flex items-center justify-center border border-primary-foreground/30"
               aria-label="Anterior"
             >
-              <ChevronLeft className="w-6 h-6 text-white" />
+              <ChevronLeft className="w-6 h-6 text-primary-foreground" />
             </button>
             <button
               onClick={(e) => {
@@ -160,10 +160,10 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 e.stopPropagation()
                 nextSlide()
               }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/40 transition flex items-center justify-center border border-white/30"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-primary-foreground/20 backdrop-blur-md hover:bg-primary-foreground/40 transition flex items-center justify-center border border-primary-foreground/30"
               aria-label="Siguiente"
             >
-              <ChevronRight className="w-6 h-6 text-white" />
+              <ChevronRight className="w-6 h-6 text-primary-foreground" />
             </button>
 
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-3">
@@ -177,8 +177,8 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                   }}
                   className={`h-3 rounded-full transition-all ${
                     index === currentIndex
-                      ? "bg-white w-10 shadow-lg"
-                      : "bg-white/50 hover:bg-white/80 w-3"
+                      ? "bg-primary-foreground w-10 shadow-lg"
+                      : "bg-primary-foreground/50 hover:bg-primary-foreground/80 w-3"
                   }`}
                   aria-label={`Ir a slide ${index + 1}`}
                 />

@@ -22,14 +22,14 @@ export default function ProductSearchBar({ onSearch }: ProductSearchBarProps) {
   }, [query, debouncedSearch])
 
   return (
-    <div className="relative">
+    <div className="relative my-2.5 max-w-[80%] mx-auto">
       <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Buscar por nombre o SKU..."
-        className="w-full h-12 pl-12 pr-4 text-lg rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+        className="w-full h-10 pl-10 pr-4 text-sm rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
       />
     </div>
   )

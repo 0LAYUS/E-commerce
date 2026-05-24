@@ -1,21 +1,9 @@
 "use client"
 
-import { Minus, Plus, Trash2, Percent } from "lucide-react"
-
-export type CartItem = {
-  id: string
-  product_id: string
-  variant_id: string | null
-  name: string
-  sku: string | null
-  quantity: number
-  unit_price: number
-  discount_pct: number
-  subtotal: number
-  stock: number
-  has_bogo?: boolean
-  bogo_applied?: boolean
-}
+import { Percent } from "lucide-react"
+import { formatPrice } from "@/lib/format"
+import { CartItemRow } from "@/components/pos/CartItemRow"
+import type { CartItem } from "@/types/pos.types"
 
 type CartPOSProps = {
   items: CartItem[]
@@ -44,14 +32,6 @@ export default function CartPOS({
   customerName,
   onCustomerNameChange,
 }: CartPOSProps) {
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      minimumFractionDigits: 0,
-    }).format(price)
-  }
-
   const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     if (value === "") {
@@ -87,68 +67,12 @@ export default function CartPOS({
         ) : (
           <div className="divide-y divide-border">
             {items.map((item) => (
-              <div key={item.id} className="py-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-sm text-card-foreground truncate">
-                      {item.name}
-                    </h4>
-                    {item.sku && (
-                      <p className="text-xs text-muted-foreground font-mono">
-                        {item.sku}
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {formatPrice(item.unit_price)} c/u
-                      {item.discount_pct > 0 && (
-                        <span className="ml-2 text-green-600 font-medium">
-                          -{item.discount_pct}%
-                        </span>
-                      )}
-                      {item.bogo_applied && (
-                        <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs px-1 rounded">
-                          2x1
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => onRemoveItem(item.id)}
-                    className="p-1 text-destructive hover:bg-destructive/10 rounded transition"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="flex justify-between items-center mt-2">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => onUpdateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                      className="w-8 h-8 flex items-center justify-center border border-input rounded-lg hover:bg-accent transition"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="w-8 text-center font-semibold">{item.quantity}</span>
-                    <button
-                      onClick={() => onUpdateQuantity(item.id, Math.min(item.stock, item.quantity + 1))}
-                      disabled={item.quantity >= item.stock}
-                      className="w-8 h-8 flex items-center justify-center border border-input rounded-lg hover:bg-accent transition disabled:opacity-50"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-card-foreground">
-                      {formatPrice(item.subtotal)}
-                    </p>
-                    {item.discount_pct > 0 && (
-                      <p className="text-xs text-muted-foreground line-through">
-                        {formatPrice(item.unit_price * item.quantity)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <CartItemRow
+                key={item.id}
+                item={item}
+                onUpdateQuantity={onUpdateQuantity}
+                onRemoveItem={onRemoveItem}
+              />
             ))}
           </div>
         )}
@@ -177,7 +101,7 @@ export default function CartPOS({
                 <span>{formatPrice(subtotal)}</span>
               </div>
               {discount_amount > 0 && (
-                <div className="flex justify-between text-green-600">
+                <div className="flex justify-between text-success">
                   <span>Descuento</span>
                   <span>-{formatPrice(discount_amount)}</span>
                 </div>

@@ -1,7 +1,8 @@
 "use client"
 
-import Image from "next/image"
 import type { MensajeResponse } from "@/shared/types/license.types"
+import { prigmaBranding } from "@/lib/constants/branding-prigma"
+import { PrigmaLogo } from "@/components/branding/prigma-logo"
 
 type LicenseOverlayProps = {
   mensaje: MensajeResponse
@@ -11,7 +12,7 @@ export function LicenseOverlay({ mensaje }: LicenseOverlayProps) {
   return (
     <div className="fixed inset-0 z-[99999] bg-gray-950 flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('/images/prigma.jpeg')] bg-no-repeat bg-center bg-cover opacity-5" />
+        <div className="absolute top-0 left-0 w-full h-full bg-no-repeat bg-center bg-cover opacity-5" style={{ backgroundImage: `url('${prigmaBranding.assets.background}')` }} />
         <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-purple-600/10 blur-3xl" />
         <div className="absolute top-1/3 -left-40 w-96 h-96 rounded-full bg-indigo-600/10 blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-violet-600/10 blur-3xl" />
@@ -22,19 +23,13 @@ export function LicenseOverlay({ mensaje }: LicenseOverlayProps) {
           <div className="flex flex-col items-center text-center">
             <div className="mb-6 relative">
               <div className="w-20 h-20 relative">
-                <Image
-                  src="/images/prigma_logo_sin_fondo.png"
-                  alt="PRIGMA"
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                />
+                <PrigmaLogo size="md" />
               </div>
               <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-full h-0.5 bg-gradient-to-r from-purple-400 to-indigo-600 rounded-full" />
             </div>
 
             <div className="mb-4">
-              <div className="text-xs tracking-widest text-gray-400 mb-2">PRIGMA</div>
+              <div className="text-xs tracking-widest text-gray-400 mb-2">{prigmaBranding.company}</div>
               <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-600">
                 {mensaje.title}
               </h1>
@@ -48,7 +43,7 @@ export function LicenseOverlay({ mensaje }: LicenseOverlayProps) {
 
             <div className="w-full space-y-3">
               <a
-                href="https://wa.me/573224839040?text=Hola%2C%20necesito%20ayuda%20con%20mi%20licencia"
+                href={`https://wa.me/${prigmaBranding.whatsapp}?text=Hola%2C%20necesito%20ayuda%20con%20mi%20licencia`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 shadow-lg shadow-purple-500/25"
@@ -64,7 +59,7 @@ export function LicenseOverlay({ mensaje }: LicenseOverlayProps) {
               </a>
 
               <a
-                href="mailto:info@prigma.com"
+                href={`mailto:${prigmaBranding.email}`}
                 className="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-700/50 text-gray-300 font-medium rounded-lg hover:bg-gray-600/50 transition-all duration-300 border border-gray-600/50"
               >
                 <svg
@@ -80,7 +75,7 @@ export function LicenseOverlay({ mensaje }: LicenseOverlayProps) {
                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                   />
                 </svg>
-                info@prigma.com
+                {prigmaBranding.email}
               </a>
 
               <button
@@ -108,10 +103,10 @@ export function LicenseOverlay({ mensaje }: LicenseOverlayProps) {
 
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-500">
-            Soluciones de software a medida
+            {prigmaBranding.tagline}
           </p>
           <p className="text-xs text-gray-600 mt-1">
-            © 2026 PRIGMA. Todos los derechos reservados.
+            © {new Date().getFullYear()} {prigmaBranding.company}. Todos los derechos reservados.
           </p>
         </div>
       </div>

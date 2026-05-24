@@ -4,13 +4,8 @@ import { useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-
-type RelatedProduct = {
-  id: string
-  name: string
-  price: number
-  image_url: string | null
-}
+import PriceDisplay from "./PriceDisplay"
+import type { RelatedProduct } from "@/types/product.types"
 
 type RelatedProductsCarouselProps = {
   products: RelatedProduct[]
@@ -27,14 +22,6 @@ export default function RelatedProductsCarousel({ products }: RelatedProductsCar
         behavior: "smooth",
       })
     }
-  }
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      minimumFractionDigits: 0,
-    }).format(price)
   }
 
   return (
@@ -85,9 +72,7 @@ export default function RelatedProductsCarousel({ products }: RelatedProductsCar
             </div>
             <div className="p-4">
               <h3 className="font-bold text-foreground mb-1 truncate">{rp.name}</h3>
-              <span className="text-primary font-extrabold">
-                {formatPrice(rp.price)}
-              </span>
+              <PriceDisplay price={rp.price} className="text-primary font-extrabold" />
             </div>
           </Link>
         ))}

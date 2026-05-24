@@ -186,8 +186,8 @@ export default function AdminPOSOffersPage() {
             <div key={offer.id} className={`bg-card rounded-xl border p-6 ${!offer.active ? "opacity-50" : ""}`}>
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                    <Tag className="w-5 h-5 text-yellow-600" />
+                  <div className="w-10 h-10 bg-warning-muted rounded-full flex items-center justify-center">
+                    <Tag className="w-5 h-5 text-warning" />
                   </div>
                   <div>
                     <h3 className="font-bold">{offer.name}</h3>
@@ -199,11 +199,11 @@ export default function AdminPOSOffersPage() {
                 <button
                   onClick={() => handleToggle(offer.id, offer.active)}
                   className={`w-12 h-6 rounded-full transition relative ${
-                    offer.active ? "bg-green-500" : "bg-gray-300"
+                    offer.active ? "bg-success" : "bg-muted"
                   }`}
                 >
                   <div
-                    className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition ${
+                    className={`w-5 h-5 bg-primary-foreground rounded-full shadow absolute top-0.5 transition ${
                       offer.active ? "right-0.5" : "left-0.5"
                     }`}
                   />

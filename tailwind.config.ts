@@ -18,10 +18,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -45,18 +41,33 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        chart: {
-          "1": "hsl(var(--chart-1))",
-          "2": "hsl(var(--chart-2))",
-          "3": "hsl(var(--chart-3))",
-          "4": "hsl(var(--chart-4))",
-          "5": "hsl(var(--chart-5))",
+        // Semantic status colors
+        success: "hsl(var(--color-success))",
+        warning: "hsl(var(--color-warning))",
+        info: "hsl(var(--color-info))",
+        danger: "hsl(var(--color-danger))",
+        // Custom colors
+        purple: "hsl(var(--color-purple))",
+        // Surface tokens
+        text: {
+          primary: "hsl(var(--text-primary))",
+          secondary: "hsl(var(--text-secondary))",
+          muted: "hsl(var(--text-muted))",
         },
+        surface: {
+          DEFAULT: "hsl(var(--bg-surface))",
+          muted: "hsl(var(--bg-surface-muted))",
+        },
+        borderSubtle: "hsl(var(--border-subtle))",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        montserrat: ["var(--font-montserrat)", "sans-serif"],
+        "varela-round": ["var(--font-varela-round)", "sans-serif"],
       },
     },
   },

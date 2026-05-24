@@ -67,10 +67,10 @@ export default function AdminPOSSalesPage() {
 
   const getPaymentIcon = (method: string) => {
     switch (method) {
-      case "efectivo": return <DollarSign className="w-4 h-4 text-green-600" />
-      case "tarjeta": return <CreditCard className="w-4 h-4 text-blue-600" />
-      case "transferencia": return <Smartphone className="w-4 h-4 text-purple-600" />
-      default: return <DollarSign className="w-4 h-4 text-orange-600" />
+      case "efectivo": return <DollarSign className="w-4 h-4 text-success" />
+      case "tarjeta": return <CreditCard className="w-4 h-4 text-info" />
+      case "transferencia": return <Smartphone className="w-4 h-4 text-purple" />
+      default: return <DollarSign className="w-4 h-4 text-warning" />
     }
   }
 

@@ -1,59 +1,38 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import Link from "next/link"
-import { ArrowLeft } from "@phosphor-icons/react"
-import ProductVariantSelector from "@/features/products/components/ProductVariantSelector"
-import AddToCartButton from "@/features/products/components/AddToCartButton"
-import RelatedProductsCarousel from "@/features/products/components/RelatedProductsCarousel"
-import ProductImageGallery from "@/features/products/components/ProductImageGallery"
-import { useMemo, useState } from "react"
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { ArrowLeft } from "@phosphor-icons/react";
+import ProductVariantSelector from "./ProductVariantSelector";
+import AddToCartButton from "./AddToCartButton";
+import RelatedProductsCarousel from "./RelatedProductsCarousel";
+import ProductImageGallery from "./ProductImageGallery";
+import { useMemo, useState } from "react";
+import { formatPrice, formatStockLabel } from "@/lib/format";
 
-type Product = {
-  id: string
-  name: string
-  description: string
-  price: number
-  stock: number
-  image_url: string
-  categories?: { name: string }
-}
-
-import type { OptionDef } from "@/features/products/types/product.types"
-
-type SKU = {
-  id: string
-  product_id: string
-  sku_code: string
-  price_override: number | null
-  stock: number
-  active: boolean
-  option_values: string[]
-}
-
-type ProductImage = {
-  id: string
-  url: string
-  alt?: string | null
-}
-
-type VariantImage = {
-  id: string
-  sku_id: string
-  url: string
-  alt?: string | null
-}
+import type {
+  Product,
+  SKU,
+  ProductImage,
+  VariantImage,
+  OptionDef,
+} from "@/features/products/types/product.types";
 
 type Props = {
-  product: Product
-  options: OptionDef[]
-  skus: SKU[]
-  basePrice: number
-  hasVariants: boolean
-  relatedProducts: { id: string; name: string; price: number; image_url: string }[]
-  productImages: ProductImage[]
-  variantImages: Record<string, VariantImage[]>
-}
+  product: Product;
+  options: OptionDef[];
+  skus: SKU[];
+  basePrice: number;
+  hasVariants: boolean;
+  relatedProducts: {
+    id: string;
+    name: string;
+    price: number;
+    image_url: string;
+  }[];
+  productImages: ProductImage[];
+  variantImages: Record<string, VariantImage[]>;
+};
 
 export default function ProductDetailClient({
   product,
@@ -65,11 +44,11 @@ export default function ProductDetailClient({
   productImages,
   variantImages,
 }: Props) {
-  const [selectedSkuId, setSelectedSkuId] = useState<string | null>(null)
+  const [selectedSkuId, setSelectedSkuId] = useState<string | null>(null);
   const totalVariantStock = useMemo(
     () => skus.reduce((sum, sku) => sum + (sku.active ? sku.stock : 0), 0),
-    [skus]
-  )
+    [skus],
+  );
 
   const activeImages = useMemo(() => {
     if (selectedSkuId && variantImages[selectedSkuId]?.length) {
@@ -77,20 +56,21 @@ export default function ProductDetailClient({
         id: img.id,
         url: img.url,
         alt: img.alt,
-      }))
+      }));
     }
-    if (productImages.length > 0) return productImages
-    if (product.image_url) return [{ id: "fallback", url: product.image_url, alt: product.name }]
-    return []
-  }, [productImages, product.image_url, product.name, selectedSkuId, variantImages])
+    if (productImages.length > 0) return productImages;
+    if (product.image_url)
+      return [{ id: "fallback", url: product.image_url, alt: product.name }];
+    return [];
+  }, [
+    productImages,
+    product.image_url,
+    product.name,
+    selectedSkuId,
+    variantImages,
+  ]);
 
-  const primaryImageUrl = activeImages[0]?.url
-
-  const formatStockLabel = (stock: number) => {
-    if (stock <= 0) return "Agotado"
-    if (stock < 5) return `Ultimas ${stock} unidades`
-    return `${stock} unidades`
-  }
+  const primaryImageUrl = activeImages[0]?.url;
 
   return (
     <div className="min-h-screen bg-background">
@@ -121,7 +101,10 @@ export default function ProductDetailClient({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <ProductImageGallery images={activeImages} productName={product.name} />
+            <ProductImageGallery
+              images={activeImages}
+              productName={product.name}
+            />
           </motion.div>
 
           <motion.div
@@ -136,7 +119,7 @@ export default function ProductDetailClient({
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider bg-secondary px-3 py-1 rounded-full border border-border">
+              <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider bg-muted px-3 py-1 rounded-full border border-border">
                 {product.categories?.name || "Sin categoría"}
               </span>
             </motion.div>
@@ -157,16 +140,12 @@ export default function ProductDetailClient({
               transition={{ delay: 0.6 }}
             >
               <span className="text-4xl font-extrabold text-foreground">
-                {new Intl.NumberFormat("es-CO", {
-                  style: "currency",
-                  currency: "COP",
-                  minimumFractionDigits: 0,
-                }).format(basePrice)}
+                {formatPrice(basePrice)}
               </span>
             </motion.div>
 
             <motion.p
-              className="text-muted-foreground mb-8 leading-relaxed bg-secondary/50 p-4 rounded-xl border border-border"
+              className="text-muted-foreground mb-8 leading-relaxed bg-muted/50 p-4 rounded-xl border border-border"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
@@ -194,14 +173,18 @@ export default function ProductDetailClient({
 
             {!hasVariants && (
               <motion.div
-                className="mb-8 bg-secondary/50 p-6 rounded-xl border border-border"
+                className="mb-8 bg-muted/50 p-6 rounded-xl border border-border"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-muted-foreground">Stock disponible</span>
-                  <span className={`text-xl font-bold ${product.stock > 0 ? "text-green-500" : "text-destructive"}`}>
+                  <span className="text-sm text-muted-foreground">
+                    Stock disponible
+                  </span>
+                  <span
+                    className={`text-xl font-bold ${product.stock > 0 ? "text-success" : "text-destructive"}`}
+                  >
                     {formatStockLabel(product.stock)}
                   </span>
                 </div>
@@ -230,5 +213,5 @@ export default function ProductDetailClient({
         )}
       </div>
     </div>
-  )
+  );
 }
