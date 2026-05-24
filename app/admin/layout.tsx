@@ -1,7 +1,7 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { LicenseOverlay } from "@/shared/components/license/LicenseOverlay";
 import { MENSAJE_BLOQUEADO } from "@/lib/constants/admin";
 import { AdminSidebar } from "@/features/admin/components/admin-sidebar";
@@ -15,6 +15,11 @@ function AdminContent({ children }: { children: React.ReactNode }) {
   const bloqueado = searchParams.get("bloqueado") === "si";
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setIsSidebarVisible(false);
+  }, [pathname]);
 
   if (bloqueado) {
     return <LicenseOverlay mensaje={MENSAJE_BLOQUEADO} />;
