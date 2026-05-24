@@ -4,8 +4,8 @@ import { useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import PriceDisplay from "@/features/products/components/PriceDisplay"
-import type { RelatedProduct } from "@/features/products/types/product.types"
+import PriceDisplay from "./PriceDisplay"
+import type { RelatedProduct } from "@/types/product.types"
 
 type RelatedProductsCarouselProps = {
   products: RelatedProduct[]

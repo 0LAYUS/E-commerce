@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { useState, useEffect } from "react"
-import HeroCarousel from "@/shared/components/layout/HeroCarousel"
+import HeroCarousel from "@/shared/components/HeroCarousel"
 import ProductGrid from "@/features/products/components/ProductGrid"
 
 import type { Product, Category } from "@/features/products/types/product.types"

@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Montserrat, Varela_Round } from "next/font/google";
 import { ThemeProvider as NextThemeProvider } from "next-themes";
 import { Suspense } from "react";
-import Navbar from "@/shared/components/Navbar";
-import Footer from "@/shared/components/Footer";
 import { CartProvider } from "@/shared/components/CartProvider";
 import { ThemeVariables } from "@/components/theme-provider";
 import { storeBranding } from "@/lib/constants/branding-store";

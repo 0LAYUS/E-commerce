@@ -3,10 +3,10 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft } from "@phosphor-icons/react";
-import ProductVariantSelector from "@/features/products/components/ProductVariantSelector";
-import AddToCartButton from "@/features/products/components/AddToCartButton";
-import RelatedProductsCarousel from "@/features/products/components/RelatedProductsCarousel";
-import ProductImageGallery from "@/features/products/components/ProductImageGallery";
+import ProductVariantSelector from "./ProductVariantSelector";
+import AddToCartButton from "./AddToCartButton";
+import RelatedProductsCarousel from "./RelatedProductsCarousel";
+import ProductImageGallery from "./ProductImageGallery";
 import { useMemo, useState } from "react";
 import { formatPrice, formatStockLabel } from "@/lib/format";
 

@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useCart } from "@/shared/components/CartProvider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import QuantitySelector from "@/features/products/components/QuantitySelector";
+import QuantitySelector from "./QuantitySelector";
 
 type Props = {
   productId: string;

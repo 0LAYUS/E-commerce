@@ -98,7 +98,7 @@ export default function CheckoutPage() {
       const amountInCents = Math.round(grandTotal) * 100
       const integritySignature = await getWompiIntegritySignature(orderId, amountInCents, "COP")
 
-      const widgetConfig: Record<string, unknown> = {
+            const widgetConfig: Record<string, unknown> = {
         currency: wompiWidgetDefaults.currency,
         amountInCents,
         reference: orderId,
@@ -114,7 +114,7 @@ export default function CheckoutPage() {
         widgetConfig.signature = { integrity: integritySignature }
       }
 
-      const checkout = new (window as any).WidgetCheckout(widgetConfig)
+      const checkout = new ((window as unknown) as { WidgetCheckout: new (config: Record<string, unknown>) => { open: (callback: (result: WompiResult) => void) => void } }).WidgetCheckout(widgetConfig)
 
       checkout.open(async (result: WompiResult) => {
         const transaction = result.transaction

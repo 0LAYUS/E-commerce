@@ -321,7 +321,6 @@ describe('ProductVariantSelector', () => {
       )
 
       await waitFor(() => {})
-
       fireEvent.click(screen.getByRole('button', { name: 'Rojo' }))
       fireEvent.click(screen.getByRole('button', { name: 'S' }))
 

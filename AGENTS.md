@@ -23,18 +23,33 @@ npm run test:run # vitest single run
 
 ## Path Aliases (@/)
 Configured in `tsconfig.json`:
+- `@/*` → project root (`./*`)
+- `@/features/*` → `src/features/*`
+- `@/shared/*` → `src/shared/*`
 - `@/components/*` → `components/`
 - `@/lib/*` → `lib/`
-- `@/hooks/*` → `hooks/`
 - `@/components/ui/*` → `components/ui/`
 
 ## Architecture
 - **Pages** (`app/**/page.tsx`): Server Components by default
 - **Interactive components** (`components/**/*.tsx`): `"use client"` directive
-- **Server Actions**: `lib/actions/*.ts`
-- **Types**: `types/*.ts`
-- **Utils**: `lib/utils.ts`, `lib/format.ts`
-- **Icons**: Lucide React + Phosphor Icons
+- **Features** (`src/features/*/`): Feature-based code organization
+  - Each feature has: `actions/`, `components/`, `hooks/`, `repositories/`, `services/`, `types/`
+  - POS: `src/features/pos/`
+  - Cart: `src/features/cart/`
+  - Products: `src/features/products/`
+  - Orders: `src/features/orders/`
+  - Admin: `src/features/admin/`
+  - Auth: `src/features/auth/`
+  - Profile: `src/features/profile/`
+- **Shared** (`src/shared/*/`): Cross-feature utilities
+  - `components/`: Layout (Navbar, Footer), Providers (Cart, License)
+  - `hooks/`: Custom React hooks
+  - `utils/`: Utility functions
+ - **Types**: `src/features/*/types/`, `src/shared/types/`, `types/*.ts`
+ - **Server Actions**: `src/features/*/actions/*.ts`, `lib/actions/*.ts`
+ - **Utils**: `lib/utils.ts`, `lib/format.ts`
+ - **Icons**: Lucide React + Phosphor Icons
 
 ## Product Components (`components/products/`)
 - **Container/Orchestrator**: `ProductGrid.tsx` — manages state, filtering, search, delegates to child components

@@ -1,8 +1,7 @@
 "use client"
 
 import { StatusBarChart } from "@/features/admin/components/StatusBarChart"
-import { getOrdersByStatus } from "@/features/admin/actions/adminActions"
-import type { FilterPeriod } from "@/features/admin/actions/adminActions"
+import { getOrdersByStatus, type FilterPeriod } from "@/features/admin/actions/adminActions"
 
 interface OnlineOrdersStatusChartProps {
   start: Date

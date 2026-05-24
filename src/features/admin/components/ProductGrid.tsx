@@ -191,20 +191,20 @@ export default function ProductGrid({ products, categories }: { products: Produc
 
   return (
     <div className="flex flex-col min-h-screen px-4 py-4 overflow-hidden">
-      <div className="flex justify-between items-center mb-4 shrink-0">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 shrink-0">
         <h1 className="text-2xl font-extrabold text-foreground flex items-center gap-3">
           <Link href="/admin" className="text-muted-foreground hover:text-foreground transition">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           Gestionar Productos
         </h1>
-        <div className="flex gap-3">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button variant="outline" asChild className="w-full sm:w-auto">
             <Link href="/admin/products/archived">
               <Archive className="w-4 h-4" /> Ver Archivados
             </Link>
           </Button>
-          <Button onClick={openNewModal}>
+          <Button onClick={openNewModal} className="w-full sm:w-auto">
             <Plus className="w-4 h-4" /> Nuevo Producto
           </Button>
         </div>

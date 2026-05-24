@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/shared/components/CartProvider";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Check } from "@phosphor-icons/react";
-import ProductCard from "@/features/products/components/ProductCard";
-import ProductSearch from "@/features/products/components/ProductSearch";
-import ProductCategoryFilter from "@/features/products/components/ProductCategoryFilter";
-import ProductEmptyState from "@/features/products/components/ProductEmptyState";
+import ProductCard from "./ProductCard";
+import ProductSearch from "./ProductSearch";
+import ProductCategoryFilter from "./ProductCategoryFilter";
+import ProductEmptyState from "./ProductEmptyState";
 import type { Product, Category } from "@/features/products/types/product.types";
 
 type ProductGridProps = {
