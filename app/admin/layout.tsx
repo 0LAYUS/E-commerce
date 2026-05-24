@@ -21,14 +21,17 @@ function AdminContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-transparent">
+      <div className="hidden md:block">
+        <AdminSidebar />
+      </div>
       {isSidebarVisible ? (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/20"
+            className="fixed inset-0 z-40 bg-black/20 md:hidden"
             onClick={() => setIsSidebarVisible(false)}
             aria-hidden="true"
           />
-          <div className="fixed inset-y-0 left-0 z-50 h-full">
+          <div className="fixed inset-y-0 left-0 z-50 h-full md:hidden">
             <AdminSidebar />
           </div>
         </>
@@ -38,7 +41,7 @@ function AdminContent({ children }: { children: React.ReactNode }) {
           {!isSidebarVisible ? (
             <Button
               variant="secondary"
-              className="fixed left-4 top-4 z-50 h-11 w-11 rounded-full p-0 shadow-md"
+              className="fixed left-4 top-4 z-50 h-11 w-11 rounded-full p-0 shadow-md md:hidden"
               onClick={() => setIsSidebarVisible(true)}
               aria-label="Mostrar menu"
             >
