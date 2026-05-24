@@ -84,10 +84,4 @@
   body {
     @apply bg-background text-foreground;
   }
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-varela-round), sans-serif;
-  }
-  button, [role="button"] {
-    font-family: var(--font-varela-round), sans-serif;
-  }
 }
