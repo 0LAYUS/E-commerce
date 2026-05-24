@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { storeBranding } from "@/lib/constants/branding-store";
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Términos y Condiciones",
 };

@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
+export const dynamic = "force-dynamic"
+
 type SaleRow = {
   total: number | string | null
   payment_method: string | null

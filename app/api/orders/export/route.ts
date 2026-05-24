@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 import type { OrderStatus } from "@/types/order.types"
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
