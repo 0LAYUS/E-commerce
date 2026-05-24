@@ -1,27 +1,38 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import Link from "next/link"
-import { ArrowLeft } from "@phosphor-icons/react"
-import ProductVariantSelector from "@/components/products/ProductVariantSelector"
-import AddToCartButton from "@/components/products/AddToCartButton"
-import RelatedProductsCarousel from "@/components/products/RelatedProductsCarousel"
-import ProductImageGallery from "@/components/products/ProductImageGallery"
-import { useMemo, useState } from "react"
-import { formatPrice, formatStockLabel } from "@/lib/format"
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { ArrowLeft } from "@phosphor-icons/react";
+import ProductVariantSelector from "@/components/products/ProductVariantSelector";
+import AddToCartButton from "@/components/products/AddToCartButton";
+import RelatedProductsCarousel from "@/components/products/RelatedProductsCarousel";
+import ProductImageGallery from "@/components/products/ProductImageGallery";
+import { useMemo, useState } from "react";
+import { formatPrice, formatStockLabel } from "@/lib/format";
 
-import type { Product, SKU, ProductImage, VariantImage, OptionDef } from "@/types/product.types"
+import type {
+  Product,
+  SKU,
+  ProductImage,
+  VariantImage,
+  OptionDef,
+} from "@/types/product.types";
 
 type Props = {
-  product: Product
-  options: OptionDef[]
-  skus: SKU[]
-  basePrice: number
-  hasVariants: boolean
-  relatedProducts: { id: string; name: string; price: number; image_url: string }[]
-  productImages: ProductImage[]
-  variantImages: Record<string, VariantImage[]>
-}
+  product: Product;
+  options: OptionDef[];
+  skus: SKU[];
+  basePrice: number;
+  hasVariants: boolean;
+  relatedProducts: {
+    id: string;
+    name: string;
+    price: number;
+    image_url: string;
+  }[];
+  productImages: ProductImage[];
+  variantImages: Record<string, VariantImage[]>;
+};
 
 export default function ProductDetailClient({
   product,
@@ -33,11 +44,11 @@ export default function ProductDetailClient({
   productImages,
   variantImages,
 }: Props) {
-  const [selectedSkuId, setSelectedSkuId] = useState<string | null>(null)
+  const [selectedSkuId, setSelectedSkuId] = useState<string | null>(null);
   const totalVariantStock = useMemo(
     () => skus.reduce((sum, sku) => sum + (sku.active ? sku.stock : 0), 0),
-    [skus]
-  )
+    [skus],
+  );
 
   const activeImages = useMemo(() => {
     if (selectedSkuId && variantImages[selectedSkuId]?.length) {
@@ -45,14 +56,21 @@ export default function ProductDetailClient({
         id: img.id,
         url: img.url,
         alt: img.alt,
-      }))
+      }));
     }
-    if (productImages.length > 0) return productImages
-    if (product.image_url) return [{ id: "fallback", url: product.image_url, alt: product.name }]
-    return []
-  }, [productImages, product.image_url, product.name, selectedSkuId, variantImages])
+    if (productImages.length > 0) return productImages;
+    if (product.image_url)
+      return [{ id: "fallback", url: product.image_url, alt: product.name }];
+    return [];
+  }, [
+    productImages,
+    product.image_url,
+    product.name,
+    selectedSkuId,
+    variantImages,
+  ]);
 
-  const primaryImageUrl = activeImages[0]?.url
+  const primaryImageUrl = activeImages[0]?.url;
 
   return (
     <div className="min-h-screen bg-background">
@@ -83,7 +101,10 @@ export default function ProductDetailClient({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <ProductImageGallery images={activeImages} productName={product.name} />
+            <ProductImageGallery
+              images={activeImages}
+              productName={product.name}
+            />
           </motion.div>
 
           <motion.div
@@ -98,7 +119,7 @@ export default function ProductDetailClient({
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider bg-secondary px-3 py-1 rounded-full border border-border">
+              <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider bg-muted px-3 py-1 rounded-full border border-border">
                 {product.categories?.name || "Sin categoría"}
               </span>
             </motion.div>
@@ -124,7 +145,7 @@ export default function ProductDetailClient({
             </motion.div>
 
             <motion.p
-              className="text-muted-foreground mb-8 leading-relaxed bg-secondary/50 p-4 rounded-xl border border-border"
+              className="text-muted-foreground mb-8 leading-relaxed bg-muted/50 p-4 rounded-xl border border-border"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
@@ -152,14 +173,18 @@ export default function ProductDetailClient({
 
             {!hasVariants && (
               <motion.div
-                className="mb-8 bg-secondary/50 p-6 rounded-xl border border-border"
+                className="mb-8 bg-muted/50 p-6 rounded-xl border border-border"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-sm text-muted-foreground">Stock disponible</span>
-                  <span className={`text-xl font-bold ${product.stock > 0 ? "text-success" : "text-destructive"}`}>
+                  <span className="text-sm text-muted-foreground">
+                    Stock disponible
+                  </span>
+                  <span
+                    className={`text-xl font-bold ${product.stock > 0 ? "text-success" : "text-destructive"}`}
+                  >
                     {formatStockLabel(product.stock)}
                   </span>
                 </div>
@@ -188,5 +213,5 @@ export default function ProductDetailClient({
         )}
       </div>
     </div>
-  )
+  );
 }
