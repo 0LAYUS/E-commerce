@@ -68,7 +68,7 @@ export function OrdersFilters({ totalCount }: OrdersFiltersProps) {
   return (
     <div className="space-y-4">
       {/* Header with count */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <h1 className="text-2xl font-bold text-foreground">Órdenes</h1>
         {totalCount !== undefined && (
           <span className="text-sm text-muted-foreground">
@@ -93,20 +93,22 @@ export function OrdersFilters({ totalCount }: OrdersFiltersProps) {
       </div>
 
       {/* Status tabs */}
-      <div className="flex gap-1 border-b border-border">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => handleStatusChange(tab.value)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              initialStatus === tab.value
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="overflow-x-auto">
+        <div className="flex gap-1 border-b border-border whitespace-nowrap min-w-max">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab.value}
+              onClick={() => handleStatusChange(tab.value)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                initialStatus === tab.value
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   )

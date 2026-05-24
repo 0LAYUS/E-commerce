@@ -69,7 +69,7 @@ export default function UserManagement({
           {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {filterOptions.map((role) => (
             <button
               key={role}
@@ -88,38 +88,40 @@ export default function UserManagement({
       </div>
 
       <div className="bg-card rounded-xl border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-muted/50 border-b border-border">
-              <th className="text-left p-4 font-medium text-muted-foreground">Usuario</th>
-              <th className="text-left p-4 font-medium text-muted-foreground">Email</th>
-              <th className="text-left p-4 font-medium text-muted-foreground">Rol</th>
-              <th className="text-left p-4 font-medium text-muted-foreground">Órdenes</th>
-              <th className="text-left p-4 font-medium text-muted-foreground">Fecha de registro</th>
-              <th className="text-left p-4 font-medium text-muted-foreground w-24">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayedUsers.map((user) => (
-              <UserTableRow
-                key={user.id}
-                user={user}
-                isMenuOpen={openMenu === user.id}
-                isUpdating={updating === user.id}
-                onToggleMenu={() => setOpenMenu(openMenu === user.id ? null : user.id)}
-                onRoleChange={handleRoleChange}
-                onViewDetails={setSelectedUserId}
-              />
-            ))}
-            {displayedUsers.length === 0 && (
-              <tr>
-                <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                  {loading ? "Cargando..." : "No se encontraron usuarios."}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-[720px] w-full text-sm">
+            <thead>
+              <tr className="bg-muted/50 border-b border-border">
+                <th className="text-left p-4 font-medium text-muted-foreground">Usuario</th>
+                <th className="text-left p-4 font-medium text-muted-foreground">Email</th>
+                <th className="text-left p-4 font-medium text-muted-foreground">Rol</th>
+                <th className="text-left p-4 font-medium text-muted-foreground">Órdenes</th>
+                <th className="text-left p-4 font-medium text-muted-foreground">Fecha de registro</th>
+                <th className="text-left p-4 font-medium text-muted-foreground w-24">Acciones</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {displayedUsers.map((user) => (
+                <UserTableRow
+                  key={user.id}
+                  user={user}
+                  isMenuOpen={openMenu === user.id}
+                  isUpdating={updating === user.id}
+                  onToggleMenu={() => setOpenMenu(openMenu === user.id ? null : user.id)}
+                  onRoleChange={handleRoleChange}
+                  onViewDetails={setSelectedUserId}
+                />
+              ))}
+              {displayedUsers.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                    {loading ? "Cargando..." : "No se encontraron usuarios."}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="flex items-center justify-between">
