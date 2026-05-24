@@ -1,21 +1,12 @@
-import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { getAllCategories } from "@/features/categories/services/categoryService"
+
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    const supabase = await createClient()
-
-    const { data: categories, error } = await supabase
-      .from("categories")
-      .select("id, name")
-      .order("name")
-
-    if (error) {
-      console.error("Categories error:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ categories: categories || [] })
+    const categories = await getAllCategories()
+    return NextResponse.json({ categories })
   } catch (error) {
     console.error("Categories error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

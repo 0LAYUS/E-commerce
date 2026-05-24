@@ -1,0 +1,153 @@
+import { createClient } from '@/lib/supabase/server';
+import Link from 'next/link';
+import Image from 'next/image';
+import { notFound } from 'next/navigation';
+import { ArrowLeft, Package } from 'lucide-react';
+
+type OrderItemRow = {
+  id: string
+  quantity: number
+  price_at_purchase: number
+  products: { name: string; image_url: string | null } | null
+}
+
+type OrderRow = {
+  id: string
+  status: string
+  created_at: string
+  customer_name: string | null
+  customer_email: string | null
+  shipping_address: string | null
+  total_amount: number
+  order_items: OrderItemRow[]
+}
+
+export default async function OrderDetailsPage(props: { params: Promise<{ id: string }> }) {
+  const { id } = await props.params;
+  
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return <div className="p-8 text-center text-muted-foreground">Inicia sesión para ver.</div>;
+  }
+
+  // Fetch order and its items
+  const { data: order } = await supabase
+    .from('orders')
+    .select(`
+      *,
+      order_items (
+        id,
+        quantity,
+        price_at_purchase,
+        products (
+          name,
+          image_url
+        )
+      )
+    `)
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single();
+
+  if (!order) {
+    notFound();
+  }
+
+  return (
+    <div>
+      <Link href="/profile/orders" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-6 transition">
+        <ArrowLeft className="w-4 h-4 mr-2" /> Volver
+      </Link>
+
+      {/* MAIN CARD 1 */}
+      <div className="bg-card rounded-xl shadow-sm border overflow-hidden p-8 mb-8">
+        <div className="flex justify-between items-start mb-2">
+          <h1 className="text-2xl font-extrabold text-foreground">Orden #{order.id.split('-')[0]}</h1>
+          <span className={`px-4 py-1.5 text-sm font-semibold rounded-full ${
+            order.status === 'APPROVED' ? 'bg-success-muted text-success' :
+            order.status === 'PENDING' ? 'bg-info-muted text-info' :
+            'bg-muted text-muted-foreground'
+          }`}>
+            {order.status === 'PENDING' ? 'Procesando' : order.status === 'APPROVED' ? 'Aprobado' : order.status}
+          </span>
+        </div>
+        <p className="text-muted-foreground mb-8">
+          Realizada el {new Date(order.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+        </p>
+
+        <hr className="border-border mb-8" />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Informacion Envío */}
+          <div>
+            <h3 className="flex items-center text-foreground font-bold mb-4">
+              <Package className="w-5 h-5 mr-2 text-info" /> Información de Envío
+            </h3>
+            <div className="text-muted-foreground space-y-1">
+              <p>{order.customer_name || 'N/A'}</p>
+              <p>{order.customer_email || 'N/A'}</p>
+              <p className="mt-2 text-sm">{order.shipping_address || 'N/A'}</p>
+            </div>
+          </div>
+          
+          {/* Resumen */}
+          <div>
+            <h3 className="text-foreground font-bold mb-4">Resumen</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Subtotal</span>
+                <span className="font-semibold text-foreground">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(order.total_amount)}</span>
+              </div>
+              <hr className="border-border" />
+              <div className="flex justify-between items-center pt-2">
+                <span className="font-extrabold text-foreground text-lg">Total</span>
+                <span className="font-extrabold text-primary text-lg">{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(order.total_amount)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* MAIN CARD 2 (Productos) */}
+      <h2 className="text-2xl font-extrabold text-foreground mb-6">Productos</h2>
+      <div className="space-y-4">
+        {(order as OrderRow).order_items?.map((item) => (
+          <div key={item.id} className="relative flex p-4 bg-card rounded-xl shadow-sm border items-center">
+            {/* Image */}
+            <div className="flex-shrink-0 w-20 h-20 bg-muted flex items-center justify-center overflow-hidden">
+              {item.products?.image_url ? (
+                <Image
+                  src={item.products.image_url}
+                  alt={item.products.name}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-contain mix-blend-multiply"
+                />
+              ) : (
+                <span className="text-xs text-muted-foreground font-mono">IMG</span>
+              )}
+            </div>
+
+            {/* Info */}
+            <div className="ml-6 flex-1">
+              <h3 className="text-base font-bold text-foreground">{item.products?.name || 'Producto Desconocido'}</h3>
+              <p className="text-sm text-muted-foreground mt-1 font-medium">Cantidad: {item.quantity}</p>
+            </div>
+
+            {/* Price */}
+            <div className="text-right flex flex-col justify-center">
+              <p className="font-extrabold text-foreground text-lg">
+                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(item.price_at_purchase)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Total: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(item.price_at_purchase * item.quantity)}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

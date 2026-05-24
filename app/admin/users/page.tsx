@@ -1,9 +1,9 @@
-import { getAllUsers, updateUserRole } from "@/lib/actions/authActions"
+import { getAllUsers, updateUserRole } from "@/features/auth/actions/authActions"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Users } from "lucide-react"
-import UserManagement from "@/components/admin/UserManagement"
+import UserManagement from "@/features/admin/components/UserManagement"
 
 export default async function UsersPage() {
   const supabase = await createClient()
@@ -27,7 +27,7 @@ export default async function UsersPage() {
   const initialData = await getAllUsers({ limit: 50, offset: 0 })
 
   return (
-    <div className="flex flex-col h-screen px-4 py-4 overflow-hidden">
+    <div className="flex flex-col min-h-screen px-4 py-4 overflow-hidden">
       <div className="flex justify-between items-center mb-4 shrink-0">
         <h1 className="text-2xl font-extrabold text-foreground flex items-center gap-3">
           <Link href="/admin" className="text-muted-foreground hover:text-foreground transition">

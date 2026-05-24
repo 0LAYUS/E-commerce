@@ -1,21 +1,16 @@
-import { createAdminClient } from "@/lib/supabase/admin"
 import { NextResponse } from "next/server"
+import { runCleanup } from "@/features/cart/services/cleanupService"
 
 export async function POST() {
   try {
-    const supabase = await createAdminClient()
+    const results = await runCleanup()
 
-    const { data, error } = await supabase.rpc("cleanup_expired_reservations")
-
-    if (error) {
-      console.error("Cleanup error:", error)
-      return NextResponse.json({ error: "Cleanup failed" }, { status: 500 })
-    }
-
-    return NextResponse.json({ 
-      success: true, 
-      cleaned: data,
-      message: `Cleaned up ${data} expired reservations` 
+    return NextResponse.json({
+      success: true,
+      reservations_cleaned: results.reservations_cleaned,
+      pending_orders_processed: results.pending_orders_processed,
+      pending_orders_errors: results.pending_orders_errors,
+      message: `Reservations cleaned: ${results.reservations_cleaned}, Pending orders processed: ${results.pending_orders_processed}`,
     })
   } catch (error) {
     console.error("Cleanup error:", error)
@@ -24,7 +19,7 @@ export async function POST() {
 }
 
 export async function GET() {
-  return NextResponse.json({ 
-    message: "POST only. Call this endpoint to cleanup expired reservations." 
+  return NextResponse.json({
+    message: "POST only. Cleans expired reservations and PENDING orders older than 30 minutes.",
   })
 }

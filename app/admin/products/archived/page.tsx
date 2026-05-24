@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin"
-import ArchivedProductsGrid from "@/components/admin/ArchivedProductsGrid"
+import ArchivedProductsGrid from "@/features/admin/components/ArchivedProductsGrid"
 
 export default async function ArchivedProductsPage() {
   const supabase = await createAdminClient()

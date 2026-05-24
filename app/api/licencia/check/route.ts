@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { verificarLicencia } from "@/lib/actions/licenseActions"
+import { verificarLicencia } from "@/shared/actions/licenseActions"
 
 export async function GET() {
   try {

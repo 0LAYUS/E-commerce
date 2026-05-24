@@ -1,39 +1,135 @@
-export default async function CheckoutResultPage({ searchParams }: { searchParams: Promise<{ id?: string, status?: string }> }) {
-  const { id, status } = await searchParams;
+import Link from "next/link"
+import { CheckCircle2, XCircle, Clock, ArrowLeft, ShoppingBag } from "lucide-react"
 
-  const isApproved = status === 'APPROVED';
+export const metadata = {
+  title: "Resultado del Pago",
+}
+
+type Status = "APPROVED" | "DECLINED" | "ERROR" | "PENDING" | string
+
+const statusConfig: Record<string, {
+  icon: React.ElementType
+  iconColor: string
+  bgColor: string
+  borderColor: string
+  title: string
+  description: string
+}> = {
+  APPROVED: {
+    icon: CheckCircle2,
+    iconColor: "text-success",
+    bgColor: "bg-success-muted",
+    borderColor: "border-success",
+    title: "¡Pago Exitoso!",
+    description: "Tu pago fue procesado correctamente. Recibirás un correo con los detalles de tu compra muy pronto.",
+  },
+  DECLINED: {
+    icon: XCircle,
+    iconColor: "text-danger",
+    bgColor: "bg-danger-muted",
+    borderColor: "border-danger",
+    title: "Pago Rechazado",
+    description: "Tu pago fue rechazado por la entidad bancaria. Verifica los datos de tu tarjeta o intenta con otro método de pago.",
+  },
+  ERROR: {
+    icon: XCircle,
+    iconColor: "text-danger",
+    bgColor: "bg-danger-muted",
+    borderColor: "border-danger",
+    title: "Error en el Pago",
+    description: "Ocurrió un error procesando tu pago. El stock ha sido liberado. Por favor, intenta de nuevo.",
+  },
+  PENDING: {
+    icon: Clock,
+    iconColor: "text-warning",
+    bgColor: "bg-warning-muted",
+    borderColor: "border-warning",
+    title: "Pago en Proceso",
+    description: "Tu pago está siendo procesado. Te notificaremos por correo cuando se confirme. No realices otro intento.",
+  },
+}
+
+export default async function CheckoutResultPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ id?: string; status?: string }>
+}) {
+  const { id, status } = await searchParams
+  const currentStatus: Status = status || "ERROR"
+
+  const config = statusConfig[currentStatus] ?? {
+    icon: XCircle,
+    iconColor: "text-muted-foreground",
+    bgColor: "bg-muted",
+    borderColor: "border-border",
+    title: "Estado Desconocido",
+    description: "No pudimos determinar el estado de tu pago. Revisa tu correo o contáctanos.",
+  }
+
+  const Icon = config.icon
 
   return (
-    <div className="max-w-2xl mx-auto mt-20 bg-white p-10 rounded-xl shadow border text-center">
-      <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${isApproved ? 'bg-green-100 text-green-500' : 'bg-red-100 text-red-500'}`}>
-        {isApproved ? (
-          <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-        ) : (
-          <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-        )}
-      </div>
-      
-      <h1 className="text-3xl font-bold mt-6 text-gray-900">
-        {isApproved ? '¡Pago Exitoso!' : 'Pago Rechazado o Fallido'}
-      </h1>
-      
-      <p className="mt-4 text-gray-600">
-        {isApproved 
-          ? 'Hemos recibido tu pago y estamos procesando tu orden. Te llegará un correo con los detalles de tu compra en WompiStore.' 
-          : 'Hubo un problema procesando tu pago o éste fue rechazado. Revisa el estado de la transacción en Wompi e intenta de nuevo.'}
-      </p>
-
-      {id && (
-        <div className="mt-8 bg-gray-50 p-4 rounded text-sm text-gray-500 border font-mono tracking-wider shadow-inner">
-          Transacción Ref: {id}
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
+      <div className={`w-full max-w-lg bg-card border rounded-2xl shadow-lg overflow-hidden`}>
+        {/* Header de color según estado */}
+        <div className={`${config.bgColor} ${config.borderColor} border-b px-8 py-8 flex flex-col items-center text-center`}>
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center ${config.bgColor} border-2 ${config.borderColor} shadow-inner mb-4`}>
+            <Icon className={`w-10 h-10 ${config.iconColor}`} />
+          </div>
+          <h1 className="text-2xl font-extrabold text-foreground">{config.title}</h1>
         </div>
-      )}
 
-      <div className="mt-10">
-        <a href="/" className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition shadow">
-          Volver a la tienda principal
-        </a>
+        {/* Cuerpo */}
+        <div className="px-8 py-8">
+          <p className="text-muted-foreground text-sm text-center leading-relaxed mb-6">
+            {config.description}
+          </p>
+
+          {/* Referencia de transacción */}
+          {id && (
+            <div className="bg-muted/50 border border-border rounded-lg px-4 py-3 mb-6">
+              <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wider">
+                ID de Transacción Wompi
+              </p>
+              <p className="font-mono text-sm text-foreground break-all">{id}</p>
+            </div>
+          )}
+
+          {/* Acciones */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {currentStatus === "APPROVED" ? (
+              <Link
+                href="/profile"
+                className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold py-3 px-5 rounded-lg hover:bg-primary/90 transition text-sm"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                Ver mis órdenes
+              </Link>
+            ) : (
+              <Link
+                href="/checkout"
+                className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold py-3 px-5 rounded-lg hover:bg-primary/90 transition text-sm"
+              >
+                Intentar de nuevo
+              </Link>
+            )}
+            <Link
+              href="/"
+              className="flex-1 flex items-center justify-center gap-2 border border-border text-foreground font-semibold py-3 px-5 rounded-lg hover:bg-muted transition text-sm"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Volver a la tienda
+            </Link>
+          </div>
+        </div>
+
+        <div className="px-8 pb-6 text-center">
+          <p className="text-xs text-muted-foreground">
+            Pago procesado de forma segura por{" "}
+            <span className="font-semibold text-foreground">Wompi</span>
+          </p>
+        </div>
       </div>
     </div>
-  );
+  )
 }

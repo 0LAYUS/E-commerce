@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { POST } from '@/app/api/cart/validate/route'
 import { NextRequest } from 'next/server'
-import * as cartValidator from '@/lib/cart/cartValidator'
+import * as cartValidator from '@/features/cart/services/cartValidationService'
 
-vi.mock('@/lib/cart/cartValidator', () => ({
+vi.mock('@/features/cart/services/cartValidationService', () => ({
   validateCartItems: vi.fn(),
 }))
 
-const mockValidateCartItems = cartValidator.validateCartItems as any
+const mockValidateCartItems = vi.mocked(cartValidator.validateCartItems)
 
 describe('POST /api/cart/validate', () => {
   beforeEach(() => {
@@ -29,9 +29,9 @@ describe('POST /api/cart/validate', () => {
     })
 
     const response = await POST(request)
-    const data = await response.json()
 
     expect(response.status).toBe(200)
+    const data = await response.json()
     expect(data.success).toBe(true)
     expect(data.items).toEqual([])
   })
@@ -39,7 +39,7 @@ describe('POST /api/cart/validate', () => {
   it('should call validateCartItems with correct items', async () => {
     mockValidateCartItems.mockResolvedValueOnce({
       success: true,
-      items: [{ id: 'item-1', status: 'valid' }],
+      items: [{ id: 'item-1', product_id: 'prod-1', status: 'valid', quantity: 2 }],
       has_problems: false,
       blocked_items: [],
     })
@@ -65,7 +65,7 @@ describe('POST /api/cart/validate', () => {
     mockValidateCartItems.mockResolvedValueOnce({
       success: false,
       items: [
-        { id: 'item-1', product_id: 'prod-1', status: 'product_inactive' },
+        { id: 'item-1', product_id: 'prod-1', status: 'product_inactive', quantity: 1 },
       ],
       has_problems: true,
       blocked_items: ['item-1'],
@@ -91,7 +91,7 @@ describe('POST /api/cart/validate', () => {
     mockValidateCartItems.mockResolvedValueOnce({
       success: true,
       items: [
-        { id: 'item-1', status: 'price_changed', available_stock: 3, quantity: 3 },
+        { id: 'item-1', product_id: 'prod-1', status: 'price_changed', available_stock: 3, quantity: 3 },
       ],
       has_problems: true,
       blocked_items: [],
@@ -133,9 +133,9 @@ describe('POST /api/cart/validate', () => {
     mockValidateCartItems.mockResolvedValueOnce({
       success: false,
       items: [
-        { id: 'item-1', status: 'valid' },
-        { id: 'item-2', status: 'out_of_stock' },
-        { id: 'item-3', status: 'variant_inactive' },
+        { id: 'item-1', product_id: 'prod-1', status: 'valid', quantity: 1 },
+        { id: 'item-2', product_id: 'prod-2', status: 'out_of_stock', quantity: 5 },
+        { id: 'item-3', product_id: 'prod-1', variant_id: 'sku-1', status: 'variant_inactive', quantity: 1 },
       ],
       has_problems: true,
       blocked_items: ['item-2', 'item-3'],
@@ -178,7 +178,7 @@ describe('POST /api/cart/validate', () => {
     })
 
     const response = await POST(request)
-    const data = await response.json()
+    await response.json()
 
     expect(mockValidateCartItems).toHaveBeenCalledWith([])
   })

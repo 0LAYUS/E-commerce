@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
-import { createAdminClient } from "@/lib/supabase/admin"
 import { NextRequest, NextResponse } from "next/server"
+import { cancelReservation } from "@/features/cart/services/cartCancelService"
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,18 +18,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Reservation ID required" }, { status: 400 })
     }
 
-    const adminClient = await createAdminClient()
+    const result = await cancelReservation(user.id, reservation_id)
 
-    const { data, error } = await adminClient.rpc("cancel_stock_reservation", {
-      p_reservation_id: reservation_id,
-    })
-
-    if (error) {
-      console.error("Cancel reservation error:", error)
-      return NextResponse.json({ error: "Failed to cancel reservation" }, { status: 500 })
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 400 })
     }
 
-    return NextResponse.json({ success: data })
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Cancel reservation error:", error)
     return NextResponse.json({ error: "Internal error" }, { status: 500 })

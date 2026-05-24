@@ -1,5 +1,5 @@
-import { validateCartItems } from "@/lib/cart/cartValidator"
-import { CartValidationRequest } from "@/types/cart.types"
+import { validateCartItems } from "@/features/cart/services/cartValidator"
+import { CartValidationRequest } from "@/features/cart/types/cart.types"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
@@ -9,7 +9,9 @@ export async function POST(request: NextRequest) {
 
     const result = await validateCartItems(items || [])
 
-    return NextResponse.json(result)
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "no-store" },
+    })
   } catch (error) {
     console.error("Cart validation error:", error)
     return NextResponse.json(

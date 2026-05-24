@@ -13,11 +13,11 @@ export default function ToggleSwitch({ checked, onChange, disabled = false }: To
       onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
       className={`w-12 h-6 rounded-full transition-colors relative ${
-        checked ? "bg-green-500" : "bg-muted"
+        checked ? "bg-success" : "bg-muted"
       } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
     >
       <div
-        className={`w-5 h-5 rounded-full bg-white shadow absolute top-0.5 transition-transform ${
+        className={`w-5 h-5 rounded-full bg-primary-foreground shadow absolute top-0.5 transition-transform ${
           checked ? "translate-x-6" : "translate-x-0.5"
         }`}
       />

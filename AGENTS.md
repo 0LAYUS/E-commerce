@@ -1,0 +1,141 @@
+# AGENTS.md — E-commerce Project
+
+## Stack
+- Next.js 15 (App Router) + React 19
+- Supabase (auth, DB, SSR)
+- Tailwind CSS + shadcn/ui (style: `new-york`, RSC enabled)
+- Vitest for tests
+
+## Dev Commands
+```bash
+npm run dev      # local dev server
+npm run build    # production build
+npm run lint     # eslint
+npm run test     # vitest (watch)
+npm run test:run # vitest single run
+```
+
+## Git Workflow
+- `main` → stable, never push directly
+- `staging` → integration branch, always branch from here
+- Prefix: `feature/` or `fix/`
+- Branch: `git checkout staging && git pull && git checkout -b feature/your-feature`
+
+## Path Aliases (@/)
+Configured in `tsconfig.json`:
+- `@/*` → project root (`./*`)
+- `@/features/*` → `src/features/*`
+- `@/shared/*` → `src/shared/*`
+- `@/components/*` → `components/`
+- `@/lib/*` → `lib/`
+- `@/components/ui/*` → `components/ui/`
+
+## Architecture
+- **Pages** (`app/**/page.tsx`): Server Components by default
+- **Interactive components** (`components/**/*.tsx`): `"use client"` directive
+- **Features** (`src/features/*/`): Feature-based code organization
+  - Each feature has: `actions/`, `components/`, `hooks/`, `repositories/`, `services/`, `types/`
+  - POS: `src/features/pos/`
+  - Cart: `src/features/cart/`
+  - Products: `src/features/products/`
+  - Orders: `src/features/orders/`
+  - Admin: `src/features/admin/`
+  - Auth: `src/features/auth/`
+  - Profile: `src/features/profile/`
+- **Shared** (`src/shared/*/`): Cross-feature utilities
+  - `components/`: Layout (Navbar, Footer), Providers (Cart, License)
+  - `hooks/`: Custom React hooks
+  - `utils/`: Utility functions
+ - **Types**: `src/features/*/types/`, `src/shared/types/`, `types/*.ts`
+ - **Server Actions**: `src/features/*/actions/*.ts`, `lib/actions/*.ts`
+ - **Utils**: `lib/utils.ts`, `lib/format.ts`
+ - **Icons**: Lucide React + Phosphor Icons
+
+## Product Components (`components/products/`)
+- **Container/Orchestrator**: `ProductGrid.tsx` — manages state, filtering, search, delegates to child components
+- **Presentational**: `ProductCard.tsx`, `ProductSearch.tsx`, `ProductCategoryFilter.tsx`, `ProductEmptyState.tsx` — receive props, no business logic
+- **Feature**: `ProductImageGallery.tsx`, `ProductVariantSelector.tsx`, `AddToCartButton.tsx`, `RelatedProductsCarousel.tsx` — self-contained interactive features
+- **Reusable UI**: `PriceDisplay.tsx`, `QuantitySelector.tsx` — shared across multiple components
+- **Tests**: co-located `*.test.tsx` (e.g., `ProductVariantSelector.test.tsx`)
+- **Types**: domain types (`Product`, `SKU`, `Category`, `GalleryImage`, `OptionDef`) in `types/product.types.ts`; component `Props` types stay local
+- **Rules**: always use shadcn/ui (`Button`, `Badge`, `Input`, `Alert`), `next/image` for images, `lib/format.ts` for currency/stock formatting, never hardcode colors or magic numbers
+
+## shadcn/ui Components
+- Source: `components/ui/`
+- Config: `components.json`
+- Add: `npx shadcn@latest add <component>`
+- Reusable: Modal/AlertDialog/ConfirmDialog → `components/ui/modal.tsx`
+
+## CSS / Design System
+- CSS variables in `app/globals.css` (e.g. `--primary`, `--color-primary`)
+- **Always use CSS variables** — never hardcode colors
+- Design tokens in `docs/SPEC.md`
+
+## Code Conventions
+- All code, comments, files in **English**
+- `camelCase` for variables/functions, `PascalCase` for components/types
+- SOLID principles apply
+- Document non-obvious logic with comments
+
+## Branding System
+
+### Purpose
+The e-commerce supports two separate brand identities:
+
+- **PRIGMA** (the developer) — used in the license overlay, admin footer, and blocked messages. Everything related to the platform itself.
+- **Store Brand** (each client) — used in the navbar, footer, SEO metadata, about page, transactional emails, and admin sidebar title. This is the client-facing identity.
+
+This separation allows a single codebase to serve multiple clients, each with their own store branding, while PRIGMA's platform branding remains consistent.
+
+### Config Files
+
+- **`lib/constants/branding-store.ts`** — exports `storeBranding` object. Contains all client-facing data:
+  - `name`, `description`, `url`, `locale`
+  - `contact`: `phone`, `email`, `address`, `city`, `country`
+  - `whatsapp`
+  - `social`: links (Facebook, Instagram, TikTok, etc.)
+  - `legal`: `foundingYear`, `copyrightName`
+  - `assets`: `logo` (path to the store's logo image)
+  - `about`: `stats`, `story`, `tagline`, `mission`, `vision`
+  - All values are in Spanish (target clients are Colombian businesses).
+
+- **`lib/constants/branding-prigma.ts`** — exports `prigmaBranding` object. Contains all PRIGMA-specific data:
+  - `company`: name
+  - `email`, `whatsapp`
+  - `assets`: `logo` (path to PRIGMA's logo), `backgroundImage`
+  - `tagline`
+
+### Reusable Components (`components/branding/`)
+
+All branding components follow the same pattern: they read from their respective config by default, but every prop can be overridden.
+
+- **`<StoreLogo />`** — renders the store's logo via `next/image`. Reads `storeBranding.assets.logo` by default.
+  - Optional props: `src` (image path), `alt` (alt text), `size` (`"sm"` | `"md"` | `"lg"`), `className`.
+- **`<StoreName />`** — renders the store's name. Reads `storeBranding.name` by default.
+  - Optional props: `as` (renders as `span`, `h1`, `p`, etc.), `className`.
+  - Accepts `children` to override the name entirely.
+- **`<PrigmaLogo />`** — renders PRIGMA's logo via `next/image`. Reads `prigmaBranding.assets.logo` by default.
+  - Optional props: `src` (image path), `alt` (alt text), `size` (`"sm"` | `"md"` | `"lg"`), `className`.
+
+### Design Principle
+Components always read from their config by default, but ALL accept optional props for overrides. This keeps branding centralized (a single source of truth per identity) while still allowing per-instance customization where needed.
+
+### Rebranding Process
+- **New client**: edit `branding-store.ts` and replace images in `public/images/`. PRIGMA config stays untouched.
+- **PRIGMA rebrands**: edit `branding-prigma.ts` only. Store clients are unaffected.
+
+## Key Flows
+- **Cart validation**: `POST /api/cart/validate` → stock + price checks
+- **Stock reservation**: `POST /api/cart/reserve` (15min hold on `/checkout`)
+- **POS**: `app/pos/page.tsx` + `app/admin/pos/*`
+- **Wompi webhook**: `POST /api/webhooks/wompi` (payment confirmation)
+
+## Existing Instruction Files
+- `RULES.md` — development rules, git workflow, conventions
+- `docs/SPEC.md` — POS system spec, data models, API endpoints
+- `docs/cart-validation-system.md` — stock reservation phases
+
+## Testing
+- Vitest with jsdom + `@testing-library/react` + `@testing-library/user-event`
+- Test files: `*.test.ts` or `*.test.tsx` co-located
+- Run single test: `npm run test:run -- path/to/test.test.ts`

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import CategoryGrid from '@/components/admin/CategoryGrid';
+import CategoryGrid from '@/features/admin/components/CategoryGrid';
 
 export default async function CategoriesPage() {
   const supabase = await createClient();

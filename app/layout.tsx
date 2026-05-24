@@ -1,24 +1,57 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { Montserrat, Varela_Round } from "next/font/google";
+import { ThemeProvider as NextThemeProvider } from "next-themes";
 import { Suspense } from "react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import { CartProvider } from "@/components/providers/CartProvider";
+import { CartProvider } from "@/shared/components/CartProvider";
+import { ThemeVariables } from "@/components/theme-provider";
+import { storeBranding } from "@/lib/constants/branding-store";
 import "./globals.css";
 
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || storeBranding.name
+const siteDescription = process.env.NEXT_PUBLIC_SITE_DESCRIPTION || storeBranding.description
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+  : process.env.NEXT_PUBLIC_SITE_URL || storeBranding.url
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Wompi E-commerce",
-  description: "Tienda online básica con Next.js y Wompi",
+  title: {
+    default: siteName,
+    template: `%s | ${siteName}`,
+  },
+  description: siteDescription,
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-32x32.png",
+    apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    type: "website",
+    locale: storeBranding.locale,
+    siteName,
+    title: siteName,
+    description: siteDescription,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteName,
+    description: siteDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  display: "swap",
+  subsets: ["latin"],
+});
+
+const varelaRound = Varela_Round({
+  variable: "--font-varela-round",
+  weight: "400",
   display: "swap",
   subsets: ["latin"],
 });
@@ -30,23 +63,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased min-h-screen bg-background text-foreground flex flex-col`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-white" />}>
-            <CartProvider>
-              <Navbar />
-              <main className="flex-grow px-0">
+      <body className={`${montserrat.variable} ${varelaRound.variable} antialiased min-h-screen bg-background text-foreground font-montserrat`}>
+        <ThemeVariables>
+          <NextThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-card" />}>
+              <CartProvider>
                 {children}
-              </main>
-              <Footer />
-            </CartProvider>
-          </Suspense>
-        </ThemeProvider>
+              </CartProvider>
+            </Suspense>
+          </NextThemeProvider>
+        </ThemeVariables>
       </body>
     </html>
   );
