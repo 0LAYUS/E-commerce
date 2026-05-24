@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { cancelReservation } from "@/features/cart/services/cartCancelService"
 
+export const runtime = "edge"
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()

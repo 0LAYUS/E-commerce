@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import { getCashEvents } from "@/features/pos/services/posCashEventService"
 
+export const runtime = "edge"
+
 async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
@@ -13,9 +15,8 @@ async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) 
     .single()
 
   if (profile?.role !== "administrador") throw new Error("Forbidden")
+  return user.id
 }
-
-export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
   try {
