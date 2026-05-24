@@ -132,14 +132,18 @@ export default function ProductGrid({
         initial="hidden"
         animate="visible"
       >
-        {filteredProducts.map((product) => (
+        {filteredProducts.map((product, index) => (
           <motion.div
             key={product.id}
             variants={itemVariants}
             whileHover={{ y: -8 }}
             layout
           >
-            <ProductCard product={product} onAddToCart={handleAddToCart} />
+            <ProductCard
+              product={product}
+              onAddToCart={handleAddToCart}
+              priority={index < 5}
+            />
           </motion.div>
         ))}
       </motion.div>

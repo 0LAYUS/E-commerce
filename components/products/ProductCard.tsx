@@ -11,9 +11,10 @@ import type { Product } from "@/types/product.types";
 type Props = {
   product: Product;
   onAddToCart: (product: Product) => void;
+  priority?: boolean;
 };
 
-export default function ProductCard({ product, onAddToCart }: Props) {
+export default function ProductCard({ product, onAddToCart, priority = false }: Props) {
   const router = useRouter();
 
   const hasStock =
@@ -22,7 +23,7 @@ export default function ProductCard({ product, onAddToCart }: Props) {
 
   return (
     <div
-      className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col hover:shadow-2xl hover:border-foreground/20 transition-all duration-300 cursor-pointer"
+      className="group bg-card rounded-2xl border border-border overflow-hidden flex flex-col h-full hover:shadow-2xl hover:border-foreground/20 transition-all duration-300 cursor-pointer"
       onClick={() => router.push(`/products/${product.id}`)}
     >
       <div className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform duration-300">
@@ -33,6 +34,7 @@ export default function ProductCard({ product, onAddToCart }: Props) {
             fill
             className="object-cover"
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+            priority={priority}
           />
         ) : (
           <div className="flex flex-col items-center gap-2 text-muted-foreground">
