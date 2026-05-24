@@ -17,7 +17,7 @@ function AdminContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex sticky top-0 max-h-[100dvh] overflow-auto bg-transparent">
+    <div className="flex h-[100dvh] overflow-hidden bg-transparent">
       <AdminSidebar />
       <div className="flex-1 overflow-auto">
         <div className="p-8 min-h-full flex flex-col">

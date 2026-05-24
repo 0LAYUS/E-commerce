@@ -42,7 +42,7 @@ export default function ProductGrid({ products, onSelectProduct, onSelectVariant
                       alt={product.name}
                       width={200}
                       height={200}
-                      className="w-full h-full object-contain mix-blend-multiply"
+                      className="w-full h-full object-contain"
                     />
                   ) : (
                     <span className="text-xs text-muted-foreground font-mono">IMG</span>
@@ -63,7 +63,7 @@ export default function ProductGrid({ products, onSelectProduct, onSelectVariant
                       <Button
                         key={variant.id}
                         size="xs"
-                        variant="secondary"
+                        variant="outline"
                         className="w-full justify-between"
                         disabled={variant.stock === 0}
                         onClick={() => onSelectVariant(product, variant)}

@@ -1,102 +1,186 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
-import { ShoppingCart } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import POSMetricCards from "@/components/admin/POSMetricCards"
-import PaymentMethodCard from "@/components/admin/PaymentMethodCard"
-import POSQuickActions from "@/components/admin/POSQuickActions"
-import { PAYMENT_METHODS } from "@/lib/constants/pos"
-import { PAYMENT_METHOD_ICONS } from "@/lib/constants/pos-icons"
-import type { SummaryData } from "@/types/pos.types"
+import { ArrowLeft, ShoppingCart, ReceiptText } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import ProductSearchBar from "./components/ProductSearchBar"
+import ProductGridPOS from "./components/ProductGridPOS"
+import CartPOS from "./components/CartPOS"
+import PaymentModal from "./components/PaymentModal"
+import ReceiptModal from "./components/ReceiptModal"
+import { CategoryFilterBar } from "@/components/pos/CategoryFilterBar"
+import { usePOSCart } from "@/hooks/usePOSCart"
+import { usePOSPayment } from "@/hooks/usePOSPayment"
 
-export default function AdminPOSPage() {
-  const [summary, setSummary] = useState<SummaryData | null>(null)
+import type { POSProduct, Category } from "@/types/product.types"
+
+export default function POSPage() {
+  const [products, setProducts] = useState<POSProduct[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [selectedCategory, setSelectedCategory] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    loadSummary()
-  }, [])
+  const {
+    cart,
+    customerName,
+    discountPct,
+    subtotal,
+    discountAmount,
+    total,
+    handleSelectProduct,
+    handleSelectVariant,
+    handleUpdateQuantity,
+    handleRemoveItem,
+    handleApplyDiscount,
+    handleClearCart,
+    setCustomerName,
+  } = usePOSCart()
 
-  const loadSummary = async () => {
+  const {
+    isPaymentOpen,
+    isReceiptOpen,
+    lastSale,
+    handlePaymentConfirm,
+    handleNewSale,
+    setIsPaymentOpen,
+    setIsReceiptOpen,
+  } = usePOSPayment(cart, customerName, discountAmount, discountPct, subtotal, total, handleClearCart)
+
+  const loadProducts = useCallback(async (query = "", categoryId = "") => {
+    setIsLoading(true)
     try {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      const params = new URLSearchParams()
+      if (query) params.set("search", query)
+      if (categoryId) params.set("category_id", categoryId)
 
-      const res = await fetch(
-        `/api/pos/reports/summary?from=${today.toISOString()}`
-      )
+      const res = await fetch(`/api/pos/products?${params}`)
       const data = await res.json()
-      setSummary(data)
+      setProducts(data.products || [])
     } catch (err) {
-      console.error("Error loading summary:", err)
+      console.error("Error loading products:", err)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
-  }
+  const loadCategories = useCallback(async () => {
+    try {
+      const res = await fetch("/api/categories")
+      const data = await res.json()
+      setCategories(data.categories || [])
+    } catch (err) {
+      console.error("Error loading categories:", err)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadProducts()
+    loadCategories()
+  }, [loadProducts, loadCategories])
+
+  const handleSearch = useCallback(
+    (query: string) => {
+      setSearchQuery(query)
+      loadProducts(query, selectedCategory)
+    },
+    [loadProducts, selectedCategory]
+  )
+
+  const handleCategoryChange = useCallback(
+    (categoryId: string) => {
+      setSelectedCategory(categoryId)
+      loadProducts(searchQuery, categoryId)
+    },
+    [loadProducts, searchQuery]
+  )
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-extrabold text-foreground">Dashboard POS</h1>
-        <div className="flex gap-3">
-          <Link
-            href="/pos"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm transition"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            Abrir POS
-          </Link>
-          <Link
-            href="/admin/pos/sales"
-            className="border border-input hover:bg-accent px-4 py-2.5 rounded-lg font-semibold text-sm transition"
-          >
-            Ver todas las ventas
-          </Link>
-        </div>
-      </div>
-
-      <POSMetricCards summary={summary} />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Ventas por Método de Pago</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {PAYMENT_METHODS.map((pm) => {
-              const iconConfig = PAYMENT_METHOD_ICONS[pm.key]
-              const methodData = summary?.by_payment_method?.[pm.key]
-              return (
-                <PaymentMethodCard
-                  key={pm.key}
-                  method={{ ...pm, icon: iconConfig.icon, colorClass: iconConfig.colorClass, bgClass: iconConfig.bgClass }}
-                  count={methodData?.count || 0}
-                  amount={methodData?.amount || 0}
-                />
-              )
-            })}
+    <div className="flex flex-col h-full">
+      <header className="bg-card border-b border-border shrink-0">
+        <div className="px-6">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3">
+              <Link href="/admin" className="p-2 hover:bg-accent rounded-lg transition">
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
+              <h1 className="text-xl font-extrabold text-card-foreground flex items-center gap-2">
+                <ShoppingCart className="w-6 h-6" />
+                Punto de Venta
+              </h1>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/pos/sales">
+                <ReceiptText className="w-4 h-4" />
+                Ver ventas
+              </Link>
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </header>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Acciones Rápidas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <POSQuickActions />
-        </CardContent>
-      </Card>
+      <main className="flex-1 min-h-0 flex overflow-hidden p-6">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="mb-4 shrink-0">
+            <ProductSearchBar onSearch={handleSearch} />
+          </div>
+
+          <CategoryFilterBar
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={handleCategoryChange}
+          />
+
+          <div className="flex-1 min-h-0 overflow-auto">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              </div>
+            ) : (
+              <ProductGridPOS
+                products={products}
+                onSelectProduct={handleSelectProduct}
+                onSelectVariant={handleSelectVariant}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="w-80 xl:w-96 shrink-0 border-l border-border overflow-auto">
+          <div className="p-4">
+            <CartPOS
+              items={cart}
+              onUpdateQuantity={handleUpdateQuantity}
+              onRemoveItem={handleRemoveItem}
+              onApplyDiscount={handleApplyDiscount}
+              onClearCart={handleClearCart}
+              subtotal={subtotal}
+              discount_amount={discountAmount}
+              total={total}
+              onOpenPayment={() => setIsPaymentOpen(true)}
+              customerName={customerName}
+              onCustomerNameChange={setCustomerName}
+            />
+          </div>
+        </div>
+      </main>
+
+      <PaymentModal
+        isOpen={isPaymentOpen}
+        onClose={() => setIsPaymentOpen(false)}
+        total={total}
+        onConfirm={handlePaymentConfirm}
+      />
+
+      {lastSale && (
+        <ReceiptModal
+          isOpen={isReceiptOpen}
+          onClose={() => setIsReceiptOpen(false)}
+          sale={lastSale}
+          onNewSale={handleNewSale}
+        />
+      )}
     </div>
   )
 }

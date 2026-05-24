@@ -26,8 +26,8 @@ export const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { href: "/admin/products", label: "Productos", icon: Package },
   { href: "/admin/sales", label: "Ventas", icon: ShoppingBag },
   { href: "/admin/orders", label: "Órdenes", icon: ListOrdered },
-  { href: "/pos", label: "POS", icon: ShoppingCart },
-  { href: "/admin/pos", label: "Ventas POS", icon: ShoppingBag },
+  { href: "/admin/pos", label: "POS", icon: ShoppingCart },
+  { href: "/admin/pos/sales", label: "Ventas POS", icon: ShoppingBag },
   { href: "/admin/shipping", label: "Envíos", icon: Truck },
 ];
 
