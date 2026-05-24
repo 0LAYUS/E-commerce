@@ -8,14 +8,14 @@ export const storeBranding = {
 
   // Contact
   contact: {
-    phone: "+57 300 123 4567",
+    phone: "+57 300 7612827",
     email: "contacto@mitienda.com",
     address: "Calle 123 #45-67",
     city: "Bogotá",
     country: "Colombia",
     schedule: "Lunes a Viernes 9am - 6pm",
   },
-  whatsapp: "573001234567",
+  whatsapp: "573007612827",
 
   // Social
   social: {
@@ -27,8 +27,7 @@ export const storeBranding = {
 
   // Legal
   legal: {
-    foundingYear: 2020,
-    copyrightName: "Mi Tienda",
+    copyrightName: "Prigma",
   },
 
   // Assets

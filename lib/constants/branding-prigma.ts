@@ -1,6 +1,7 @@
 export const prigmaBranding = {
   company: "PRIGMA",
-  email: "contacto@prigma.com",
+  url: "https://prigma.onrender.com/",
+  email: "prigmasoftware@gmail.com",
   whatsapp: "573224839040",
   tagline: "Soluciones de software a medida",
   assets: {

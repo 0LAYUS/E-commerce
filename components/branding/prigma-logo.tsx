@@ -6,11 +6,11 @@ import { prigmaBranding } from "@/lib/constants/branding-prigma"
 type PrigmaLogoProps = {
   src?: string
   alt?: string
-  size?: "sm" | "md" | "lg"
+  size?: "xs" | "sm" | "md" | "lg"
   className?: string
 }
 
-const sizePx = { sm: 56, md: 80, lg: 120 } as const
+const sizePx = { xs: 16, sm: 56, md: 80, lg: 120 } as const
 
 export function PrigmaLogo({ src, alt, size = "md", className = "" }: PrigmaLogoProps) {
   const px = sizePx[size]

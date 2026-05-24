@@ -1,14 +1,25 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { motion } from "framer-motion"
-import { EnvelopeSimple, Phone, MapPin, FacebookLogo, InstagramLogo, TwitterLogo, YoutubeLogo, PaperPlaneTilt } from "@phosphor-icons/react"
-import { storeBranding } from "@/lib/constants/branding-store"
-import { StoreLogo } from "@/components/branding/store-logo"
-import { StoreName } from "@/components/branding/store-name"
+import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  EnvelopeSimple,
+  Phone,
+  MapPin,
+  FacebookLogo,
+  InstagramLogo,
+  TwitterLogo,
+  YoutubeLogo,
+  PaperPlaneTilt,
+} from "@phosphor-icons/react";
+import { storeBranding } from "@/lib/constants/branding-store";
+import { prigmaBranding } from "@/lib/constants/branding-prigma";
+import { StoreLogo } from "@/components/branding/store-logo";
+import { StoreName } from "@/components/branding/store-name";
+import { PrigmaLogo } from "@/components/branding/prigma-logo";
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear()
+  const currentYear = new Date().getFullYear();
 
   return (
     <motion.footer
@@ -22,9 +33,9 @@ export default function Footer() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary/30 rounded-full blur-3xl" />
       </div>
 
-      <div className="max-w-screen-2xl mx-auto px-6 py-16 relative">
+      <div className="max-w-screen-2xl mx-auto px-6 pt-16 relative">
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12"
+          className="grid grid-cols-2 md:grid-cols-2 gap-8 lg:gap-12 max-w-[800px] mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
@@ -36,7 +47,7 @@ export default function Footer() {
           >
             <Link href="/" className="flex items-center gap-2">
               <motion.div
-                whileHover={{ rotate: [0, -10, 10, 0] }}
+                // whileHover={{ rotate: [0, -10, 10, 0] }}
                 transition={{ duration: 0.5 }}
               >
                 <StoreLogo size="sm" />
@@ -53,10 +64,26 @@ export default function Footer() {
               transition={{ delay: 0.4 }}
             >
               {[
-                { Icon: FacebookLogo, href: storeBranding.social.facebook, label: "Facebook" },
-                { Icon: InstagramLogo, href: storeBranding.social.instagram, label: "Instagram" },
-                { Icon: TwitterLogo, href: storeBranding.social.twitter, label: "Twitter" },
-                { Icon: YoutubeLogo, href: storeBranding.social.youtube, label: "Youtube" },
+                {
+                  Icon: FacebookLogo,
+                  href: storeBranding.social.facebook,
+                  label: "Facebook",
+                },
+                {
+                  Icon: InstagramLogo,
+                  href: storeBranding.social.instagram,
+                  label: "Instagram",
+                },
+                {
+                  Icon: TwitterLogo,
+                  href: storeBranding.social.twitter,
+                  label: "Twitter",
+                },
+                {
+                  Icon: YoutubeLogo,
+                  href: storeBranding.social.youtube,
+                  label: "Youtube",
+                },
               ].map((social, i) => (
                 <motion.a
                   key={i}
@@ -71,69 +98,6 @@ export default function Footer() {
               ))}
             </motion.div>
           </motion.div>
-
-          <motion.div
-            className="space-y-5"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <h3 className="font-bold text-card-foreground text-lg">Navegación</h3>
-            <nav className="flex flex-col gap-3">
-              {[
-                { href: "/", label: "Inicio" },
-                { href: "/products", label: "Productos" },
-                { href: "/about", label: "Sobre Nosotros" },
-                { href: "/contact", label: "Contacto" },
-              ].map((link) => (
-                <motion.div
-                  key={link.href}
-                  whileHover={{ x: 5 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                >
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2 group"
-                  >
-                    <span className="w-0 group-hover:w-2 h-0.5 bg-muted group-hover:w-2 transition-all duration-300" />
-                    {link.label}
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
-          </motion.div>
-
-          <motion.div
-            className="space-y-5"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <h3 className="font-bold text-card-foreground text-lg">Categorías</h3>
-            <nav className="flex flex-col gap-3">
-              {[
-                { href: "/?category=electronica", label: "Electrónica" },
-                { href: "/?category=ropa", label: "Ropa" },
-                { href: "/?category=accesorios", label: "Accesorios" },
-                { href: "/?category=hogar", label: "Hogar" },
-              ].map((link) => (
-                <motion.div
-                  key={link.href}
-                  whileHover={{ x: 5 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                >
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2 group"
-                  >
-                    <span className="w-0 group-hover:w-2 h-0.5 bg-muted transition-all duration-300" />
-                    {link.label}
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
-          </motion.div>
-
           <motion.div
             className="space-y-5"
             initial={{ opacity: 0, y: 20 }}
@@ -143,7 +107,10 @@ export default function Footer() {
             <h3 className="font-bold text-card-foreground text-lg">Contacto</h3>
             <div className="flex flex-col gap-4">
               {[
-                { Icon: MapPin, text: `${storeBranding.contact.address}, ${storeBranding.contact.city}, ${storeBranding.contact.country}` },
+                {
+                  Icon: MapPin,
+                  text: `${storeBranding.contact.address}, ${storeBranding.contact.city}, ${storeBranding.contact.country}`,
+                },
                 { Icon: Phone, text: storeBranding.contact.phone },
                 { Icon: EnvelopeSimple, text: storeBranding.contact.email },
               ].map((item, i) => (
@@ -160,33 +127,12 @@ export default function Footer() {
                   >
                     <item.Icon className="w-5 h-5" weight="duotone" />
                   </motion.div>
-                  <span className="group-hover:text-card-foreground transition-colors duration-300">{item.text}</span>
+                  <span className="group-hover:text-card-foreground transition-colors duration-300">
+                    {item.text}
+                  </span>
                 </motion.div>
               ))}
             </div>
-
-            <motion.div
-              className="pt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Tu email"
-                  className="flex-1 px-4 py-3 rounded-xl bg-secondary text-card-foreground placeholder:text-muted-foreground text-sm border border-border focus:border-primary focus:outline-none transition-colors"
-                />
-                <motion.button
-                  className="px-4 py-3 bg-secondary rounded-xl hover:bg-accent transition-all border border-border"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <PaperPlaneTilt className="w-5 h-5 text-primary-foreground" weight="fill" />
-                </motion.button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">Suscríbete para recibir ofertas exclusivas</p>
-            </motion.div>
           </motion.div>
         </motion.div>
 
@@ -203,7 +149,8 @@ export default function Footer() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
-              © {currentYear} {storeBranding.legal.copyrightName}. Todos los derechos reservados.
+              © {currentYear} {storeBranding.legal.copyrightName}. Todos los
+              derechos reservados.
             </motion.p>
             <motion.div
               className="flex gap-6"
@@ -212,9 +159,7 @@ export default function Footer() {
               transition={{ delay: 0.9 }}
             >
               {[
-                { href: "/privacy", label: "Privacidad" },
-                { href: "/terms", label: "Términos" },
-                { href: "/returns", label: "Devoluciones" },
+                { href: "/terms", label: "Términos y Condiciones" },
               ].map((link) => (
                 <motion.div
                   key={link.href}
@@ -231,10 +176,27 @@ export default function Footer() {
               ))}
             </motion.div>
           </div>
+        </motion.div>
 
-
+        <motion.div
+          className="border-t border-border mt-8 pt-6 flex items-center justify-center gap-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.0 }}
+        >
+          <a
+            href={prigmaBranding.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <PrigmaLogo size="sm" />
+            <span className="text-sm text-muted-foreground">
+              Desarrollado por {prigmaBranding.company}
+            </span>
+          </a>
         </motion.div>
       </div>
     </motion.footer>
-  )
+  );
 }
