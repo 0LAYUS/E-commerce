@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
-import { createAdminClient } from "@/lib/supabase/admin"
 import { NextRequest, NextResponse } from "next/server"
+import { confirmReservation } from "@/features/cart/services/cartConfirmService"
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,32 +18,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Reservation ID required" }, { status: 400 })
     }
 
-    const { data: reservation, error: fetchError } = await supabase
-      .from("stock_reservations")
-      .select("user_id")
-      .eq("id", reservation_id)
-      .single()
+    const result = await confirmReservation(user.id, reservation_id)
 
-    if (fetchError || !reservation) {
-      return NextResponse.json({ error: "Reserva no encontrada" }, { status: 404 })
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 400 })
     }
 
-    if (reservation.user_id !== user.id) {
-      return NextResponse.json({ error: "No tienes permiso para confirmar esta reserva" }, { status: 403 })
-    }
-
-    const adminClient = await createAdminClient()
-
-    const { data, error } = await adminClient.rpc("confirm_stock_reservation", {
-      p_reservation_id: reservation_id,
-    })
-
-    if (error) {
-      console.error("Confirm reservation error:", error)
-      return NextResponse.json({ error: "Failed to confirm reservation" }, { status: 500 })
-    }
-
-    return NextResponse.json({ success: data })
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Confirm reservation error:", error)
     return NextResponse.json({ error: "Internal error" }, { status: 500 })

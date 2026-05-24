@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
-import { getOrderById } from "@/lib/actions/orderActions"
-import { OrderDetailsCard } from "@/components/admin/OrderDetailsCard"
+import { getOrderById } from "@/features/orders/actions/orderActions"
+import { OrderDetailsCard } from "@/features/admin/components/OrderDetailsCard"
 
 export default async function OrderDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params

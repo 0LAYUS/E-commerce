@@ -1,9 +1,9 @@
-import { getAllUsers, updateUserRole } from "@/lib/actions/authActions"
+import { getAllUsers, updateUserRole } from "@/features/auth/actions/authActions"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Users } from "lucide-react"
-import UserManagement from "@/components/admin/UserManagement"
+import UserManagement from "@/features/admin/components/UserManagement"
 
 export default async function UsersPage() {
   const supabase = await createClient()

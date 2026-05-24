@@ -1,67 +1,26 @@
 import { createClient } from "@/lib/supabase/server"
-import { createAdminClient } from "@/lib/supabase/admin"
 import { NextRequest, NextResponse } from "next/server"
-
-type CashupBody = {
-  declared_amount: number
-  notes?: string
-}
+import { createCashup, getCashups } from "@/features/pos/services/posSaleService"
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CashupBody = await request.json()
-    const { declared_amount, notes } = body
-
     const supabase = await createClient()
-    const adminClient = await createAdminClient()
-
     const { data: { user } } = await supabase.auth.getUser()
+
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const body = await request.json()
+    const { declared_amount, notes } = body
 
-    const { data: todaySales } = await adminClient
-      .from("pos_sales")
-      .select("amount_received, change_amount")
-      .eq("payment_method", "efectivo")
-      .gte("created_at", today.toISOString())
-
-    const expectedCash = todaySales?.reduce((sum: number, sale: { amount_received: number | null; change_amount: number | null }) => {
-      const received = sale.amount_received || 0
-      const change = sale.change_amount || 0
-      return sum + received - change
-    }, 0) || 0
-
-    const difference = declared_amount - expectedCash
-
-    const { data: cashup, error } = await adminClient
-      .from("pos_cash_events")
-      .insert([{
-        user_id: user.id,
-        type: "cashup",
-        amount: declared_amount,
-        notes: `Declarado: $${declared_amount.toLocaleString()}. Esperado: $${expectedCash.toLocaleString()}. Diferencia: $${difference.toLocaleString()}. ${notes || ""}`.trim(),
-      }])
-      .select()
-      .single()
-
-    if (error) {
-      console.error("Cashup error:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    if (declared_amount === undefined) {
+      return NextResponse.json({ error: "declared_amount is required" }, { status: 400 })
     }
 
-    return NextResponse.json({
-      success: true,
-      cashup,
-      summary: {
-        declared_amount,
-        expected_amount: expectedCash,
-        difference,
-      },
-    })
+    const summary = await createCashup(user.id, declared_amount, notes)
+
+    return NextResponse.json({ success: true, summary })
   } catch (error) {
     console.error("Cashup error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -70,13 +29,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const from = searchParams.get("from")
-    const to = searchParams.get("to")
-
     const supabase = await createClient()
-
     const { data: { user } } = await supabase.auth.getUser()
+
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -91,36 +46,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    let query = supabase
-      .from("pos_cash_events")
-      .select(`
-        id,
-        user_id,
-        type,
-        amount,
-        payment_method,
-        notes,
-        created_at,
-        user:profiles!user_id(id, email)
-      `)
-      .eq("type", "cashup")
-      .order("created_at", { ascending: false })
+    const { searchParams } = new URL(request.url)
+    const from = searchParams.get("from")
+    const to = searchParams.get("to")
 
-    if (from) {
-      query = query.gte("created_at", from)
-    }
-    if (to) {
-      query = query.lte("created_at", to)
-    }
-
-    const { data: cashups, error } = await query
-
-    if (error) {
-      console.error("Cashup fetch error:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ cashups: cashups || [] })
+    const cashups = await getCashups(from, to)
+    return NextResponse.json({ cashups })
   } catch (error) {
     console.error("Cashup error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
