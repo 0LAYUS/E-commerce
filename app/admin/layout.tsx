@@ -14,6 +14,7 @@ function AdminContent({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const bloqueado = searchParams.get("bloqueado") === "si";
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   if (bloqueado) {
     return <LicenseOverlay mensaje={MENSAJE_BLOQUEADO} />;
@@ -36,12 +37,17 @@ function AdminContent({ children }: { children: React.ReactNode }) {
           </div>
         </>
       ) : null}
-      <div className="flex-1 overflow-auto">
+      <div
+        className="flex-1 overflow-auto"
+        onScroll={(event) => setIsScrolled(event.currentTarget.scrollTop > 0)}
+      >
         <div className="p-8 min-h-full flex flex-col">
           {!isSidebarVisible ? (
             <Button
               variant="secondary"
-              className="fixed left-4 top-4 z-50 h-11 w-11 rounded-full p-0 shadow-md md:hidden"
+              className={`fixed left-4 top-4 z-50 h-11 w-11 rounded-full p-0 shadow-md md:hidden transition-opacity ${
+                isScrolled ? "opacity-60" : "opacity-100"
+              }`}
               onClick={() => setIsSidebarVisible(true)}
               aria-label="Mostrar menu"
             >
