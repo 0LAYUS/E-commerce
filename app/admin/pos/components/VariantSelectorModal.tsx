@@ -3,7 +3,7 @@
 import { Modal } from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
 import { formatPrice, formatStockLabel } from "@/lib/format"
-import type { POSProduct, POSVariant } from "@/types/product.types"
+import type { POSProduct, POSVariant } from "@/features/products/types/product.types"
 
 type VariantSelectorModalProps = {
   product: POSProduct | null

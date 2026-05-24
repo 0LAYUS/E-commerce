@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type TouchEvent } from "react"
 import Image from "next/image"
 import { ShoppingBag, CaretLeft, CaretRight } from "@phosphor-icons/react"
-import type { GalleryImage } from "@/types/product.types"
+import type { GalleryImage } from "@/features/products/types/product.types"
 
 type Props = {
   images: GalleryImage[]

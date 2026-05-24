@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import type { CartItem } from "@/types/cart.types"
+import type { CartItem } from "@/features/cart/types/cart.types"
 
 type PriceChange = {
   name: string

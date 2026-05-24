@@ -1,10 +1,10 @@
 "use client"
 
 import { X } from "lucide-react"
-import { createShippingZone, updateShippingZone } from "@/lib/actions/adminActions"
+import { createShippingZone, updateShippingZone } from "@/features/admin/actions/adminActions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import type { ShippingZone } from "@/types/cart.types"
+import type { ShippingZone } from "@/features/cart/types/cart.types"
 
 type ShippingZoneFormProps = {
   editingZone: ShippingZone | null

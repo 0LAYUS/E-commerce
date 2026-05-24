@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { SignOut, House } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { logout } from "@/lib/actions/authActions";
+import { logout } from "@/features/auth/actions/authActions";
 import { SIDEBAR_ITEMS } from "@/lib/constants/admin";
 import { storeBranding } from "@/lib/constants/branding-store";
 import { StoreLogo } from "@/components/branding/store-logo";

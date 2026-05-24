@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import SalesMetricCards from '@/components/admin/SalesMetricCards';
+import SalesMetricCards from '@/features/admin/components/SalesMetricCards';
 import { formatPrice } from '@/lib/format';
 import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT } from '@/lib/constants/orders';
 

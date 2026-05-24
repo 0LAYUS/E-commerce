@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import type { Category } from "@/types/product.types";
+import type { Category } from "@/features/products/types/product.types";
 
 type Props = {
   categories: Category[];

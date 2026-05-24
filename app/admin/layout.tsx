@@ -2,11 +2,11 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { LicenseOverlay } from "@/components/license/LicenseOverlay";
+import { LicenseOverlay } from "@/shared/components/license/LicenseOverlay";
 import { MENSAJE_BLOQUEADO } from "@/lib/constants/admin";
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
-import { AdminFooter } from "@/components/admin/admin-footer";
-import { AdminSkeleton } from "@/components/admin/admin-skeleton";
+import { AdminSidebar } from "@/features/admin/components/admin-sidebar";
+import { AdminFooter } from "@/features/admin/components/admin-footer";
+import { AdminSkeleton } from "@/features/admin/components/admin-skeleton";
 
 function AdminContent({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();

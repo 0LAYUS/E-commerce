@@ -1,6 +1,6 @@
 "use client";
 
-import { login } from "@/lib/actions/authActions";
+import { login } from "@/features/auth/actions/authActions";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";

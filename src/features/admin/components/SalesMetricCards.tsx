@@ -1,5 +1,5 @@
 import { TrendingUp, CheckCircle, Clock } from "lucide-react"
-import { MetricCard } from "@/components/admin/MetricCard"
+import { MetricCard } from "@/features/admin/components/MetricCard"
 import { formatPrice } from "@/lib/format"
 
 type SalesMetricCardsProps = {

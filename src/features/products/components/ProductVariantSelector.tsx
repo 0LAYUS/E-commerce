@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
-import { useCart } from "@/components/providers/CartProvider"
+import { useCart } from "@/shared/components/CartProvider"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import QuantitySelector from "@/components/products/QuantitySelector"
-import PriceDisplay from "@/components/products/PriceDisplay"
+import QuantitySelector from "@/features/products/components/QuantitySelector"
+import PriceDisplay from "@/features/products/components/PriceDisplay"
 import { formatStockLabel } from "@/lib/format"
-import type { OptionDef, SKU } from "@/types/product.types"
+import type { OptionDef, SKU } from "@/features/products/types/product.types"
 
 type ProductVariantSelectorProps = {
   options: OptionDef[]

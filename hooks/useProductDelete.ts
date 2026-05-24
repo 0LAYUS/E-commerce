@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { hasSales, deleteProduct as deleteProductAction } from "@/lib/actions/productActions"
+import { hasSales, deleteProduct as deleteProductAction } from "@/features/products/actions/productActions"
 
 type UseProductDeleteReturn = {
   deleteConfirmOpen: boolean

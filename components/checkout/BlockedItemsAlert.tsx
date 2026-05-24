@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import type { CartItem, ItemStatus } from "@/types/cart.types"
+import type { CartItem, ItemStatus } from "@/features/cart/types/cart.types"
 
 type BlockedItemsAlertProps = {
   blockedItems: CartItem[]

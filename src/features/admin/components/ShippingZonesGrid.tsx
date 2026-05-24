@@ -4,12 +4,12 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Plus } from "lucide-react"
-import { deleteShippingZone } from "@/lib/actions/adminActions"
+import { deleteShippingZone } from "@/features/admin/actions/adminActions"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
-import ShippingZoneCard from "@/components/admin/ShippingZoneCard"
-import ShippingZoneForm from "@/components/admin/ShippingZoneForm"
-import type { ShippingZone } from "@/types/cart.types"
+import ShippingZoneCard from "@/features/admin/components/ShippingZoneCard"
+import ShippingZoneForm from "@/features/admin/components/ShippingZoneForm"
+import type { ShippingZone } from "@/features/cart/types/cart.types"
 
 export default function ShippingZonesGrid({ zones }: { zones: ShippingZone[] }) {
   const router = useRouter()

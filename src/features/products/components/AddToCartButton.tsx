@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useCart } from "@/components/providers/CartProvider";
+import { useCart } from "@/shared/components/CartProvider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import QuantitySelector from "@/components/products/QuantitySelector";
+import QuantitySelector from "@/features/products/components/QuantitySelector";
 
 type Props = {
   productId: string;

@@ -4,12 +4,12 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Package, User, MapPin, CreditCard, AlertTriangle, RotateCcw } from "lucide-react"
-import { updateOrderStatus, rollbackOrderStock, markOrderAsError } from "@/lib/actions/orderActions"
+import { updateOrderStatus, rollbackOrderStock, markOrderAsError } from "@/features/orders/actions/orderActions"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/modal"
 import { formatPrice } from "@/lib/format"
 import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT } from "@/lib/constants/orders"
-import type { OrderWithRelations, OrderStatus } from "@/types/order.types"
+import type { OrderWithRelations, OrderStatus } from "@/features/orders/types/order.types"
 
 const STATUS_LABELS = {
   PENDING: "Pendiente",

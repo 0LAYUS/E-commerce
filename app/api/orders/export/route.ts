@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
-import type { OrderStatus } from "@/types/order.types"
+import type { OrderStatus } from "@/features/orders/types/order.types"
 
 export const dynamic = "force-dynamic"
 

@@ -13,7 +13,7 @@ import { CategoryFilterBar } from "@/components/pos/CategoryFilterBar"
 import { usePOSCart } from "@/hooks/usePOSCart"
 import { usePOSPayment } from "@/hooks/usePOSPayment"
 
-import type { POSProduct, Category } from "@/types/product.types"
+import type { POSProduct, Category } from "@/features/products/types/product.types"
 
 export default function POSPage() {
   const [products, setProducts] = useState<POSProduct[]>([])

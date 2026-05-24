@@ -1,5 +1,5 @@
 import { Tag, Package, ShoppingCart } from "lucide-react"
-import { MetricCard } from "@/components/admin/MetricCard"
+import { MetricCard } from "@/features/admin/components/MetricCard"
 
 type StoreSummaryCardsProps = {
   categoriesCount: number | null

@@ -3,7 +3,7 @@
 import { User, Shield } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ROLE_DISPLAY_NAMES } from "@/lib/constants/users"
-import type { UserType } from "@/types/user.types"
+import type { UserType } from "@/features/auth/types/user.types"
 import UserRoleMenu from "./UserRoleMenu"
 
 type UserTableRowProps = {

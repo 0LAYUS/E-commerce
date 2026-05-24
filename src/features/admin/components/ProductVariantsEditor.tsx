@@ -2,13 +2,13 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { Plus, ChevronDown, ChevronUp } from "lucide-react"
-import { replaceVariantImages } from "@/lib/actions/productActions"
+import { replaceVariantImages } from "@/features/products/actions/productActions"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
-import { VariantOptionEditor } from "@/components/admin/VariantOptionEditor"
-import { VariantRow } from "@/components/admin/VariantRow"
+import { VariantOptionEditor } from "@/features/admin/components/VariantOptionEditor"
+import { VariantRow } from "@/features/admin/components/VariantRow"
 import { useVariantActions } from "@/hooks/useVariantActions"
 import { generateCartesianVariants } from "@/lib/utils/variantGenerator"
-import type { OptionDef } from "@/types/product.types"
+import type { OptionDef } from "@/features/products/types/product.types"
 
 type ProductVariantsEditorProps = {
   initialOptions?: { name: string; values: string[] }[]

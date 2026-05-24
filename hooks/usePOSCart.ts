@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import type { POSProduct } from "@/types/product.types"
+import type { POSProduct } from "@/features/products/types/product.types"
 import type { CartItem } from "@/types/pos.types"
 
 type UsePOSCartReturn = {

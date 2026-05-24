@@ -3,7 +3,7 @@ import { POST } from '@/app/api/cart/validate/route'
 import { NextRequest } from 'next/server'
 import * as cartValidator from '@/features/cart/services/cartValidationService'
 
-vi.mock('@/lib/services/cart/cartValidationService', () => ({
+vi.mock('@/features/cart/services/cartValidationService', () => ({
   validateCartItems: vi.fn(),
 }))
 

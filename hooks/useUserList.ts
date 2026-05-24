@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import type { UserType } from "@/types/user.types"
+import type { UserType } from "@/features/auth/types/user.types"
 import type { FilterRole } from "@/types/admin.types"
 import { USER_LIST_LIMIT } from "@/lib/constants/users"
 

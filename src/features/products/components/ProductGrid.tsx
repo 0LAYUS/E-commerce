@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/components/providers/CartProvider";
+import { useCart } from "@/shared/components/CartProvider";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Check } from "@phosphor-icons/react";
-import ProductCard from "@/components/products/ProductCard";
-import ProductSearch from "@/components/products/ProductSearch";
-import ProductCategoryFilter from "@/components/products/ProductCategoryFilter";
-import ProductEmptyState from "@/components/products/ProductEmptyState";
-import type { Product, Category } from "@/types/product.types";
+import ProductCard from "@/features/products/components/ProductCard";
+import ProductSearch from "@/features/products/components/ProductSearch";
+import ProductCategoryFilter from "@/features/products/components/ProductCategoryFilter";
+import ProductEmptyState from "@/features/products/components/ProductEmptyState";
+import type { Product, Category } from "@/features/products/types/product.types";
 
 type ProductGridProps = {
   initialProducts: Product[];

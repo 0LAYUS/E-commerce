@@ -16,7 +16,7 @@ import {
 } from "@phosphor-icons/react";
 import { StoreLogo } from "@/components/branding/store-logo";
 import { StoreName } from "@/components/branding/store-name";
-import { logout } from "@/lib/actions/authActions";
+import { logout } from "@/features/auth/actions/authActions";
 import { Button } from "@/components/ui/button";
 import CartIcon from "./CartIcon";
 

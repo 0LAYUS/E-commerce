@@ -3,7 +3,7 @@
 import { formatPrice } from "@/lib/format"
 import Image from "next/image"
 import { Pencil, Trash2 } from "lucide-react"
-import type { Product } from "@/types/product.types"
+import type { Product } from "@/features/products/types/product.types"
 
 type ProductCardProps = {
   product: Product

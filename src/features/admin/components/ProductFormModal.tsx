@@ -5,7 +5,7 @@ import { X, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ToggleSwitch from "@/components/ui/ToggleSwitch"
-import type { Product } from "@/types/product.types"
+import type { Product } from "@/features/products/types/product.types"
 
 type ProductFormModalProps = {
   editingProduct: Product | null

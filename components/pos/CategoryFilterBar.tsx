@@ -1,6 +1,6 @@
 "use client"
 
-import type { Category } from "@/types/product.types"
+import type { Category } from "@/features/products/types/product.types"
 
 type CategoryFilterBarProps = {
   categories: Category[]

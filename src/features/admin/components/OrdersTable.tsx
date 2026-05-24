@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { formatPrice } from "@/lib/format"
 import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT } from "@/lib/constants/orders"
-import type { OrderWithRelations } from "@/types/order.types"
+import type { OrderWithRelations } from "@/features/orders/types/order.types"
 
 interface OrdersTableProps {
   orders: OrderWithRelations[]

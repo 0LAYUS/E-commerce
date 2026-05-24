@@ -10,16 +10,16 @@ import {
   getProductOptions,
   getProductVariants,
   getProductImages,
-} from "@/lib/actions/productActions"
+} from "@/features/products/actions/productActions"
 import ProductVariantsEditor from "./ProductVariantsEditor"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
-import { ProductCard } from "@/components/admin/ProductCard"
-import { ProductFormModal } from "@/components/admin/ProductFormModal"
+import { ProductCard } from "@/features/admin/components/ProductCard"
+import { ProductFormModal } from "@/features/admin/components/ProductFormModal"
 import { useProductImages } from "@/hooks/useProductImages"
 import { useProductDelete } from "@/hooks/useProductDelete"
 
-import type { Product } from "@/types/product.types"
+import type { Product } from "@/features/products/types/product.types"
 
 export default function ProductGrid({ products, categories }: { products: Product[]; categories: { id: string; name: string }[] }) {
   const router = useRouter()
@@ -181,7 +181,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
 
   const handleToggleActive = async (id: string, active: boolean) => {
     try {
-      const { toggleProductActive } = await import("@/lib/actions/productActions")
+      const { toggleProductActive } = await import("@/features/products/actions/productActions")
       await toggleProductActive(id, active)
       router.refresh()
     } catch (err) {

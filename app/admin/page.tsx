@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
-import { DashboardClient } from '@/components/admin/DashboardClient';
-import StoreSummaryCards from '@/components/admin/StoreSummaryCards';
-import RecentOrdersTable from '@/components/admin/RecentOrdersTable';
+import { DashboardClient } from '@/features/admin/components/DashboardClient';
+import StoreSummaryCards from '@/features/admin/components/StoreSummaryCards';
+import RecentOrdersTable from '@/features/admin/components/RecentOrdersTable';
 
 export default async function AdminDashboard() {
   const supabase = await createClient();

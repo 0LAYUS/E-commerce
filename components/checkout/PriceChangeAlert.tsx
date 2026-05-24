@@ -1,6 +1,6 @@
 "use client"
 
-import type { CartItem, ItemStatus } from "@/types/cart.types"
+import type { CartItem, ItemStatus } from "@/features/cart/types/cart.types"
 import { formatPrice } from "@/lib/format"
 import { TrendingUp, TrendingDown } from "lucide-react"
 

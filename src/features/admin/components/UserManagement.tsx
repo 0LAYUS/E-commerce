@@ -7,7 +7,7 @@ import { UserDetailsModal } from "./UserDetailsModal"
 import UserTableRow from "./UserTableRow"
 import { useUserList } from "@/hooks/useUserList"
 import { ROLE_FILTER_LABELS } from "@/lib/constants/users"
-import type { UserType } from "@/types/user.types"
+import type { UserType } from "@/features/auth/types/user.types"
 import type { FilterRole } from "@/types/admin.types"
 
 type UserManagementProps = {

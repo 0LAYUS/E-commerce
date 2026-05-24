@@ -8,7 +8,7 @@ import {
   Truck,
   ListOrdered,
 } from "lucide-react";
-import type { MensajeResponse } from "@/types/license.types";
+import type { MensajeResponse } from "@/shared/types/license.types";
 import type { SidebarItem } from "@/types/admin.types";
 import { prigmaBranding } from "@/lib/constants/branding-prigma";
 

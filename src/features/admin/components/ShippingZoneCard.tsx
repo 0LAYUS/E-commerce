@@ -3,7 +3,7 @@
 import { Truck, Pencil, Trash2 } from "lucide-react"
 import { formatPrice } from "@/lib/format"
 import { Button } from "@/components/ui/button"
-import type { ShippingZone } from "@/types/cart.types"
+import type { ShippingZone } from "@/features/cart/types/cart.types"
 
 type ShippingZoneCardProps = {
   zone: ShippingZone

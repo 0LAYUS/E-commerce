@@ -1,8 +1,8 @@
 "use client"
 
-import { StatusBarChart } from "@/components/admin/StatusBarChart"
-import { getPOSSalesByStatus } from "@/lib/actions/adminActions"
-import type { FilterPeriod } from "@/lib/actions/adminActions"
+import { StatusBarChart } from "@/features/admin/components/StatusBarChart"
+import { getPOSSalesByStatus } from "@/features/admin/actions/adminActions"
+import type { FilterPeriod } from "@/features/admin/actions/adminActions"
 
 interface POSSalesStatusChartProps {
   start: Date

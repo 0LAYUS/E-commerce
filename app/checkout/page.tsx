@@ -1,10 +1,10 @@
 "use client"
 
-import { useCart } from "@/components/providers/CartProvider"
+import { useCart } from "@/shared/components/CartProvider"
 import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { createOrder } from "@/lib/actions/checkoutActions"
-import { getWompiIntegritySignature } from "@/lib/actions/wompiActions"
+import { createOrder } from "@/features/orders/actions/checkoutActions"
+import { getWompiIntegritySignature } from "@/features/orders/actions/wompiActions"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { AlertTriangle, Clock } from "lucide-react"
 import Link from "next/link"

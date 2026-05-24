@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import type { CartItem, ItemStatus } from "@/types/cart.types"
+import type { CartItem, ItemStatus } from "@/features/cart/types/cart.types"
 import { formatPrice } from "@/lib/format"
 
 type OrderSummaryProps = {

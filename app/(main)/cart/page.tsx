@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useCart } from "@/components/providers/CartProvider"
+import { useCart } from "@/shared/components/CartProvider"
 import Link from "next/link"
 import { AlertTriangle, Info, TrendingUp, TrendingDown } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"

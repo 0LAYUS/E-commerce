@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { hasVariantSales, archiveVariant, deleteVariant } from "@/lib/actions/productActions"
+import { hasVariantSales, archiveVariant, deleteVariant } from "@/features/products/actions/productActions"
 
 type UseVariantActionsReturn = {
   variantsWithSales: Set<string>
@@ -54,7 +54,7 @@ export function useVariantActions(onAlert: (title: string, description: string) 
       if (variantId.startsWith("temp-")) return
 
       try {
-        const { updateVariant } = await import("@/lib/actions/productActions")
+        const { updateVariant } = await import("@/features/products/actions/productActions")
         await updateVariant(variantId, {
           stock: data.stock,
           price_override: data.price_override,

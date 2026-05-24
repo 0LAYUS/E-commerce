@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
-import type { ShippingZone } from "@/types/cart.types"
+import type { ShippingZone } from "@/features/cart/types/cart.types"
 
 type UseCheckoutSetupReturn = {
   zones: ShippingZone[]

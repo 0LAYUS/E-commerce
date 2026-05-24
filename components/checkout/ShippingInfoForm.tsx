@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { ShippingZone } from "@/types/cart.types"
+import type { ShippingZone } from "@/features/cart/types/cart.types"
 import { formatPrice } from "@/lib/format"
 
 type ShippingInfoFormProps = {

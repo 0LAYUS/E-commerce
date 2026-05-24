@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { formatPrice, formatStockLabel } from "@/lib/format"
-import type { POSProduct, POSVariant } from "@/types/product.types"
+import type { POSProduct, POSVariant } from "@/features/products/types/product.types"
 import VariantSelectorModal from "./VariantSelectorModal"
 
 type ProductGridProps = {

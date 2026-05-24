@@ -1,3 +1,3 @@
 "use server"
 
-export { updateVariant, hasVariantSales, archiveVariant, deleteVariant, replaceVariantImages } from "@/lib/actions/productActions"
+export { updateVariant, hasVariantSales, archiveVariant, deleteVariant, replaceVariantImages } from "@/features/products/actions/productActions"

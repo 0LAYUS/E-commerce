@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { updateProfile } from "@/lib/actions/profileActions";
+import { updateProfile } from "@/features/profile/actions/profileActions";
 import { PersonalInfoSection } from "@/components/profile/PersonalInfoSection";
 import { PasswordChangeSection } from "@/components/profile/PasswordChangeSection";
-import type { ProfileData } from "@/types/user.types";
+import type { ProfileData } from "@/features/auth/types/user.types";
 
 export default function ProfileForm({ initialProfile }: { initialProfile: ProfileData | null }) {
   const [loading, setLoading] = useState(false);

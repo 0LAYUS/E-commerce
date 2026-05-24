@@ -1,13 +1,12 @@
 "use client";
 
-<<<<<<<< HEAD:app/(main)/products/[id]/ProductDetailClient.tsx
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft } from "@phosphor-icons/react";
-import ProductVariantSelector from "@/components/products/ProductVariantSelector";
-import AddToCartButton from "@/components/products/AddToCartButton";
-import RelatedProductsCarousel from "@/components/products/RelatedProductsCarousel";
-import ProductImageGallery from "@/components/products/ProductImageGallery";
+import ProductVariantSelector from "@/features/products/components/ProductVariantSelector";
+import AddToCartButton from "@/features/products/components/AddToCartButton";
+import RelatedProductsCarousel from "@/features/products/components/RelatedProductsCarousel";
+import ProductImageGallery from "@/features/products/components/ProductImageGallery";
 import { useMemo, useState } from "react";
 import { formatPrice, formatStockLabel } from "@/lib/format";
 
@@ -17,52 +16,7 @@ import type {
   ProductImage,
   VariantImage,
   OptionDef,
-} from "@/types/product.types";
-========
-import { motion } from "framer-motion"
-import Link from "next/link"
-import { ArrowLeft } from "@phosphor-icons/react"
-import ProductVariantSelector from "@/features/products/components/ProductVariantSelector"
-import AddToCartButton from "@/features/products/components/AddToCartButton"
-import RelatedProductsCarousel from "@/features/products/components/RelatedProductsCarousel"
-import ProductImageGallery from "@/features/products/components/ProductImageGallery"
-import { useMemo, useState } from "react"
-
-type Product = {
-  id: string
-  name: string
-  description: string
-  price: number
-  stock: number
-  image_url: string
-  categories?: { name: string }
-}
-
-import type { OptionDef } from "@/features/products/types/product.types"
-
-type SKU = {
-  id: string
-  product_id: string
-  sku_code: string
-  price_override: number | null
-  stock: number
-  active: boolean
-  option_values: string[]
-}
-
-type ProductImage = {
-  id: string
-  url: string
-  alt?: string | null
-}
-
-type VariantImage = {
-  id: string
-  sku_id: string
-  url: string
-  alt?: string | null
-}
->>>>>>>> origin/staging:src/features/products/components/ProductDetailClient.tsx
+} from "@/features/products/types/product.types";
 
 type Props = {
   product: Product;

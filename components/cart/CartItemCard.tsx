@@ -6,8 +6,8 @@ import { Trash2, Minus, Plus } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { STATUS_BADGE_CONFIG, STATUS_MESSAGES } from "@/lib/constants/cart"
 import { formatPrice } from "@/lib/format"
-import type { CartItem } from "@/types/cart.types"
-import type { ItemStatus } from "@/types/cart.types"
+import type { CartItem } from "@/features/cart/types/cart.types"
+import type { ItemStatus } from "@/features/cart/types/cart.types"
 
 type CartItemCardProps = {
   item: CartItem

@@ -5,8 +5,8 @@ import Image from "next/image";
 import { ShoppingBag, MagnifyingGlass, Plus } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import PriceDisplay from "@/components/products/PriceDisplay";
-import type { Product } from "@/types/product.types";
+import PriceDisplay from "@/features/products/components/PriceDisplay";
+import type { Product } from "@/features/products/types/product.types";
 
 type Props = {
   product: Product;

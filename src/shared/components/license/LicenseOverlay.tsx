@@ -1,6 +1,6 @@
 "use client"
 
-import type { MensajeResponse } from "@/types/license.types"
+import type { MensajeResponse } from "@/shared/types/license.types"
 import { prigmaBranding } from "@/lib/constants/branding-prigma"
 import { PrigmaLogo } from "@/components/branding/prigma-logo"
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { User, Shield, MoreVertical, Eye } from "lucide-react"
-import type { UserType } from "@/types/user.types"
+import type { UserType } from "@/features/auth/types/user.types"
 
 type UserRoleMenuProps = {
   user: UserType
