@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAllUsers } from "@/features/auth/actions/authActions"
 
+export const runtime = "edge"
 export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
