@@ -5,6 +5,8 @@ import { OrdersPagination } from "@/features/admin/components/OrdersPagination"
 import { OrdersExportButton } from "@/features/admin/components/OrdersExportButton"
 import type { OrderStatus } from "@/features/orders/types/order.types"
 
+export const runtime = 'edge'
+
 interface SearchParams {
   status?: string
   search?: string

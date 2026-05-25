@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { CheckCircle2, XCircle, Clock, ArrowLeft, ShoppingBag } from "lucide-react"
 
+export const runtime = 'edge'
+
 export const metadata = {
   title: "Resultado del Pago",
 }

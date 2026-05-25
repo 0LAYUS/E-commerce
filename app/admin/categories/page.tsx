@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import CategoryGrid from '@/features/admin/components/CategoryGrid';
 
+export const runtime = 'edge'
+
 export default async function CategoriesPage() {
   const supabase = await createClient();
   const { data: categories } = await supabase

@@ -5,6 +5,8 @@ import Link from "next/link"
 import { ArrowLeft, Users } from "lucide-react"
 import UserManagement from "@/features/admin/components/UserManagement"
 
+export const runtime = 'edge'
+
 export default async function UsersPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
