@@ -1,5 +1,4 @@
 import { createAdminClient } from "@/lib/supabase/admin"
-import crypto from "crypto"
 import { sendOrderConfirmationEmail } from "@/features/orders/services/orderConfirmation"
 import {
   findOrderItems,
@@ -10,7 +9,15 @@ import {
   incrementProductStock,
 } from "@/features/cart/repositories/stockRepository"
 
-function verifyWompiSignature(payload: unknown, checksumHeader: string | null): boolean {
+async function sha256Hex(message: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(message)
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+}
+
+async function verifyWompiSignature(payload: unknown, checksumHeader: string | null): Promise<boolean> {
   const eventsSecret = process.env.WOMPI_EVENTS_SECRET
 
   if (!eventsSecret || eventsSecret.startsWith("test_events_REEMPLAZAR")) {
@@ -30,7 +37,7 @@ function verifyWompiSignature(payload: unknown, checksumHeader: string | null): 
   }
 
   const stringToHash = `${timestamp}${checksumHeader}${eventsSecret}`
-  const expectedSignature = crypto.createHash("sha256").update(stringToHash).digest("hex")
+  const expectedSignature = await sha256Hex(stringToHash)
 
   const isValid = expectedSignature === checksumHeader
   if (!isValid) {
@@ -55,7 +62,7 @@ export async function processWompiWebhook(
   payload: WompiTransactionEvent,
   checksumHeader: string | null
 ): Promise<{ received: boolean; skipped?: boolean; error?: string }> {
-  if (!verifyWompiSignature(payload, checksumHeader)) {
+  if (!await verifyWompiSignature(payload, checksumHeader)) {
     return { received: false, error: "Firma inválida" }
   }
 
