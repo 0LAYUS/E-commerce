@@ -7,6 +7,8 @@ import {
   deleteBogoOffer,
 } from "@/features/pos/services/posBogoOfferService"
 
+export const runtime = "edge"
+
 async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
