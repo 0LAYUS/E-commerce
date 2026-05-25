@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/admin"
 import ArchivedProductsGrid from "@/features/admin/components/ArchivedProductsGrid"
 
+export const dynamic = "force-dynamic";
+
 export default async function ArchivedProductsPage() {
   const supabase = await createAdminClient()
 
