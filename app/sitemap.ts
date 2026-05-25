@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
 import type { MetadataRoute } from "next"
 
+export const runtime = 'edge'
+
 const baseUrl =
   process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`

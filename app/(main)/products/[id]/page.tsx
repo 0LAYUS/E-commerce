@@ -4,6 +4,8 @@ import type { Metadata } from "next"
 import { getProductOptions, getProductVariants, getProductImages, getVariantImagesByProductId } from "@/features/products/actions/productActions"
 import ProductDetailClient from "@/features/products/components/ProductDetailClient"
 
+export const runtime = "edge"
+
 type PageProps = {
   params: Promise<{ id: string }>
 }

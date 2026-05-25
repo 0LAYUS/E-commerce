@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { runCleanup } from "@/features/cart/services/cleanupService"
 
+export const runtime = "edge"
+
 export async function POST() {
   try {
     const results = await runCleanup()

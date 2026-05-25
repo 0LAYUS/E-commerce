@@ -2,6 +2,8 @@ import { Suspense } from "react"
 import { createClient } from "@/lib/supabase/server"
 import HomeContent from "@/features/home/components/HomeContent"
 
+export const runtime = 'edge'
+
 async function getProductsData() {
   const supabase = await createClient()
   const { data: categories } = await supabase.from('categories').select('*')

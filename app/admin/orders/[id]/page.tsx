@@ -4,6 +4,8 @@ import { ArrowLeft } from "lucide-react"
 import { getOrderById } from "@/features/orders/actions/orderActions"
 import { OrderDetailsCard } from "@/features/admin/components/OrderDetailsCard"
 
+export const runtime = "edge"
+
 export default async function OrderDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params
 

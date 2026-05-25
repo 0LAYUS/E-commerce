@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { exportOrdersToCSV } from "@/features/orders/services/orderService"
 import type { OrderStatus } from "@/features/orders/types/order.types"
 
+export const runtime = "edge"
 export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
