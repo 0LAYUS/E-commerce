@@ -1,7 +1,5 @@
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Prigma Comercio"
 const siteUrl =
   process.env.VERCEL_URL
@@ -197,6 +195,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
     return
   }
 
+  const resend = new Resend(apiKey)
   const orderShortId = data.orderId.slice(0, 8).toUpperCase()
 
   try {
