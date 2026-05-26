@@ -53,3 +53,9 @@ skills-lock.json
 
 # Supabase temp files
 supabase/.temp/
+
+# opennext
+.open-next
+
+# wrangler
+.wrangler/
