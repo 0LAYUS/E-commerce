@@ -38,8 +38,13 @@ export function LicenseProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval)
   }, [])
 
-  if (licenseState.blocked && licenseState.mensaje) {
-    return <LicenseOverlay mensaje={licenseState.mensaje} />
+  if (licenseState.blocked) {
+    const mensaje = licenseState.mensaje ?? {
+      title: "LICENCIA INACTIVA",
+      description: "Comunícate con PRIGMA para más información.",
+      status: "cancelled",
+    }
+    return <LicenseOverlay mensaje={mensaje} />
   }
 
   return <>{children}</>

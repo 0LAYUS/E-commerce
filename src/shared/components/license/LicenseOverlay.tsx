@@ -30,7 +30,7 @@ export function LicenseOverlay({ mensaje }: LicenseOverlayProps) {
 
             <div className="mb-4">
               <div className="text-xs tracking-widest text-gray-400 mb-2">{prigmaBranding.company}</div>
-              <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-600">
+              <h1 className="text-2xl md:text-3xl font-bold text-red-400">
                 {mensaje.title}
               </h1>
             </div>
@@ -46,7 +46,7 @@ export function LicenseOverlay({ mensaje }: LicenseOverlayProps) {
                 href={`https://wa.me/${prigmaBranding.whatsapp}?text=Hola%2C%20necesito%20ayuda%20con%20mi%20licencia`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-500 hover:to-indigo-500 transition-all duration-300 shadow-lg shadow-purple-500/25"
+                className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-purple-500/25"
               >
                 <svg
                   className="w-5 h-5 mr-2"

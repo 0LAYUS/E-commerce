@@ -2,12 +2,12 @@ import { NextResponse, type NextRequest } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { signLicenseRequest } from "@/shared/utils/sign-request"
 
-const PRIGMA_URL = process.env.PRIGMA_URL || "https://prisma.onrender.com"
+const PRIGMA_URL = process.env.PRIGMA_URL || "https://prigma.onrender.com"
 const LICENSE_KEY = process.env.LICENSE_KEY || ""
 const LICENSE_CACHE_SECONDS = 300
 
 async function verificarLicenciaActiva(request: NextRequest): Promise<boolean> {
-  if (!LICENSE_KEY) return true
+  if (!LICENSE_KEY) return false
 
   const cachedStatus = request.cookies.get("_license_status")?.value
   if (cachedStatus) {
@@ -29,7 +29,7 @@ async function verificarLicenciaActiva(request: NextRequest): Promise<boolean> {
       },
     })
 
-    if (!res.ok) return true
+    if (!res.ok) return false
 
     const data = await res.json()
     const active = data.status === "active" || data.status === "trial" || data.status === "grace_period"
@@ -45,7 +45,7 @@ async function verificarLicenciaActiva(request: NextRequest): Promise<boolean> {
     })
     return active
   } catch {
-    return true
+    return false
   }
 }
 
