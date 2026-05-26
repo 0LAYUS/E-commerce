@@ -10,7 +10,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "pages:build": "npx opennextjs-cloudflare build",
+    "pages:build": "npx opennextjs-cloudflare build && mkdir -p .vercel/output/static && cp -r .open-next/* .vercel/output/static/ && cp .open-next/worker.js .vercel/output/static/_worker.js",
     "pages:deploy": "npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy",
     "pages:dev": "npx wrangler dev"
   },
