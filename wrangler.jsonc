@@ -8,6 +8,12 @@
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
+	"services": [
+		{
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "vitaminaspati-e-commerce"
+		}
+	],
 	"durable_objects": {
 		"bindings": [
 			{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" },
