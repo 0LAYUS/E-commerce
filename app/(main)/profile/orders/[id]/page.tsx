@@ -4,8 +4,6 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Package } from 'lucide-react';
 
-export const runtime = "edge"
-
 type OrderItemRow = {
   id: string
   quantity: number

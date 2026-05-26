@@ -1,8 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import ProductGrid from '@/features/admin/components/ProductGrid';
 
-export const runtime = 'edge'
-
 export default async function ProductsPage() {
   const supabase = await createClient();
   

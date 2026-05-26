@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { storeBranding } from "@/lib/constants/branding-store";
 
-export const runtime = 'edge'
 export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {

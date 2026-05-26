@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { PosSaleFilters } from "@/features/pos/repositories/posRepository"
 import { getSalesAdmin } from "@/features/pos/services/posSaleService"
 
-export const runtime = "edge"
-
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()

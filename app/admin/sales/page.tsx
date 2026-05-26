@@ -4,8 +4,6 @@ import SalesMetricCards from '@/features/admin/components/SalesMetricCards';
 import { formatPrice } from '@/lib/format';
 import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT } from '@/lib/constants/orders';
 
-export const runtime = 'edge'
-
 type OrderRow = {
   id: string
   total_amount: number

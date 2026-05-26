@@ -3,8 +3,6 @@ import { DashboardClient } from '@/features/admin/components/DashboardClient';
 import StoreSummaryCards from '@/features/admin/components/StoreSummaryCards';
 import RecentOrdersTable from '@/features/admin/components/RecentOrdersTable';
 
-export const runtime = 'edge'
-
 export default async function AdminDashboard() {
   const supabase = await createClient();
 

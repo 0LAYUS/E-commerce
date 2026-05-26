@@ -2,8 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import ProfileForm from "./ProfileForm";
 
-export const runtime = 'edge'
-
 export default async function ProfilePage() {
   const supabase = await createClient();
   const {
