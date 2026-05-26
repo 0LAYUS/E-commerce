@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { getAllCategories } from "@/features/categories/services/categoryService"
 
-export const runtime = "edge"
 export const dynamic = "force-dynamic"
 
 export async function GET() {

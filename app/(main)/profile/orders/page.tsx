@@ -4,8 +4,6 @@ import Link from "next/link";
 import { Eye } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 
-export const runtime = 'edge'
-
 export default async function ProfileOrdersPage() {
   const supabase = await createClient();
   const {

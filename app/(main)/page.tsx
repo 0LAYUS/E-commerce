@@ -2,7 +2,6 @@ import { Suspense } from "react"
 import { createClient } from "@/lib/supabase/server"
 import HomeContent from "@/features/home/components/HomeContent"
 
-export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 
 async function getProductsData() {
