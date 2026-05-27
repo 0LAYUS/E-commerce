@@ -3,12 +3,30 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import {
   getAllUsers as svcGetAllUsers,
   getUserDetails as svcGetUserDetails,
-  updateUserRole as svcUpdateUserRole,
 } from "@/features/auth/services/authService"
+import { updateProfileRole } from "@/features/auth/repositories/userRepository"
 import type { UserRole } from "@/features/auth/types/user.types"
+
+const ERROR_MAP: Record<string, string> = {
+  "Invalid login credentials": "Correo o contraseña incorrectos",
+  "Email not confirmed": "Debes confirmar tu correo antes de iniciar sesión",
+  "User not found": "No existe una cuenta con ese correo",
+  "Invalid email": "El formato del correo no es válido",
+  "Password should be at least": "La contraseña debe tener al menos 6 caracteres",
+  "Database error": "Error de conexión. Intentá de nuevo",
+  "Over request rate limit": "Demasiados intentos. Esperá un momento",
+}
+
+function translateError(message: string): string {
+  for (const [key, val] of Object.entries(ERROR_MAP)) {
+    if (message.includes(key)) return val
+  }
+  return message
+}
 
 export async function getAllUsers(options?: {
   limit?: number
@@ -24,7 +42,8 @@ export async function getUserDetails(userId: string) {
 }
 
 export async function updateUserRole(userId: string, role: UserRole) {
-  await svcUpdateUserRole(userId, role)
+  const adminClient = await createAdminClient()
+  await updateProfileRole(adminClient, userId, role)
   revalidatePath("/admin/users")
 }
 
@@ -40,7 +59,7 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    redirect("/login?error=" + encodeURIComponent(error.message));
+    redirect("/login?error=" + encodeURIComponent(translateError(error.message)));
   }
 
   await supabase.auth.refreshSession();
@@ -83,7 +102,7 @@ export async function signup(formData: FormData) {
   });
 
   if (error) {
-    redirect("/register?error=" + encodeURIComponent(error.message));
+    redirect("/register?error=" + encodeURIComponent(translateError(error.message)));
   }
 
   revalidatePath("/", "layout");
@@ -104,7 +123,7 @@ export async function resetPasswordForEmail(formData: FormData) {
   });
 
   if (error) {
-    return { success: false, message: error.message };
+    return { success: false, message: translateError(error.message) };
   }
 
   return { success: true, message: "Revisa tu correo para el enlace de recuperación" };

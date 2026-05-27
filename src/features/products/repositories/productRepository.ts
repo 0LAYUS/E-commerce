@@ -10,7 +10,7 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 export async function findProductById(client: SupabaseClient, id: string) {
   const { data, error } = await client
     .from("products")
-    .select("id, name, description, price, stock, active, archived, category_id, image_url, has_variants")
+    .select("id, name, description, price, stock, active, archived, category_id, image_url")
     .eq("id", id)
     .single()
 
