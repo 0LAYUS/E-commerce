@@ -1,0 +1,46 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"main": ".open-next/worker.js",
+	"name": "vitaminaspati-e-commerce",
+	"compatibility_date": "2025-05-25",
+	"compatibility_flags": ["nodejs_compat"],
+	"workers_dev": false,
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"routes": [
+		{ "pattern": "vitaminaspati.com", "custom_domain": true }
+	],
+	"services": [
+		{
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "vitaminaspati-e-commerce"
+		}
+	],
+	"observability": {
+		"enabled": false,
+		"head_sampling_rate": 1,
+		"logs": {
+			"enabled": true,
+			"head_sampling_rate": 1,
+			"persist": true,
+			"invocation_logs": true
+		},
+		"traces": {
+			"enabled": false,
+			"persist": true,
+			"head_sampling_rate": 1
+		}
+	},
+	"durable_objects": {
+		"bindings": [
+			{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" },
+			{ "name": "NEXT_TAG_CACHE_DO_SHARDED", "class_name": "DOShardedTagCache" },
+			{ "name": "NEXT_CACHE_DO_PURGE", "class_name": "BucketCachePurge" }
+		]
+	},
+	"migrations": [
+		{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler", "DOShardedTagCache", "BucketCachePurge"] }
+	]
+}

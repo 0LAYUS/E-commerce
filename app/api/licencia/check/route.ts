@@ -7,6 +7,13 @@ export async function GET() {
 
     return NextResponse.json({ blocked, mensaje })
   } catch {
-    return NextResponse.json({ blocked: false, mensaje: null })
+    return NextResponse.json({
+      blocked: true,
+      mensaje: {
+        title: "ERROR DE VERIFICACIÓN",
+        description: "No se pudo verificar la licencia. Comunícate con PRIGMA.",
+        status: "cancelled",
+      },
+    })
   }
 }

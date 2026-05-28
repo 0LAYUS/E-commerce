@@ -9,7 +9,7 @@ const LICENSE_KEY = process.env.LICENSE_KEY || ""
 
 async function verificarLicenciaStatus(): Promise<VerifyResponse> {
   if (!LICENSE_KEY) {
-    return { status: "active", blocked: false }
+    return { status: "cancelled", blocked: true }
   }
 
   try {
@@ -25,7 +25,7 @@ async function verificarLicenciaStatus(): Promise<VerifyResponse> {
     })
 
     if (!res.ok) {
-      return { status: "active", blocked: false }
+      return { status: "cancelled", blocked: true }
     }
 
     const data = await res.json()
@@ -36,7 +36,7 @@ async function verificarLicenciaStatus(): Promise<VerifyResponse> {
       blocked,
     }
   } catch {
-    return { status: "active", blocked: false }
+    return { status: "cancelled", blocked: true }
   }
 }
 
