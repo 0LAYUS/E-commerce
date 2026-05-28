@@ -9,11 +9,12 @@ import ProductGridPOS from "@/features/pos/components/ProductGridPOS"
 import CartPOS from "@/features/pos/components/CartPOS"
 import PaymentModal from "@/features/pos/components/PaymentModal"
 import ReceiptModal from "@/features/pos/components/ReceiptModal"
+import VariantSelectorModal from "@/features/pos/components/VariantSelectorModal"
 import { CategoryFilterBar } from "@/components/pos/CategoryFilterBar"
 import { usePOSCart } from "@/hooks/usePOSCart"
 import { usePOSPayment } from "@/hooks/usePOSPayment"
 
-import type { POSProduct, Category } from "@/features/products/types/product.types"
+import type { POSProduct, POSVariant, Category } from "@/features/products/types/product.types"
 
 export default function POSPage() {
   const [products, setProducts] = useState<POSProduct[]>([])
@@ -21,6 +22,8 @@ export default function POSPage() {
   const [selectedCategory, setSelectedCategory] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(true)
+  const [variantModalProduct, setVariantModalProduct] = useState<POSProduct | null>(null)
+  const [variantModalOpen, setVariantModalOpen] = useState(false)
 
   const {
     cart,
@@ -96,6 +99,27 @@ export default function POSPage() {
     [loadProducts, searchQuery]
   )
 
+  const handleProductClick = useCallback(
+    (product: POSProduct) => {
+      if (product.has_variants || product.variants?.length) {
+        setVariantModalProduct(product)
+        setVariantModalOpen(true)
+      } else {
+        handleSelectProduct(product)
+      }
+    },
+    [handleSelectProduct]
+  )
+
+  const handleVariantSelect = useCallback(
+    (product: POSProduct, variant: POSVariant) => {
+      handleSelectVariant(product, variant)
+      setVariantModalOpen(false)
+      setVariantModalProduct(null)
+    },
+    [handleSelectVariant]
+  )
+
   return (
     <div className="flex flex-col h-full">
       <header className="bg-card border-b border-border shrink-0">
@@ -140,8 +164,7 @@ export default function POSPage() {
             ) : (
               <ProductGridPOS
                 products={products}
-                onSelectProduct={handleSelectProduct}
-                onSelectVariant={handleSelectVariant}
+                onSelectProduct={handleProductClick}
               />
             )}
           </div>
@@ -165,6 +188,16 @@ export default function POSPage() {
           </div>
         </div>
       </main>
+
+      <VariantSelectorModal
+        product={variantModalProduct}
+        open={variantModalOpen}
+        onClose={() => {
+          setVariantModalOpen(false)
+          setVariantModalProduct(null)
+        }}
+        onSelectVariant={handleVariantSelect}
+      />
 
       <PaymentModal
         isOpen={isPaymentOpen}

@@ -1,36 +1,64 @@
-drop policy "All SKUs are viewable by admins." on "public"."product_skus";
+-- ============================================================
+-- Remote schema delta — must run AFTER init_schema
+-- Contains policy updates, column drops, function replacements
+-- All DROP statements wrapped with IF EXISTS for idempotency
+-- ============================================================
 
-drop policy "Categories are viewable by everyone." on "public"."categories";
+-- Drop and recreate policies
+drop policy if exists "All SKUs are viewable by admins." on "public"."product_skus";
+drop policy if exists "Categories are viewable by everyone." on "public"."categories";
+drop policy if exists "Active products are viewable by everyone." on "public"."products";
+drop policy if exists "Authenticated users can insert own profile" on "public"."profiles";
 
-drop policy "Active products are viewable by everyone." on "public"."products";
+-- Drop constraint if exists
+alter table if exists "public"."product_skus" drop constraint if exists "product_skus_product_id_sku_code_key";
 
-drop policy "Authenticated users can insert own profile" on "public"."profiles";
-
-alter table "public"."product_skus" drop constraint "product_skus_product_id_sku_code_key";
-
+-- Functions (already use IF EXISTS)
 drop function if exists "public"."check_product_pos_sales"(p_product_id uuid);
 
+-- Indexes (already use IF EXISTS)
 drop index if exists "public"."idx_product_skus_product_id";
-
 drop index if exists "public"."product_skus_product_id_sku_code_key";
 
-alter table "public"."categories" drop column "archived";
+-- Drop archived columns (these columns may not exist on fresh DB)
+alter table if exists "public"."categories" drop column if exists "archived";
+alter table if exists "public"."product_skus" drop column if exists "archived";
+alter table if exists "public"."products" drop column if exists "archived";
 
+-- Alter column types (safe — columns exist from init_schema)
 alter table "public"."orders" alter column "customer_email" set data type character varying(255) using "customer_email"::character varying(255);
-
 alter table "public"."orders" alter column "customer_name" set data type character varying(255) using "customer_name"::character varying(255);
 
-alter table "public"."product_skus" drop column "archived";
-
+-- Set not null (columns exist from init_schema)
 alter table "public"."product_skus" alter column "active" set not null;
-
-alter table "public"."products" drop column "archived";
-
 alter table "public"."products" alter column "active" set not null;
 
-CREATE UNIQUE INDEX product_skus_sku_code_key ON public.product_skus USING btree (sku_code);
+-- Recreate unique constraint on sku_code (without product_id)
+-- On fresh DB, init_schema already creates product_skus_sku_code_unique
+-- So we only need to ensure the constraint exists, not create a duplicate
+DO $$
+BEGIN
+  -- If the old composite constraint exists, drop it
+  IF EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'product_skus_product_id_sku_code_key'
+    AND table_schema = 'public' AND table_name = 'product_skus'
+  ) THEN
+    ALTER TABLE public.product_skus DROP CONSTRAINT product_skus_product_id_sku_code_key;
+  END IF;
 
-alter table "public"."product_skus" add constraint "product_skus_sku_code_key" UNIQUE using index "product_skus_sku_code_key";
+  -- Ensure unique constraint on sku_code exists (init_schema may have already created it)
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'product_skus_sku_code_key'
+    AND table_schema = 'public' AND table_name = 'product_skus'
+    AND constraint_type = 'UNIQUE'
+  ) THEN
+    -- Also drop any existing index with this name that isn't tied to a constraint
+    DROP INDEX IF EXISTS product_skus_sku_code_key;
+    ALTER TABLE public.product_skus ADD CONSTRAINT product_skus_sku_code_key UNIQUE (sku_code);
+  END IF;
+END $$;
 
 set check_function_bodies = off;
 
@@ -725,40 +753,40 @@ $function$
 ;
 
 
-  create policy "Categories are viewable by everyone."
+-- Recreate policies (drop first to avoid duplicates)
+drop policy if exists "Categories are viewable by everyone." on "public"."categories";
+create policy "Categories are viewable by everyone."
   on "public"."categories"
   as permissive
   for select
   to public
 using (true);
 
-
-
-  create policy "Active products are viewable by everyone."
+drop policy if exists "Active products are viewable by everyone." on "public"."products";
+create policy "Active products are viewable by everyone."
   on "public"."products"
   as permissive
   for select
   to public
 using ((active = true));
 
-
-
-  create policy "Authenticated users can insert own profile"
+drop policy if exists "Authenticated users can insert own profile" on "public"."profiles";
+create policy "Authenticated users can insert own profile"
   on "public"."profiles"
   as permissive
   for insert
   to public
 with check ((auth.uid() = id));
 
+-- Storage policies — drop old, create new
+drop policy if exists "Anyone can update product images" on "storage"."objects";
+drop policy if exists "Anyone can view product images" on "storage"."objects";
+drop policy if exists "Authenticated users can upload product images" on "storage"."objects";
+drop policy if exists "Admin delete for product-images" on "storage"."objects";
+drop policy if exists "Admin write for product-images" on "storage"."objects";
+drop policy if exists "Public read for product-images" on "storage"."objects";
 
-drop policy "Anyone can update product images" on "storage"."objects";
-
-drop policy "Anyone can view product images" on "storage"."objects";
-
-drop policy "Authenticated users can upload product images" on "storage"."objects";
-
-
-  create policy "Admin delete for product-images"
+create policy "Admin delete for product-images"
   on "storage"."objects"
   as permissive
   for delete
@@ -767,9 +795,7 @@ using (((bucket_id = 'product-images'::text) AND (( SELECT profiles.role
    FROM public.profiles
   WHERE (profiles.id = auth.uid())) = 'administrador'::public.user_role)));
 
-
-
-  create policy "Admin write for product-images"
+create policy "Admin write for product-images"
   on "storage"."objects"
   as permissive
   for insert
@@ -778,9 +804,7 @@ with check (((bucket_id = 'product-images'::text) AND (( SELECT profiles.role
    FROM public.profiles
   WHERE (profiles.id = auth.uid())) = 'administrador'::public.user_role)));
 
-
-
-  create policy "Public read for product-images"
+create policy "Public read for product-images"
   on "storage"."objects"
   as permissive
   for select

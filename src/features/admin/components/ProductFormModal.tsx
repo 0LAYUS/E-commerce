@@ -102,6 +102,11 @@ export function ProductFormModal({
                 type="number"
                 name="price"
                 defaultValue={editingProduct?.price}
+                onFocus={(e) => {
+                  if (e.target.value === "0") {
+                    e.target.select()
+                  }
+                }}
                 required
               />
             </div>
@@ -140,6 +145,11 @@ export function ProductFormModal({
                   if (!isNaN(num)) {
                     onNewProductStockChange(num)
                   }
+                }
+              }}
+              onFocus={(e) => {
+                if (!hasVariants && e.target.value === "0") {
+                  e.target.select()
                 }
               }}
               required={!hasVariants}

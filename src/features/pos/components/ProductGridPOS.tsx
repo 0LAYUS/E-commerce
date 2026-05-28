@@ -4,22 +4,14 @@ import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { formatPrice } from "@/lib/format"
-import type { POSProduct, POSVariant } from "@/features/products/types/product.types"
+import type { POSProduct } from "@/features/products/types/product.types"
 
 type ProductGridPOSProps = {
   products: POSProduct[]
   onSelectProduct: (product: POSProduct) => void
-  onSelectVariant: (product: POSProduct, variant: POSVariant) => void
 }
 
-function getVariantLabel(variant: POSVariant) {
-  if (variant.option_values && variant.option_values.length > 0) {
-    return variant.option_values.join(" / ")
-  }
-  return variant.sku_code || "Variante"
-}
-
-export default function ProductGridPOS({ products, onSelectProduct, onSelectVariant }: ProductGridPOSProps) {
+export default function ProductGridPOS({ products, onSelectProduct }: ProductGridPOSProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {products.map((product) => {
@@ -67,28 +59,14 @@ export default function ProductGridPOS({ products, onSelectProduct, onSelectVari
               </div>
 
               {hasVariants ? (
-                <div className="space-y-2">
-                  {availableVariants.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">No hay variantes activas</p>
-                  ) : (
-                    <div className="grid grid-cols-1 gap-2">
-                      {availableVariants.map((variant) => (
-                        <button
-                          key={variant.id}
-                          onClick={() => onSelectVariant(product, variant)}
-                          disabled={variant.stock <= 0}
-                          className="w-full text-left border border-input rounded-lg px-3 py-2 text-xs font-medium hover:bg-accent transition disabled:opacity-50"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="truncate">{getVariantLabel(variant)}</span>
-                            <span className="text-muted-foreground">{formatPrice(variant.price_override ?? product.price)}</span>
-                          </div>
-                          <span className="text-[11px] text-muted-foreground">Stock: {variant.stock}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => onSelectProduct(product)}
+                >
+                  Ver variantes ({availableVariants.length})
+                </Button>
               ) : (
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs text-muted-foreground">Stock: {baseStock}</span>

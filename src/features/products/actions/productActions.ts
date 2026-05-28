@@ -11,6 +11,7 @@ import {
   updateVariant as svcUpdateVariant,
   toggleProductActive as svcToggleProductActive,
   replaceVariantImages as svcReplaceVariantImages,
+  deleteVariantImage as svcDeleteVariantImage,
   archiveProduct as svcArchiveProduct,
   unarchiveProduct as svcUnarchiveProduct,
   archiveVariant as svcArchiveVariant,
@@ -63,6 +64,11 @@ export async function toggleProductActive(productId: string, active: boolean) {
 
 export async function replaceVariantImages(variantId: string, formData: FormData) {
   await svcReplaceVariantImages(variantId, formData)
+  revalidatePath("/admin/products")
+}
+
+export async function deleteVariantImage(imageId: string, url: string) {
+  await svcDeleteVariantImage(imageId, url)
   revalidatePath("/admin/products")
 }
 

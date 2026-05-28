@@ -172,6 +172,27 @@ export async function insertOptionValue(
 }
 
 /**
+ * Deletes all option values belonging to a product's option types.
+ * Must be called BEFORE deleteOptionTypesByProduct to avoid FK violation.
+ */
+export async function deleteOptionValuesByProduct(
+  client: SupabaseClient,
+  productId: string
+) {
+  const typeIds = await findOptionTypesByProduct(client, productId).then(
+    (types) => types.map((t) => t.id)
+  )
+  if (typeIds.length === 0) return
+
+  const { error } = await client
+    .from("product_option_values")
+    .delete()
+    .in("option_type_id", typeIds)
+
+  if (error) throw new Error(error.message)
+}
+
+/**
  * Deletes all option types belonging to a product.
  */
 export async function deleteOptionTypesByProduct(
@@ -483,6 +504,21 @@ export async function deleteVariantImagesBySkuId(
     .from("product_variant_images")
     .delete()
     .eq("sku_id", skuId)
+
+  if (error) throw new Error(error.message)
+}
+
+/**
+ * Deletes a single variant image by ID.
+ */
+export async function deleteVariantImageById(
+  client: SupabaseClient,
+  imageId: string
+) {
+  const { error } = await client
+    .from("product_variant_images")
+    .delete()
+    .eq("id", imageId)
 
   if (error) throw new Error(error.message)
 }
