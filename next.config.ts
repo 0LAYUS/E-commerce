@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import type { Configuration, RuleSetRule } from "webpack";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -18,6 +19,29 @@ const nextConfig: NextConfig = {
         pathname: "/storage/v1/object/public/**",
       },
     ],
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '5mb',
+    },
+  },
+  webpack: (config: Configuration) => {
+    const existingRules = config.module?.rules as RuleSetRule[] | undefined;
+    if (existingRules) {
+      const wasmRuleIndex = existingRules.findIndex(
+        (rule) => rule.test instanceof RegExp && rule.test.test(".wasm")
+      );
+      if (wasmRuleIndex !== -1) {
+        existingRules.splice(wasmRuleIndex, 1);
+      }
+    }
+
+    config.module?.rules?.push({
+      test: /\.wasm$/,
+      type: "asset/resource",
+    });
+
+    return config;
   },
 };
 

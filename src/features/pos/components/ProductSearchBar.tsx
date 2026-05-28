@@ -22,7 +22,7 @@ export default function ProductSearchBar({ onSearch }: ProductSearchBarProps) {
   }, [query, debouncedSearch])
 
   return (
-    <div className="relative my-2.5 max-w-[80%] mx-auto">
+    <div className="relative my-2.5 w-full sm:max-w-[80%] sm:mx-auto">
       <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
       <input
         type="text"

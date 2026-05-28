@@ -36,6 +36,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
   const [productActive, setProductActive] = useState(true)
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertConfig, setAlertConfig] = useState({ title: "", description: "" })
+  const [originalImageCount, setOriginalImageCount] = useState(0)
 
   const totalVariantStock = variantStocks.reduce((sum, v) => sum + (v.active ? v.stock : 0), 0)
 
@@ -71,6 +72,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
   const openNewModal = () => {
     setEditingProduct(null)
     setImageItems([])
+    setOriginalImageCount(0)
     setHasVariants(false)
     setVariantOptions([])
     setVariantStocks([])
@@ -106,6 +108,9 @@ export default function ProductGrid({ products, categories }: { products: Produc
       )
       if (images.length > 0) {
         setImageItems(images.map((img) => ({ id: img.id, url: img.url, type: "existing" })))
+        setOriginalImageCount(images.length)
+      } else {
+        setOriginalImageCount(0)
       }
     } catch (err) {
       console.error("Error loading variants:", err)
@@ -120,6 +125,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
     setTimeout(() => {
       setEditingProduct(null)
       setImageItems([])
+      setOriginalImageCount(0)
       setHasVariants(false)
       setVariantOptions([])
       setVariantStocks([])
@@ -149,6 +155,10 @@ export default function ProductGrid({ products, categories }: { products: Produc
         item.type === "existing" ? { type: "existing" as const, id: item.id } : { type: "new" as const }
       )
       formData.set("image_order", JSON.stringify(imageOrder))
+
+      if (editingProduct && imageItems.length === 0 && originalImageCount > 0) {
+        formData.set("remove_all_images", "true")
+      }
 
       imageItems
         .filter((item) => item.type === "new" && item.file)

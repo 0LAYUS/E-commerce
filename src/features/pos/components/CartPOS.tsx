@@ -45,7 +45,7 @@ export default function CartPOS({
   }
 
   return (
-    <div className="bg-card rounded-xl shadow-sm border p-6 flex flex-col h-full">
+    <div className="bg-card rounded-xl shadow-sm border p-6 flex flex-col h-auto lg:h-full">
       <h2 className="text-xl font-extrabold text-card-foreground mb-4">Carrito de Venta</h2>
 
       <div className="mb-4">

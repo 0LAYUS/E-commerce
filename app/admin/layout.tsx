@@ -46,7 +46,7 @@ function AdminContent({ children }: { children: React.ReactNode }) {
         className="flex-1 overflow-auto"
         onScroll={(event) => setIsScrolled(event.currentTarget.scrollTop > 0)}
       >
-        <div className="p-8 min-h-full flex flex-col">
+        <div className="pt-20 px-4 pb-8 md:p-8 min-h-full flex flex-col">
           {!isSidebarVisible ? (
             <Button
               variant="secondary"

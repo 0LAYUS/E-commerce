@@ -247,6 +247,20 @@ export default function Navbar() {
                   </motion.div>
                 )}
 
+                {user && role !== "administrador" && (
+                  <motion.div whileTap={{ scale: 0.95 }} className="mt-2">
+                    <Button asChild variant="ghost" className="w-full">
+                      <Link
+                        href="/profile/orders"
+                        className="flex items-center justify-center gap-2"
+                      >
+                        <Layout className="w-5 h-5" weight="duotone" />
+                        Mi Cuenta
+                      </Link>
+                    </Button>
+                  </motion.div>
+                )}
+
                 {!user && (
                   <motion.div whileTap={{ scale: 0.95 }} className="mt-2">
                     <Button asChild variant="default" className="w-full">

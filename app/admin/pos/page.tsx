@@ -100,7 +100,7 @@ export default function POSPage() {
     <div className="flex flex-col h-full">
       <header className="bg-card border-b border-border shrink-0">
         <div className="px-6">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-0 sm:h-16">
             <div className="flex items-center gap-3">
               <Link href="/admin" className="p-2 hover:bg-accent rounded-lg transition">
                 <ArrowLeft className="w-5 h-5" />
@@ -110,7 +110,7 @@ export default function POSPage() {
                 Punto de Venta
               </h1>
             </div>
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
               <Link href="/admin/pos/sales">
                 <ReceiptText className="w-4 h-4" />
                 Ver ventas
@@ -120,8 +120,8 @@ export default function POSPage() {
         </div>
       </header>
 
-      <main className="flex-1 min-h-0 flex overflow-hidden p-6">
-        <div className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-visible lg:overflow-hidden p-4 sm:p-6 gap-6">
+        <div className="flex-1 flex flex-col min-h-0">
           <div className="mb-4 shrink-0">
             <ProductSearchBar onSearch={handleSearch} />
           </div>
@@ -147,7 +147,7 @@ export default function POSPage() {
           </div>
         </div>
 
-        <div className="w-80 xl:w-96 shrink-0 border-l border-border overflow-auto">
+        <div className="w-full lg:w-80 xl:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-border overflow-visible lg:overflow-auto">
           <div className="p-4">
             <CartPOS
               items={cart}

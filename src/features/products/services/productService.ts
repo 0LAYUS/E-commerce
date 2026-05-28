@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { optimizeImage } from "@/lib/image-processor"
 import type { OptionDef, ProductImage, VariantImage } from "@/features/products/types/product.types"
 import {
   findOptionTypesByProduct,
@@ -54,6 +55,13 @@ function normalizeImageFiles(formData: FormData): File[] {
   return files
 }
 
+function extractStoragePaths(urls: string[]): string[] {
+  return urls.map((url) => {
+    const match = url.match(/\/product-images\/(.+)$/)
+    return match ? decodeURIComponent(match[1]) : ""
+  }).filter(Boolean)
+}
+
 async function uploadProductImage(
   client: Awaited<ReturnType<typeof createClient>>,
   productId: string,
@@ -64,6 +72,32 @@ async function uploadProductImage(
   const filePath = `public/products/${productId}/${Date.now()}-${index}.${fileExt}`
 
   const { error } = await client.storage.from("product-images").upload(filePath, file)
+  if (error) throw new Error("Error subiendo imagen: " + error.message)
+
+  const { data } = client.storage.from("product-images").getPublicUrl(filePath)
+  return data.publicUrl
+}
+
+async function uploadOptimizedImage(
+  client: Awaited<ReturnType<typeof createClient>>,
+  productId: string,
+  file: File,
+  index: number
+): Promise<string> {
+  const buffer = await file.arrayBuffer()
+  let optimized: { buffer: Uint8Array }
+
+  try {
+    optimized = await optimizeImage(new Uint8Array(buffer))
+  } catch {
+    optimized = { buffer: new Uint8Array(buffer) }
+  }
+
+  const filePath = `public/products/${productId}/${Date.now()}-${index}.webp`
+
+  const { error } = await client.storage
+    .from("product-images")
+    .upload(filePath, new Blob([optimized.buffer.buffer as ArrayBuffer], { type: "image/webp" }))
   if (error) throw new Error("Error subiendo imagen: " + error.message)
 
   const { data } = client.storage.from("product-images").getPublicUrl(filePath)
@@ -88,6 +122,12 @@ async function syncProductImages(
   const finalOrder = imageOrder && imageOrder.length > 0 ? imageOrder : fallbackOrder
 
   if (finalOrder.length === 0) {
+    if (existing.length > 0) {
+      const paths = extractStoragePaths(existing.map((img) => img.url))
+      if (paths.length > 0) {
+        await client.storage.from("product-images").remove(paths)
+      }
+    }
     await deleteAllProductImages(client, productId)
     await repoUpdateProduct(client, productId, { image_url: null })
     return
@@ -99,6 +139,10 @@ async function syncProductImages(
 
   const toDelete = existing.filter((img) => !keepIds.has(img.id))
   if (toDelete.length > 0) {
+    const paths = extractStoragePaths(toDelete.map((img) => img.url))
+    if (paths.length > 0) {
+      await client.storage.from("product-images").remove(paths)
+    }
     await deleteProductImagesByIds(client, toDelete.map((img) => img.id))
   }
 
@@ -121,7 +165,7 @@ async function syncProductImages(
     } else {
       const file = fileQueue.shift()
       if (!file) continue
-      const url = await uploadProductImage(client, productId, file, i)
+      const url = await uploadOptimizedImage(client, productId, file, i)
       await insertProductImage(client, { product_id: productId, url, alt: productName || null, position: i })
       if (!firstUrl) firstUrl = url
     }
@@ -335,7 +379,17 @@ export async function updateProduct(formData: FormData) {
     await deleteOptionTypesByProduct(client, id)
   }
 
-  if (imageOrder !== null || imageFiles.length > 0) {
+  if (formData.get("remove_all_images") === "true") {
+    const existing = await findProductImages(client, id)
+    if (existing.length > 0) {
+      const paths = extractStoragePaths(existing.map((img) => img.url))
+      if (paths.length > 0) {
+        await client.storage.from("product-images").remove(paths)
+      }
+    }
+    await deleteAllProductImages(client, id)
+    await repoUpdateProduct(client, id, { image_url: null })
+  } else if (imageOrder !== null || imageFiles.length > 0) {
     await syncProductImages(client, id, imageFiles, imageOrder, name)
   }
 }
@@ -349,10 +403,20 @@ export async function replaceVariantImages(variantId: string, formData: FormData
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
-    const fileExt = file.name.split(".").pop() || "jpg"
-    const filePath = `public/variants/${variantId}/${Date.now()}-${i}.${fileExt}`
+    let optimized: { buffer: Uint8Array }
 
-    const { error } = await client.storage.from("product-images").upload(filePath, file)
+    try {
+      const buffer = await file.arrayBuffer()
+      optimized = await optimizeImage(new Uint8Array(buffer))
+    } catch {
+      optimized = { buffer: new Uint8Array(await file.arrayBuffer()) }
+    }
+
+    const filePath = `public/variants/${variantId}/${Date.now()}-${i}.webp`
+
+    const { error } = await client.storage
+      .from("product-images")
+      .upload(filePath, new Blob([optimized.buffer.buffer as ArrayBuffer], { type: "image/webp" }))
     if (error) throw new Error("Error subiendo imagen de variante: " + error.message)
 
     const { data } = client.storage.from("product-images").getPublicUrl(filePath)
