@@ -2,13 +2,14 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { Plus, ChevronDown, ChevronUp } from "lucide-react"
-import { replaceVariantImages } from "@/features/products/actions/productActions"
+import { replaceVariantImages, deleteVariantImage } from "@/features/products/actions/productActions"
+import { getVariantImagesByProductId } from "@/features/products/actions/productActions"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 import { VariantOptionEditor } from "@/features/admin/components/VariantOptionEditor"
 import { VariantRow } from "@/features/admin/components/VariantRow"
 import { useVariantActions } from "@/hooks/useVariantActions"
 import { generateCartesianVariants } from "@/lib/utils/variantGenerator"
-import type { OptionDef } from "@/features/products/types/product.types"
+import type { OptionDef, VariantImage } from "@/features/products/types/product.types"
 
 type ProductVariantsEditorProps = {
   initialOptions?: { name: string; values: string[] }[]
@@ -20,6 +21,7 @@ type ProductVariantsEditorProps = {
     active: boolean
     option_values: string[]
   }[]
+  productId?: string
   hasVariants: boolean
   onHasVariantsChange: (value: boolean) => void
 }
@@ -27,6 +29,7 @@ type ProductVariantsEditorProps = {
 export default function ProductVariantsEditor({
   initialOptions = [],
   initialVariants = [],
+  productId,
   hasVariants,
   onHasVariantsChange,
 }: ProductVariantsEditorProps) {
@@ -47,6 +50,9 @@ export default function ProductVariantsEditor({
     })
     return initial
   })
+
+  const [variantImages, setVariantImages] = useState<Record<string, VariantImage[]>>({})
+  const [uploadingVariantId, setUploadingVariantId] = useState<string | null>(null)
 
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertConfig, setAlertConfig] = useState({ title: "", description: "" })
@@ -94,6 +100,18 @@ export default function ProductVariantsEditor({
       return hasChanges ? next : prev
     })
   }, [initialVariants])
+
+  useEffect(() => {
+    if (!productId) return
+    const realVariantIds = initialVariants.filter((v) => !v.id.startsWith("temp-")).map((v) => v.id)
+    if (realVariantIds.length === 0) return
+
+    getVariantImagesByProductId(productId).then((grouped) => {
+      setVariantImages(grouped)
+    }).catch((err) => {
+      console.error("Error loading variant images:", err)
+    })
+  }, [productId, initialVariants])
 
   const variants = useMemo(() => {
     if (!hasVariants || options.length === 0 || options.some((o) => o.values.length === 0)) {
@@ -164,12 +182,32 @@ export default function ProductVariantsEditor({
 
   const handleVariantImageChange = async (variantId: string, files: FileList | null) => {
     if (!files || files.length === 0 || variantId.startsWith("temp-")) return
+    setUploadingVariantId(variantId)
     const formData = new FormData()
     Array.from(files).forEach((file) => formData.append("images", file))
     try {
       await replaceVariantImages(variantId, formData)
+      if (productId) {
+        const grouped = await getVariantImagesByProductId(productId)
+        setVariantImages(grouped)
+      }
     } catch (err) {
       console.error("Error uploading variant images:", err)
+      handleAlert("Error subiendo imagen", String(err))
+    } finally {
+      setUploadingVariantId(null)
+    }
+  }
+
+  const handleDeleteVariantImage = async (imageId: string, url: string) => {
+    try {
+      await deleteVariantImage(imageId, url)
+      if (productId) {
+        const grouped = await getVariantImagesByProductId(productId)
+        setVariantImages(grouped)
+      }
+    } catch (err) {
+      console.error("Error deleting variant image:", err)
       handleAlert("Error", String(err))
     }
   }
@@ -288,10 +326,13 @@ export default function ProductVariantsEditor({
                           options={options}
                           priceOverride={variantData[v.id]?.price_override ?? null}
                           stock={variantData[v.id]?.stock ?? 0}
+                          images={variantImages[v.id] || []}
+                          isUploading={uploadingVariantId === v.id}
                           onToggleActive={() => handleToggleActive(v.id)}
                           onPriceChange={(val) => updateVariantField(v.id, "price_override", val)}
                           onStockChange={(val) => updateVariantField(v.id, "stock", val)}
                           onImageChange={(files) => handleVariantImageChange(v.id, files)}
+                          onDeleteImage={handleDeleteVariantImage}
                           onAction={handleVariantAction}
                           openMenuId={openVariantMenu}
                           onMenuToggle={(id) => setOpenVariantMenu(openVariantMenu === id ? null : id)}

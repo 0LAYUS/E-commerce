@@ -32,7 +32,7 @@ async function getProductsData() {
 
   const productsWithVariantInfo = products?.map(p => ({
     ...p,
-    hasVariants: productsWithVariants.has(p.id),
+    has_variants: productsWithVariants.has(p.id),
     effective_stock: variantStockMap[p.id] ?? p.stock
   })) || []
   return { categories: categories || [], products: productsWithVariantInfo }

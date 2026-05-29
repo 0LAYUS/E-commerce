@@ -1,8 +1,20 @@
 # AGENTS.md — E-commerce Project
 
 ## Stack
-- Next.js 15 (App Router) + React 19
-- Supabase (auth, DB, SSR)
+
+### Next.js (CRITICAL VERSION)
+- **Next.js 15.4.6** (App Router) + React 19
+  - ⚠️ **THIS EXACT VERSION IS REQUIRED** for Cloudflare Pages deployment via `@cloudflare/next-on-pages`
+  - DO NOT upgrade or downgrade without verifying `@cloudflare/next-on-pages` compatibility first
+  - Any version change can break the Cloudflare Workers runtime
+
+### Supabase
+- Backend for auth, database, SSR, and real-time subscriptions
+  - Use `@supabase/ssr` for server-side operations
+  - Use `@supabase/supabase-js` for client-side operations
+  - ALL database queries MUST go through Supabase client — never raw SQL unless it's a migration file
+
+### UI & Testing
 - Tailwind CSS + shadcn/ui (style: `new-york`, RSC enabled)
 - Vitest for tests
 
@@ -76,6 +88,15 @@ Configured in `tsconfig.json`:
 - `camelCase` for variables/functions, `PascalCase` for components/types
 - SOLID principles apply
 - Document non-obvious logic with comments
+
+## Component Reuse Rule
+- **ALWAYS check existing components before creating new ones.** The codebase already has well-tested components that handle most common use cases.
+- Search `components/`, `src/shared/components/`, and `src/features/*/components/` first.
+- Reuse shadcn/ui components from `components/ui/` — do not recreate dialogs, modals, buttons, inputs, etc.
+- Reuse branding components from `components/branding/` — do not recreate logo/name displays.
+- Reuse product components from `components/products/` — do not recreate cards, grids, selectors, etc.
+- Only create a new component if no existing component covers the use case, or if the existing one needs a significantly different behavior that would break its current contracts.
+- Keep code clean: no dead code, no unused imports, no commented-out blocks, no TODOs left without issue references.
 
 ## Branding System
 

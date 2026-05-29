@@ -319,245 +319,384 @@ ALTER TABLE public.pos_sale_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pos_cash_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pos_bogo_offers ENABLE ROW LEVEL SECURITY;
 
--- NOTE: policies may already exist; if they do, CREATE POLICY will fail.
--- If your DB isn't truly blank, we will need the migration to be idempotent (DROP POLICY IF EXISTS).
+-- NOTE: Policies wrapped in DO blocks for idempotency on fresh DBs
 
-CREATE POLICY "Public profiles are viewable by everyone."
-  ON public.profiles FOR SELECT
-  TO public
-  USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'profiles' AND policyname = 'Public profiles are viewable by everyone.') THEN
+    CREATE POLICY "Public profiles are viewable by everyone."
+      ON public.profiles FOR SELECT
+      TO public
+      USING (true);
+  END IF;
+END $$;
 
-CREATE POLICY "Authenticated users can insert own profile"
-  ON public.profiles FOR INSERT
-  TO public
-  WITH CHECK (auth.uid() = id);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'profiles' AND policyname = 'Authenticated users can insert own profile') THEN
+    CREATE POLICY "Authenticated users can insert own profile"
+      ON public.profiles FOR INSERT
+      TO public
+      WITH CHECK (auth.uid() = id);
+  END IF;
+END $$;
 
-CREATE POLICY "Users can update own profile."
-  ON public.profiles FOR UPDATE
-  TO public
-  USING (auth.uid() = id);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'profiles' AND policyname = 'Users can update own profile.') THEN
+    CREATE POLICY "Users can update own profile."
+      ON public.profiles FOR UPDATE
+      TO public
+      USING (auth.uid() = id);
+  END IF;
+END $$;
 
-CREATE POLICY "Categories are viewable by everyone."
-  ON public.categories FOR SELECT
-  TO public
-  USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'categories' AND policyname = 'Categories are viewable by everyone.') THEN
+    CREATE POLICY "Categories are viewable by everyone."
+      ON public.categories FOR SELECT
+      TO public
+      USING (true);
+  END IF;
+END $$;
 
-CREATE POLICY "Administrators can manage categories."
-  ON public.categories FOR ALL
-  TO public
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'categories' AND policyname = 'Administrators can manage categories.') THEN
+    CREATE POLICY "Administrators can manage categories."
+      ON public.categories FOR ALL
+      TO public
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Active products are viewable by everyone."
-  ON public.products FOR SELECT
-  TO public
-  USING (active = true);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Active products are viewable by everyone.') THEN
+    CREATE POLICY "Active products are viewable by everyone."
+      ON public.products FOR SELECT
+      TO public
+      USING (active = true);
+  END IF;
+END $$;
 
-CREATE POLICY "All products are viewable by admins."
-  ON public.products FOR SELECT
-  TO public
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'All products are viewable by admins.') THEN
+    CREATE POLICY "All products are viewable by admins."
+      ON public.products FOR SELECT
+      TO public
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Administrators can manage products."
-  ON public.products FOR ALL
-  TO public
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Administrators can manage products.') THEN
+    CREATE POLICY "Administrators can manage products."
+      ON public.products FOR ALL
+      TO public
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Users can view their own orders."
-  ON public.orders FOR SELECT
-  TO public
-  USING (
-    (auth.uid() = user_id)
-    OR (
-      ( SELECT profiles.role
-        FROM public.profiles
-        WHERE (public.profiles.id = auth.uid())
-      ) = 'administrador'::public.user_role
-    )
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'orders' AND policyname = 'Users can view their own orders.') THEN
+    CREATE POLICY "Users can view their own orders."
+      ON public.orders FOR SELECT
+      TO public
+      USING (
+        (auth.uid() = user_id)
+        OR (
+          ( SELECT profiles.role
+            FROM public.profiles
+            WHERE (public.profiles.id = auth.uid())
+          ) = 'administrador'::public.user_role
+        )
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Users can create their own orders."
-  ON public.orders FOR INSERT
-  TO public
-  WITH CHECK (auth.uid() = user_id);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'orders' AND policyname = 'Users can create their own orders.') THEN
+    CREATE POLICY "Users can create their own orders."
+      ON public.orders FOR INSERT
+      TO public
+      WITH CHECK (auth.uid() = user_id);
+  END IF;
+END $$;
 
-CREATE POLICY "Administrators can manage orders."
-  ON public.orders FOR UPDATE
-  TO public
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'orders' AND policyname = 'Administrators can manage orders.') THEN
+    CREATE POLICY "Administrators can manage orders."
+      ON public.orders FOR UPDATE
+      TO public
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Users can view items from their own orders."
-  ON public.order_items FOR SELECT
-  TO public
-  USING (
-    (EXISTS (
-      SELECT 1
-      FROM public.orders
-      WHERE (public.orders.id = public.order_items.order_id)
-        AND (public.orders.user_id = auth.uid())
-    ))
-    OR (
-      ( SELECT profiles.role
-        FROM public.profiles
-        WHERE (public.profiles.id = auth.uid())
-      ) = 'administrador'::public.user_role
-    )
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'order_items' AND policyname = 'Users can view items from their own orders.') THEN
+    CREATE POLICY "Users can view items from their own orders."
+      ON public.order_items FOR SELECT
+      TO public
+      USING (
+        (EXISTS (
+          SELECT 1
+          FROM public.orders
+          WHERE (public.orders.id = public.order_items.order_id)
+            AND (public.orders.user_id = auth.uid())
+        ))
+        OR (
+          ( SELECT profiles.role
+            FROM public.profiles
+            WHERE (public.profiles.id = auth.uid())
+          ) = 'administrador'::public.user_role
+        )
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Users can insert items to their own orders."
-  ON public.order_items FOR INSERT
-  TO public
-  WITH CHECK (
-    EXISTS (
-      SELECT 1
-      FROM public.orders
-      WHERE (public.orders.id = public.order_items.order_id)
-        AND (public.orders.user_id = auth.uid())
-    )
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'order_items' AND policyname = 'Users can insert items to their own orders.') THEN
+    CREATE POLICY "Users can insert items to their own orders."
+      ON public.order_items FOR INSERT
+      TO public
+      WITH CHECK (
+        EXISTS (
+          SELECT 1
+          FROM public.orders
+          WHERE (public.orders.id = public.order_items.order_id)
+            AND (public.orders.user_id = auth.uid())
+        )
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Option types are viewable by everyone."
-  ON public.product_option_types FOR SELECT
-  TO public
-  USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'product_option_types' AND policyname = 'Option types are viewable by everyone.') THEN
+    CREATE POLICY "Option types are viewable by everyone."
+      ON public.product_option_types FOR SELECT
+      TO public
+      USING (true);
+  END IF;
+END $$;
 
-CREATE POLICY "Option values are viewable by everyone."
-  ON public.product_option_values FOR SELECT
-  TO public
-  USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'product_option_values' AND policyname = 'Option values are viewable by everyone.') THEN
+    CREATE POLICY "Option values are viewable by everyone."
+      ON public.product_option_values FOR SELECT
+      TO public
+      USING (true);
+  END IF;
+END $$;
 
-CREATE POLICY "SKUs are viewable by everyone."
-  ON public.product_skus FOR SELECT
-  TO public
-  USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'product_skus' AND policyname = 'SKUs are viewable by everyone.') THEN
+    CREATE POLICY "SKUs are viewable by everyone."
+      ON public.product_skus FOR SELECT
+      TO public
+      USING (true);
+  END IF;
+END $$;
 
-CREATE POLICY "SKU option values are viewable by everyone."
-  ON public.sku_option_values FOR SELECT
-  TO public
-  USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'sku_option_values' AND policyname = 'SKU option values are viewable by everyone.') THEN
+    CREATE POLICY "SKU option values are viewable by everyone."
+      ON public.sku_option_values FOR SELECT
+      TO public
+      USING (true);
+  END IF;
+END $$;
 
-CREATE POLICY "Admins can manage option types."
-  ON public.product_option_types FOR ALL
-  TO public
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'product_option_types' AND policyname = 'Admins can manage option types.') THEN
+    CREATE POLICY "Admins can manage option types."
+      ON public.product_option_types FOR ALL
+      TO public
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Admins can manage option values."
-  ON public.product_option_values FOR ALL
-  TO public
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'product_option_values' AND policyname = 'Admins can manage option values.') THEN
+    CREATE POLICY "Admins can manage option values."
+      ON public.product_option_values FOR ALL
+      TO public
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Admins can manage SKUs."
-  ON public.product_skus FOR ALL
-  TO public
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'product_skus' AND policyname = 'Admins can manage SKUs.') THEN
+    CREATE POLICY "Admins can manage SKUs."
+      ON public.product_skus FOR ALL
+      TO public
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Admins can manage SKU option values."
-  ON public.sku_option_values FOR ALL
-  TO public
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'sku_option_values' AND policyname = 'Admins can manage SKU option values.') THEN
+    CREATE POLICY "Admins can manage SKU option values."
+      ON public.sku_option_values FOR ALL
+      TO public
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Users can view their own reservations."
-  ON public.stock_reservations FOR SELECT
-  TO public
-  USING (auth.uid() = user_id);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'stock_reservations' AND policyname = 'Users can view their own reservations.') THEN
+    CREATE POLICY "Users can view their own reservations."
+      ON public.stock_reservations FOR SELECT
+      TO public
+      USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
-CREATE POLICY "Users can update their own pending reservations."
-  ON public.stock_reservations FOR UPDATE
-  TO public
-  USING (
-    (auth.uid() = user_id) AND (status = 'pending'::text)
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'stock_reservations' AND policyname = 'Users can update their own pending reservations.') THEN
+    CREATE POLICY "Users can update their own pending reservations."
+      ON public.stock_reservations FOR UPDATE
+      TO public
+      USING (
+        (auth.uid() = user_id) AND (status = 'pending'::text)
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Users can view items of their own reservations."
-  ON public.stock_reservation_items FOR SELECT
-  TO public
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.stock_reservations
-      WHERE (public.stock_reservations.id = public.stock_reservation_items.reservation_id)
-        AND (public.stock_reservations.user_id = auth.uid())
-    )
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'stock_reservation_items' AND policyname = 'Users can view items of their own reservations.') THEN
+    CREATE POLICY "Users can view items of their own reservations."
+      ON public.stock_reservation_items FOR SELECT
+      TO public
+      USING (
+        EXISTS (
+          SELECT 1
+          FROM public.stock_reservations
+          WHERE (public.stock_reservations.id = public.stock_reservation_items.reservation_id)
+            AND (public.stock_reservations.user_id = auth.uid())
+        )
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Admins can do everything on pos_sales"
-  ON public.pos_sales FOR ALL
-  TO authenticated
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'pos_sales' AND policyname = 'Admins can do everything on pos_sales') THEN
+    CREATE POLICY "Admins can do everything on pos_sales"
+      ON public.pos_sales FOR ALL
+      TO authenticated
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Admins can do everything on pos_sale_payments"
-  ON public.pos_sale_payments FOR ALL
-  TO authenticated
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'pos_sale_payments' AND policyname = 'Admins can do everything on pos_sale_payments') THEN
+    CREATE POLICY "Admins can do everything on pos_sale_payments"
+      ON public.pos_sale_payments FOR ALL
+      TO authenticated
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Admins can do everything on pos_cash_events"
-  ON public.pos_cash_events FOR ALL
-  TO authenticated
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'pos_cash_events' AND policyname = 'Admins can do everything on pos_cash_events') THEN
+    CREATE POLICY "Admins can do everything on pos_cash_events"
+      ON public.pos_cash_events FOR ALL
+      TO authenticated
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
-CREATE POLICY "Admins can do everything on pos_bogo_offers"
-  ON public.pos_bogo_offers FOR ALL
-  TO authenticated
-  USING (
-    ( SELECT profiles.role
-      FROM public.profiles
-      WHERE (public.profiles.id = auth.uid())
-    ) = 'administrador'::public.user_role
-  );
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'pos_bogo_offers' AND policyname = 'Admins can do everything on pos_bogo_offers') THEN
+    CREATE POLICY "Admins can do everything on pos_bogo_offers"
+      ON public.pos_bogo_offers FOR ALL
+      TO authenticated
+      USING (
+        ( SELECT profiles.role
+          FROM public.profiles
+          WHERE (public.profiles.id = auth.uid())
+        ) = 'administrador'::public.user_role
+      );
+  END IF;
+END $$;
 
 
 -- ============================================================
@@ -567,26 +706,42 @@ CREATE POLICY "Admins can do everything on pos_bogo_offers"
 INSERT INTO storage.buckets (id, name, public) VALUES
 ('product-images', 'product-images', true);
 
-CREATE POLICY "Anyone can update product images"
-  ON "storage"."objects"
-  AS permissive
-  FOR UPDATE
-  TO public
-USING ((bucket_id = 'product-images'::text))
-WITH CHECK ((bucket_id = 'product-images'::text));
+-- Storage policies (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND schemaname = 'storage' AND policyname = 'Anyone can update product images') THEN
+    CREATE POLICY "Anyone can update product images"
+      ON "storage"."objects"
+      AS permissive
+      FOR UPDATE
+      TO public
+    USING ((bucket_id = 'product-images'::text))
+    WITH CHECK ((bucket_id = 'product-images'::text));
+  END IF;
+END $$;
 
-CREATE POLICY "Anyone can view product images"
-  ON "storage"."objects"
-  AS permissive
-  FOR SELECT
-  TO public
-USING ((bucket_id = 'product-images'::text));
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND schemaname = 'storage' AND policyname = 'Anyone can view product images') THEN
+    CREATE POLICY "Anyone can view product images"
+      ON "storage"."objects"
+      AS permissive
+      FOR SELECT
+      TO public
+    USING ((bucket_id = 'product-images'::text));
+  END IF;
+END $$;
 
-CREATE POLICY "Authenticated users can upload product images"
-  ON "storage"."objects"
-  AS permissive
-  FOR INSERT
-  TO authenticated
-WITH CHECK ((bucket_id = 'product-images'::text));
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND schemaname = 'storage' AND policyname = 'Authenticated users can upload product images') THEN
+    CREATE POLICY "Authenticated users can upload product images"
+      ON "storage"."objects"
+      AS permissive
+      FOR INSERT
+      TO authenticated
+    WITH CHECK ((bucket_id = 'product-images'::text));
+  END IF;
+END $$;
 
 COMMIT;

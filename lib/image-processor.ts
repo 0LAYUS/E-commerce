@@ -1,19 +1,8 @@
-import {
-  PhotonImage,
-  SamplingFilter,
-  resize,
-  initPhoton,
-} from "@cf-wasm/photon/others"
-import photonWasmUrl from "@cf-wasm/photon/photon.wasm"
-
-let initialized = false
-
-async function ensureInitialized() {
-  if (!initialized) {
-    await initPhoton({ module_or_path: new URL(photonWasmUrl, import.meta.url) })
-    initialized = true
-  }
-}
+/**
+ * Image optimization for server actions.
+ * - Node.js (dev): uses sharp (bundled with Next.js)
+ * - Cloudflare Workers (prod): uses photon WASM
+ */
 
 const MAX_WIDTH = 1200
 
@@ -23,12 +12,62 @@ export interface OptimizedImage {
   height: number
 }
 
+let sharpModule: { default: typeof import('sharp') } | null | undefined = undefined
+
+async function getSharp() {
+  if (sharpModule === undefined) {
+    try {
+      sharpModule = await import('sharp')
+    } catch {
+      sharpModule = null
+    }
+  }
+  return sharpModule
+}
+
 export async function optimizeImage(fileBuffer: Uint8Array): Promise<OptimizedImage> {
-  await ensureInitialized()
+  const sharpPkg = await getSharp()
 
-  const inputImage = PhotonImage.new_from_byteslice(fileBuffer)
+  if (sharpPkg) {
+    const sharp = sharpPkg.default
+    // Node.js dev server: use sharp (bundled with Next.js)
+    const instance = sharp(fileBuffer)
+    const metadata = await instance.metadata()
+    const originalWidth = metadata.width ?? 0
 
-  let outputImage: PhotonImage
+    let processed = instance
+    if (originalWidth > MAX_WIDTH) {
+      processed = instance.resize({ width: MAX_WIDTH, withoutEnlargement: true })
+    }
+
+    const result = await processed.webp({ quality: 80 }).toBuffer({ resolveWithObject: true })
+    return {
+      buffer: new Uint8Array(result.data),
+      width: result.info.width,
+      height: result.info.height,
+    }
+  }
+
+  // Cloudflare Workers prod: use photon WASM
+  return optimizeWithPhoton(fileBuffer)
+}
+
+let photonInitialized = false
+
+async function optimizeWithPhoton(fileBuffer: Uint8Array): Promise<OptimizedImage> {
+  const { PhotonImage, SamplingFilter, resize, initPhoton } = await import("@cf-wasm/photon/others")
+  const photonWasmUrl = (await import("@cf-wasm/photon/photon.wasm")).default
+
+  if (!photonInitialized) {
+    await initPhoton({ module_or_path: new URL(photonWasmUrl, import.meta.url) })
+    photonInitialized = true
+  }
+
+  // new_from_blob decodes JPEG/PNG/WebP automatically via image crate
+  const blob = new Blob([fileBuffer as BlobPart])
+  const inputImage = PhotonImage.new_from_blob(blob)
+
+  let outputImage: ReturnType<typeof PhotonImage.new_from_blob>
   const originalWidth = inputImage.get_width()
   const originalHeight = inputImage.get_height()
 

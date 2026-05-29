@@ -20,12 +20,15 @@ import {
   updateProductImage,
   insertVariantImage,
   deleteVariantImagesBySkuId,
+  deleteVariantImageById,
   deleteProductImagesByIds,
   deleteAllProductImages,
   deleteOptionTypesByProduct,
+  deleteOptionValuesByProduct,
   deleteSkusByProduct,
   deleteSkuOptionValuesBySkuIds,
   deleteSkuById,
+  updateSku,
   countOrderItemsByProduct,
   countOrderItemsByVariant,
   countPosSalesByProduct,
@@ -48,10 +51,30 @@ function parseImageOrder(raw: FormDataEntryValue | null): ImageOrderEntry[] | nu
   } catch { return null }
 }
 
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/tiff"]
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
 function normalizeImageFiles(formData: FormData): File[] {
-  const files = formData.getAll("images").filter((f): f is File => f instanceof File && f.size > 0)
+  const files = formData.getAll("images").filter((f): f is File => {
+    if (!(f instanceof File) || f.size === 0) return false
+    if (!ALLOWED_IMAGE_TYPES.includes(f.type)) {
+      throw new Error(`Formato no soportado: ${f.name || "archivo"}. Use JPG, PNG, WebP, GIF, BMP o TIFF.`)
+    }
+    if (f.size > MAX_FILE_SIZE) {
+      throw new Error(`Archivo muy grande (${f.name}): ${(f.size / 1024 / 1024).toFixed(1)}MB. Máximo 10MB.`)
+    }
+    return true
+  })
   const single = formData.get("image")
-  if (files.length === 0 && single instanceof File && single.size > 0) return [single]
+  if (files.length === 0 && single instanceof File && single.size > 0) {
+    if (!ALLOWED_IMAGE_TYPES.includes(single.type)) {
+      throw new Error(`Formato no soportado. Use JPG, PNG, WebP, GIF, BMP o TIFF.`)
+    }
+    if (single.size > MAX_FILE_SIZE) {
+      throw new Error(`Archivo muy grande: ${(single.size / 1024 / 1024).toFixed(1)}MB. Máximo 10MB.`)
+    }
+    return [single]
+  }
   return files
 }
 
@@ -60,22 +83,6 @@ function extractStoragePaths(urls: string[]): string[] {
     const match = url.match(/\/product-images\/(.+)$/)
     return match ? decodeURIComponent(match[1]) : ""
   }).filter(Boolean)
-}
-
-async function uploadProductImage(
-  client: Awaited<ReturnType<typeof createClient>>,
-  productId: string,
-  file: File,
-  index: number
-): Promise<string> {
-  const fileExt = file.name.split(".").pop() || "jpg"
-  const filePath = `public/products/${productId}/${Date.now()}-${index}.${fileExt}`
-
-  const { error } = await client.storage.from("product-images").upload(filePath, file)
-  if (error) throw new Error("Error subiendo imagen: " + error.message)
-
-  const { data } = client.storage.from("product-images").getPublicUrl(filePath)
-  return data.publicUrl
 }
 
 async function uploadOptimizedImage(
@@ -90,14 +97,14 @@ async function uploadOptimizedImage(
   try {
     optimized = await optimizeImage(new Uint8Array(buffer))
   } catch {
-    optimized = { buffer: new Uint8Array(buffer) }
+    throw new Error("Error procesando imagen. Formato no soportado o archivo corrupto.")
   }
 
   const filePath = `public/products/${productId}/${Date.now()}-${index}.webp`
 
   const { error } = await client.storage
     .from("product-images")
-    .upload(filePath, new Blob([optimized.buffer.buffer as ArrayBuffer], { type: "image/webp" }))
+    .upload(filePath, new Blob([optimized.buffer as BlobPart], { type: "image/webp" }))
   if (error) throw new Error("Error subiendo imagen: " + error.message)
 
   const { data } = client.storage.from("product-images").getPublicUrl(filePath)
@@ -244,16 +251,97 @@ async function updateVariantsFromFormData(
   formData: FormData,
   basePrice: number
 ) {
-  const skuIds = await findSkuIdsByProduct(client, productId)
-  await deleteSkuOptionValuesBySkuIds(client, skuIds)
-  await deleteSkusByProduct(client, productId)
-  await deleteOptionTypesByProduct(client, productId)
-
   const optionsRaw = formData.get("variant_options") as string
+  const variantsRaw = formData.get("variant_data") as string
   if (!optionsRaw) return
 
-  // Delegate to create (same logic, clean slate)
-  await createVariantsFromFormData(client, productId, formData, basePrice)
+  const options: OptionDef[] = JSON.parse(optionsRaw)
+  const variantsData: { id?: string; sku_code: string; stock?: number; price_override?: number | null; active?: boolean }[] =
+    variantsRaw ? JSON.parse(variantsRaw) : []
+
+  if (options.length === 0 || options.some((o) => o.values.length === 0)) {
+    throw new Error("Las variantes requieren al menos una opción con valores")
+  }
+
+  // Get existing SKUs to preserve IDs
+  const existingSkus = await findSkusByProduct(client, productId)
+  const existingSkuMap = new Map(existingSkus.map((s) => [s.sku_code, s]))
+
+  // Get expected sku_codes from new combinations
+  const expectedSkuCodes = new Set(
+    options
+      .filter((o) => o.name.trim() && o.values.length > 0)
+      .reduce<string[][]>((acc, opt) => {
+        if (acc.length === 0) return opt.values.map((v) => [v])
+        return acc.flatMap((combo) => opt.values.map((v) => [...combo, v]))
+      }, [])
+      .map((combo) => combo.map((v) => v.toUpperCase().replace(/\s+/g, "_")).join("-"))
+  )
+
+  // Delete SKUs that no longer exist in the new combination set
+  for (const sku of existingSkus) {
+    if (!expectedSkuCodes.has(sku.sku_code)) {
+      await deleteSkuById(client, sku.id)
+    }
+  }
+
+  // Delete sku_option_values FIRST (FK references product_option_values)
+  await deleteSkuOptionValuesBySkuIds(client, existingSkus.map((s) => s.id))
+
+  // Delete option types/values (cheap, no FK issues)
+  await deleteOptionValuesByProduct(client, productId)
+  await deleteOptionTypesByProduct(client, productId)
+
+  // Recreate option types and values
+  const optionIds: { name: string; valueIds: { value: string; id: string }[] }[] = []
+  for (let i = 0; i < options.length; i++) {
+    const opt = options[i]
+    if (!opt.name.trim() || opt.values.length === 0) continue
+    const type = await insertOptionType(client, { product_id: productId, name: opt.name, position: i })
+    if (!type) continue
+
+    const valueIds: { value: string; id: string }[] = []
+    for (let j = 0; j < opt.values.length; j++) {
+      const val = await insertOptionValue(client, { option_type_id: type.id, value: opt.values[j], position: j })
+      if (val) valueIds.push({ value: val.value, id: val.id })
+    }
+    optionIds.push({ name: opt.name, valueIds })
+  }
+
+  // Match or create SKUs preserving existing IDs
+  const combinations = cartesian(optionIds.map((o) => o.valueIds))
+  for (const combo of combinations) {
+    const sku_code = combo.map((c) => c.value.toUpperCase().replace(/\s+/g, "_")).join("-")
+    const entry = variantsData.find((v) => v.sku_code === sku_code)
+    const existingSku = existingSkuMap.get(sku_code)
+
+    let skuId: string
+    if (existingSku) {
+      // Update existing SKU — preserves ID so variant images stay linked
+      await updateSku(client, existingSku.id, {
+        stock: entry?.stock ?? 0,
+        price_override: entry?.price_override ?? basePrice,
+        active: entry?.active ?? true,
+      })
+      skuId = existingSku.id
+    } else {
+      // Create new SKU
+      const sku = await insertSku(client, {
+        product_id: productId,
+        sku_code,
+        price_override: entry?.price_override ?? basePrice,
+        stock: entry?.stock ?? 0,
+        active: entry?.active ?? true,
+      })
+      if (!sku) continue
+      skuId = sku.id
+    }
+
+    // Link option values to SKU
+    for (const item of combo) {
+      await insertSkuOptionValue(client, { sku_id: skuId, option_value_id: item.id })
+    }
+  }
 }
 
 // ============================================
@@ -376,6 +464,7 @@ export async function updateProduct(formData: FormData) {
     const skuIds = await findSkuIdsByProduct(client, id)
     await deleteSkuOptionValuesBySkuIds(client, skuIds)
     await deleteSkusByProduct(client, id)
+    await deleteOptionValuesByProduct(client, id)
     await deleteOptionTypesByProduct(client, id)
   }
 
@@ -397,31 +486,43 @@ export async function updateProduct(formData: FormData) {
 export async function replaceVariantImages(variantId: string, formData: FormData) {
   const client = await createClient()
   const files = normalizeImageFiles(formData)
-  if (files.length === 0) return
+  if (files.length === 0) throw new Error("No se encontraron imagenes validas")
 
   await deleteVariantImagesBySkuId(client, variantId)
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
-    let optimized: { buffer: Uint8Array }
+    let optimized: { buffer: Uint8Array; width?: number; height?: number }
 
     try {
       const buffer = await file.arrayBuffer()
       optimized = await optimizeImage(new Uint8Array(buffer))
-    } catch {
-      optimized = { buffer: new Uint8Array(await file.arrayBuffer()) }
+    } catch (err) {
+      throw new Error("Error procesando imagen: " + (err instanceof Error ? err.message : "unknown"))
     }
 
     const filePath = `public/variants/${variantId}/${Date.now()}-${i}.webp`
 
     const { error } = await client.storage
       .from("product-images")
-      .upload(filePath, new Blob([optimized.buffer.buffer as ArrayBuffer], { type: "image/webp" }))
+      .upload(filePath, new Blob([optimized.buffer as BlobPart], { type: "image/webp" }))
     if (error) throw new Error("Error subiendo imagen de variante: " + error.message)
 
     const { data } = client.storage.from("product-images").getPublicUrl(filePath)
     await insertVariantImage(client, { sku_id: variantId, url: data.publicUrl, position: i })
   }
+}
+
+export async function deleteVariantImage(imageId: string, url: string) {
+  const client = await createClient()
+
+  const match = url.match(/\/product-images\/(.+)$/)
+  if (match) {
+    const path = decodeURIComponent(match[1])
+    await client.storage.from("product-images").remove([path])
+  }
+
+  await deleteVariantImageById(client, imageId)
 }
 
 // ============================================

@@ -1,6 +1,8 @@
 "use client"
 
+import { X } from "lucide-react"
 import { VariantActionMenu } from "./VariantActionMenu"
+import type { VariantImage } from "@/features/products/types/product.types"
 
 type VariantRowProps = {
   variantId: string
@@ -10,10 +12,13 @@ type VariantRowProps = {
   options: { name: string }[]
   priceOverride: number | null
   stock: number
+  images: VariantImage[]
+  isUploading: boolean
   onToggleActive: () => void
   onPriceChange: (value: number | null) => void
   onStockChange: (value: number) => void
   onImageChange: (files: FileList | null) => void
+  onDeleteImage: (imageId: string, url: string) => void
   onAction: (variantId: string, skuCode: string) => void
   openMenuId: string | null
   onMenuToggle: (variantId: string) => void
@@ -28,10 +33,13 @@ export function VariantRow({
   options,
   priceOverride,
   stock,
+  images,
+  isUploading,
   onToggleActive,
   onPriceChange,
   onStockChange,
   onImageChange,
+  onDeleteImage,
   onAction,
   openMenuId,
   onMenuToggle,
@@ -67,6 +75,12 @@ export function VariantRow({
             const val = e.target.value
             onPriceChange(val ? parseInt(val) : null)
           }}
+          onFocus={(e) => {
+            if (e.target.value === "0") {
+              e.target.value = ""
+            }
+            e.target.select()
+          }}
           placeholder="Base"
           className="w-24 h-8 px-2 rounded border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
@@ -77,24 +91,63 @@ export function VariantRow({
           min="0"
           value={stock}
           onChange={(e) => onStockChange(parseInt(e.target.value) || 0)}
+          onFocus={(e) => {
+            if (e.target.value === "0") {
+              e.target.value = ""
+            }
+            e.target.select()
+          }}
           className="w-20 h-8 px-2 rounded border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </td>
       <td className="p-3">
-        <label className={`inline-flex items-center gap-2 text-xs font-semibold ${isTemp ? "text-muted-foreground" : "text-foreground"}`}>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            disabled={isTemp}
-            onChange={(e) => onImageChange(e.target.files)}
-            className="hidden"
-          />
-          <span className={`px-2 py-1 rounded border ${isTemp ? "border-border" : "border-input hover:border-primary cursor-pointer"}`}>
-            {isTemp ? "Guarda para subir" : "Subir fotos"}
-          </span>
-        </label>
-        <p className="text-[11px] text-muted-foreground mt-1">Reemplaza imagenes actuales</p>
+        <div className="space-y-2">
+          {images.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {images.map((img) => (
+                <div key={img.id} className="relative group w-12 h-12 rounded overflow-hidden border border-border">
+                  <img
+                    src={img.url}
+                    alt={img.alt || ""}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => onDeleteImage(img.id, img.url)}
+                    className="absolute top-0 right-0 w-4 h-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div>
+            <input
+              id={`variant-file-${variantId}`}
+              type="file"
+              accept="image/*"
+              multiple
+              disabled={isTemp || isUploading}
+              onChange={(e) => {
+                onImageChange(e.target.files)
+                e.target.value = ""
+              }}
+              className="sr-only"
+            />
+            <label
+              htmlFor={`variant-file-${variantId}`}
+              className={`inline-flex items-center gap-2 text-xs font-semibold ${isTemp || isUploading ? "text-muted-foreground cursor-not-allowed" : "text-foreground cursor-pointer"}`}
+            >
+              <span className={`px-2 py-1 rounded border ${isTemp ? "border-border" : isUploading ? "border-primary/50 bg-primary/10" : "border-input hover:border-primary"}`}>
+                {isTemp ? "Guarda primero para subir" : isUploading ? "Subiendo..." : images.length > 0 ? "Agregar más" : "Subir fotos"}
+              </span>
+            </label>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            {images.length > 0 ? `${images.length} imagen${images.length > 1 ? "es" : ""}` : "Reemplaza imagenes actuales"}
+          </p>
+        </div>
       </td>
       <td className="p-3">
         <VariantActionMenu

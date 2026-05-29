@@ -72,14 +72,14 @@ export default function VariantSelectorModal({
                   </div>
                 </div>
 
-                  <Button
-                    size="xs"
-                    variant="secondary"
-                    disabled={isOutOfStock}
-                    onClick={() => onSelectVariant(product, variant)}
-                  >
-                    Agregar
-                  </Button>
+                <Button
+                  size="xs"
+                  variant="secondary"
+                  disabled={isOutOfStock}
+                  onClick={() => onSelectVariant(product, variant)}
+                >
+                  Agregar
+                </Button>
               </div>
             )
           })}

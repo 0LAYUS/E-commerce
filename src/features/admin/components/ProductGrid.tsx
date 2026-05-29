@@ -261,19 +261,36 @@ export default function ProductGrid({ products, categories }: { products: Produc
           onNewProductStockChange={setNewProductStock}
           newProductStock={newProductStock}
           variantsEditor={
-            <ProductVariantsEditor
-              initialOptions={variantOptions}
-              initialVariants={variantStocks.map((v) => ({
-                id: v.id,
-                sku_code: v.sku_code,
-                stock: v.stock,
-                price_override: v.price_override,
-                active: v.active,
-                option_values: [],
-              }))}
-              hasVariants={hasVariants}
-              onHasVariantsChange={handleHasVariantsChange}
-            />
+            editingProduct ? (
+              <ProductVariantsEditor
+                productId={editingProduct.id}
+                initialOptions={variantOptions}
+                initialVariants={variantStocks.map((v) => ({
+                  id: v.id,
+                  sku_code: v.sku_code,
+                  stock: v.stock,
+                  price_override: v.price_override,
+                  active: v.active,
+                  option_values: [],
+                }))}
+                hasVariants={hasVariants}
+                onHasVariantsChange={handleHasVariantsChange}
+              />
+            ) : (
+              <ProductVariantsEditor
+                initialOptions={variantOptions}
+                initialVariants={variantStocks.map((v) => ({
+                  id: v.id,
+                  sku_code: v.sku_code,
+                  stock: v.stock,
+                  price_override: v.price_override,
+                  active: v.active,
+                  option_values: [],
+                }))}
+                hasVariants={hasVariants}
+                onHasVariantsChange={handleHasVariantsChange}
+              />
+            )
           }
         />
       )}
