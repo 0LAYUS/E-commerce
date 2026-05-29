@@ -628,13 +628,54 @@ export async function deleteProduct(
     return { success: true, archived: true }
   }
 
-  const { deleteProduct: repoDelete } = await import("@/features/products/repositories/productRepository")
-    .then(() => ({ deleteProduct: async () => {
-      const { error } = await client.from("products").delete().eq("id", id)
-      if (error) throw new Error(error.message)
-    }}))
+  // 1. Delete POS BOGO offers associated to this product
+  await client.from("pos_bogo_offers").delete().eq("product_id", id)
 
-  await repoDelete()
+  // 2. Delete stock reservation items associated to this product
+  await client.from("stock_reservation_items").delete().eq("product_id", id)
+
+  // 3. Clean up SKUs/variants
+  const skuIds = await findSkuIdsByProduct(client, id)
+  if (skuIds.length > 0) {
+    // Delete variant-specific BOGO offers
+    await client.from("pos_bogo_offers").delete().in("variant_id", skuIds)
+    // Delete variant-specific stock reservation items
+    await client.from("stock_reservation_items").delete().in("variant_id", skuIds)
+    // Delete option value links for SKUs
+    await deleteSkuOptionValuesBySkuIds(client, skuIds)
+
+    // Find and delete variant images from storage
+    const variantImages = await findVariantImages(client, skuIds)
+    if (variantImages.length > 0) {
+      const paths = extractStoragePaths(variantImages.map((img) => img.url))
+      if (paths.length > 0) {
+        await client.storage.from("product-images").remove(paths)
+      }
+    }
+    // Delete variant images from DB
+    await client.from("product_variant_images").delete().in("sku_id", skuIds)
+    // Delete SKUs
+    await deleteSkusByProduct(client, id)
+  }
+
+  // 4. Clean up option values & option types
+  await deleteOptionValuesByProduct(client, id)
+  await deleteOptionTypesByProduct(client, id)
+
+  // 5. Clean up product images
+  const productImages = await findProductImages(client, id)
+  if (productImages.length > 0) {
+    const paths = extractStoragePaths(productImages.map((img) => img.url))
+    if (paths.length > 0) {
+      await client.storage.from("product-images").remove(paths)
+    }
+  }
+  await deleteAllProductImages(client, id)
+
+  // 6. Finally delete the product record
+  const { error } = await client.from("products").delete().eq("id", id)
+  if (error) throw new Error("Error eliminando producto: " + error.message)
+
   return { success: true }
 }
 

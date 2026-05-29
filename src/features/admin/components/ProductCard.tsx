@@ -18,21 +18,19 @@ export function ProductCard({ product, onEdit, onDelete, onToggleActive }: Produ
 
   return (
     <div
-      className={`bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition h-full ${
-        !isActive ? "opacity-50" : ""
-      }`}
+      className={`bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-md transition h-full ${!isActive ? "opacity-50" : ""
+        }`}
     >
-      <div className="aspect-square bg-muted flex items-center justify-center p-3 border-b border-border relative">
+      <div className="aspect-square bg-white flex items-center justify-center p-3 border-b border-border relative">
         {product.image_url ? (
-          <Image src={product.image_url} alt={product.name} fill className="object-contain mix-blend-multiply" />
+          <Image src={product.image_url} alt={product.name} fill className="object-contain" />
         ) : (
           <span className="text-xs text-muted-foreground font-mono">IMG</span>
         )}
         <button
           onClick={() => onToggleActive(product.id, !isActive)}
-          className={`absolute top-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition ${
-            !isActive ? "bg-destructive text-destructive-foreground" : "bg-success text-success-foreground"
-          }`}
+          className={`absolute top-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition ${!isActive ? "bg-destructive text-destructive-foreground" : "bg-success text-success-foreground"
+            }`}
         >
           {!isActive ? "OFF" : "ON"}
         </button>
