@@ -53,33 +53,38 @@ export async function optimizeImage(fileBuffer: Uint8Array): Promise<OptimizedIm
 }
 
 async function optimizeWithPhoton(fileBuffer: Uint8Array): Promise<OptimizedImage> {
-  const { PhotonImage, SamplingFilter, resize } = await import("@cf-wasm/photon/workerd")
+  try {
+    const { PhotonImage, SamplingFilter, resize } = await import("@cf-wasm/photon/workerd")
 
-  // new_from_blob decodes JPEG/PNG/WebP automatically via image crate
-  const blob = new Blob([fileBuffer as BlobPart])
-  const inputImage = PhotonImage.new_from_blob(blob)
+    // new_from_blob decodes JPEG/PNG/WebP automatically via image crate
+    const blob = new Blob([fileBuffer as BlobPart])
+    const inputImage = PhotonImage.new_from_blob(blob)
 
-  let outputImage: ReturnType<typeof PhotonImage.new_from_blob>
-  const originalWidth = inputImage.get_width()
-  const originalHeight = inputImage.get_height()
+    let outputImage: ReturnType<typeof PhotonImage.new_from_blob>
+    const originalWidth = inputImage.get_width()
+    const originalHeight = inputImage.get_height()
 
-  if (originalWidth > MAX_WIDTH) {
-    const aspectRatio = originalHeight / originalWidth
-    const newWidth = MAX_WIDTH
-    const newHeight = Math.round(MAX_WIDTH * aspectRatio)
-    outputImage = resize(inputImage, newWidth, newHeight, SamplingFilter.Lanczos3)
-  } else {
-    outputImage = inputImage
+    if (originalWidth > MAX_WIDTH) {
+      const aspectRatio = originalHeight / originalWidth
+      const newWidth = MAX_WIDTH
+      const newHeight = Math.round(MAX_WIDTH * aspectRatio)
+      outputImage = resize(inputImage, newWidth, newHeight, SamplingFilter.Lanczos3)
+    } else {
+      outputImage = inputImage
+    }
+
+    const webpBytes = outputImage.get_bytes_webp()
+    const width = outputImage.get_width()
+    const height = outputImage.get_height()
+
+    inputImage.free()
+    if (outputImage !== inputImage) {
+      outputImage.free()
+    }
+
+    return { buffer: webpBytes, width, height }
+  } catch (err) {
+    console.error("Photon optimization failed:", err)
+    throw err
   }
-
-  const webpBytes = outputImage.get_bytes_webp()
-  const width = outputImage.get_width()
-  const height = outputImage.get_height()
-
-  inputImage.free()
-  if (outputImage !== inputImage) {
-    outputImage.free()
-  }
-
-  return { buffer: webpBytes, width, height }
 }

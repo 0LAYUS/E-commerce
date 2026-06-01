@@ -85,6 +85,24 @@ function extractStoragePaths(urls: string[]): string[] {
   }).filter(Boolean)
 }
 
+function detectImageFormat(buffer: ArrayBuffer): string | null {
+  const bytes = new Uint8Array(buffer.slice(0, 12))
+  // JPEG: FF D8 FF
+  if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return "jpeg"
+  // PNG: 89 50 4E 47
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return "png"
+  // WebP: RIFF....WEBP
+  if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+      bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return "webp"
+  // GIF: GIF8
+  if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) return "gif"
+  // BMP: BM
+  if (bytes[0] === 0x42 && bytes[1] === 0x4D) return "bmp"
+  // TIFF: 49 49 2A 00 or 4D 4D 00 2A
+  if ((bytes[0] === 0x49 && bytes[1] === 0x49) || (bytes[0] === 0x4D && bytes[1] === 0x4D)) return "tiff"
+  return null
+}
+
 async function uploadOptimizedImage(
   client: Awaited<ReturnType<typeof createClient>>,
   productId: string,
@@ -92,12 +110,25 @@ async function uploadOptimizedImage(
   index: number
 ): Promise<string> {
   const buffer = await file.arrayBuffer()
+
+  const detected = detectImageFormat(buffer)
+  if (!detected) {
+    throw new Error(`No se pudo identificar el formato de "${file.name}". Asegúrese de que sea una imagen válida (JPG, PNG, WebP, GIF, BMP o TIFF).`)
+  }
+
   let optimized: { buffer: Uint8Array }
 
   try {
     optimized = await optimizeImage(new Uint8Array(buffer))
-  } catch {
-    throw new Error("Error procesando imagen. Formato no soportado o archivo corrupto.")
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`Image optimization failed for ${file.name}:`, msg)
+
+    if (msg.includes("unsupported") || msg.includes("format") || msg.includes("decode") ||
+        msg.includes("corrupt") || msg.includes("invalid") || msg.includes("truncated")) {
+      throw new Error(`No se pudo procesar "${file.name}". El archivo puede estar corrupto o tener un formato no compatible. Use JPG, PNG o WebP.`)
+    }
+    throw new Error(`Error procesando "${file.name}": ${msg}`)
   }
 
   const filePath = `public/products/${productId}/${Date.now()}-${index}.webp`
