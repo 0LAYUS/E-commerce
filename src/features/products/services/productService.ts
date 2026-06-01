@@ -653,6 +653,17 @@ export async function deleteProduct(
       }
     }))
 
+  // Delete in order: option values → SKUs → option types → product
+  const skus = await (async () => {
+    const { data } = await client.from("product_skus").select("id").eq("product_id", id)
+    return data ?? []
+  })()
+  if (skus.length > 0) {
+    await deleteSkuOptionValuesBySkuIds(client, skus.map(s => s.id))
+    await deleteSkusByProduct(client, id)
+  }
+  await deleteOptionValuesByProduct(client, id)
+  await deleteOptionTypesByProduct(client, id)
   await repoDelete()
   return { success: true }
 }
