@@ -50,27 +50,35 @@ export default function ProductDetailClient({
     [skus],
   );
 
-  const activeImages = useMemo(() => {
-    if (selectedSkuId && variantImages[selectedSkuId]?.length) {
-      return variantImages[selectedSkuId].map((img) => ({
+  const allImages = useMemo(() => {
+    const productImgs = productImages.length > 0
+      ? productImages
+      : product.image_url
+        ? [{ id: "fallback", url: product.image_url, alt: product.name }]
+        : [];
+
+    const variantImgsAll = Object.entries(variantImages).flatMap(([skuId, imgs]) =>
+      imgs.map((img) => ({
         id: img.id,
         url: img.url,
         alt: img.alt,
-      }));
-    }
-    if (productImages.length > 0) return productImages;
-    if (product.image_url)
-      return [{ id: "fallback", url: product.image_url, alt: product.name }];
-    return [];
-  }, [
-    productImages,
-    product.image_url,
-    product.name,
-    selectedSkuId,
-    variantImages,
-  ]);
+        skuId,
+      }))
+    );
 
-  const primaryImageUrl = activeImages[0]?.url;
+    return [...productImgs, ...variantImgsAll];
+  }, [productImages, product.image_url, product.name, variantImages]);
+
+  const selectedVariantIndex = useMemo(() => {
+    if (!selectedSkuId) return undefined;
+    return allImages.findIndex((img) => (img as { skuId?: string }).skuId === selectedSkuId);
+  }, [selectedSkuId, allImages]);
+
+  const primaryImageUrl = allImages[0]?.url;
+
+  const handleImageSelect = (skuId: string | undefined) => {
+    if (skuId) setSelectedSkuId(skuId);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,8 +110,11 @@ export default function ProductDetailClient({
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <ProductImageGallery
-              images={activeImages}
+              images={allImages}
               productName={product.name}
+              selectedSkuId={selectedSkuId}
+              onImageSelect={handleImageSelect}
+              scrollToIndex={selectedVariantIndex}
             />
           </motion.div>
 

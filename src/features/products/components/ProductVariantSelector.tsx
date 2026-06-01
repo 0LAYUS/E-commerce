@@ -89,10 +89,14 @@ export default function ProductVariantSelector({
   }, [onSkuChange, selectedSku])
 
   const handleOptionChange = useCallback((optionName: string, value: string) => {
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [optionName]: value,
-    }))
+    setSelectedOptions((prev) => {
+      if (prev[optionName] === value) {
+        const next = { ...prev }
+        delete next[optionName]
+        return next
+      }
+      return { ...prev, [optionName]: value }
+    })
   }, [])
 
   const handleAddToCart = useCallback(async () => {
@@ -150,13 +154,19 @@ export default function ProductVariantSelector({
                   key={value}
                   type="button"
                   onClick={() => handleOptionChange(option.name, value)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium border transition ${
+                  title={isSelected ? "Clic para deseleccionar" : ""}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium border transition relative ${
                     isSelected
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-background text-foreground border-input hover:border-primary"
                   }`}
                 >
                   {value}
+                  {isSelected && (
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive text-destructive-foreground rounded-full text-[8px] flex items-center justify-center font-bold leading-none">
+                      ×
+                    </span>
+                  )}
                 </button>
               )
             })}

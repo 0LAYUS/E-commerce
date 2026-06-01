@@ -5,12 +5,17 @@ import Image from "next/image"
 import { ShoppingBag, CaretLeft, CaretRight } from "@phosphor-icons/react"
 import type { GalleryImage } from "@/features/products/types/product.types"
 
+type ExtendedImage = GalleryImage & { skuId?: string }
+
 type Props = {
-  images: GalleryImage[]
+  images: ExtendedImage[]
   productName: string
+  selectedSkuId?: string | null
+  onImageSelect?: (skuId: string | undefined) => void
+  scrollToIndex?: number
 }
 
-export default function ProductImageGallery({ images, productName }: Props) {
+export default function ProductImageGallery({ images, productName, selectedSkuId, onImageSelect, scrollToIndex }: Props) {
   const normalized = useMemo(
     () => images.filter((img) => img.url),
     [images]
@@ -21,6 +26,12 @@ export default function ProductImageGallery({ images, productName }: Props) {
   useEffect(() => {
     setActiveIndex(0)
   }, [normalized.length])
+
+  useEffect(() => {
+    if (scrollToIndex !== undefined && scrollToIndex >= 0) {
+      setActiveIndex(scrollToIndex)
+    }
+  }, [scrollToIndex])
 
   const handlePrev = () => {
     setActiveIndex((prev) => (prev === 0 ? normalized.length - 1 : prev - 1))
@@ -71,7 +82,18 @@ export default function ProductImageGallery({ images, productName }: Props) {
           style={{ transform: `translateX(-${activeIndex * 100}%)` }}
         >
           {normalized.map((img, index) => (
-            <div key={img.id ?? `${img.url}-${index}`} className="h-full w-full shrink-0 relative">
+            <div
+              key={img.id ?? `${img.url}-${index}`}
+              className="h-full w-full shrink-0 relative cursor-pointer"
+              onClick={() => {
+                const imgSkuId = (img as ExtendedImage).skuId
+                if (imgSkuId) {
+                  onImageSelect?.(imgSkuId)
+                } else if (selectedSkuId) {
+                  onImageSelect?.(undefined)
+                }
+              }}
+            >
               <Image
                 src={img.url}
                 alt={img.alt || productName}
@@ -122,24 +144,45 @@ export default function ProductImageGallery({ images, productName }: Props) {
 
       {normalized.length > 1 && (
         <div className="grid grid-cols-5 gap-2">
-          {normalized.map((img, index) => (
-            <button
-              key={img.id ?? `${img.url}-${index}`}
-              type="button"
-              onClick={() => setActiveIndex(index)}
-              className={`aspect-square rounded-xl border overflow-hidden bg-card flex items-center justify-center relative transition ${
-                index === activeIndex ? "border-primary" : "border-border hover:border-primary/60"
-              }`}
-            >
-              <Image
-                src={img.url}
-                alt={img.alt || productName}
-                fill
-                className="object-contain p-2"
-                sizes="20vw"
-              />
-            </button>
-          ))}
+          {normalized.map((img, index) => {
+            const isVariantImage = !!(img as ExtendedImage).skuId
+            const isSelectedVariant = isVariantImage && (img as ExtendedImage).skuId === selectedSkuId
+            return (
+              <button
+                key={img.id ?? `${img.url}-${index}`}
+                type="button"
+                onClick={() => {
+                  setActiveIndex(index)
+                  const imgSkuId = (img as ExtendedImage).skuId
+                  if (imgSkuId) {
+                    onImageSelect?.(imgSkuId)
+                  } else if (selectedSkuId) {
+                    onImageSelect?.(undefined)
+                  }
+                }}
+                className={`aspect-square rounded-xl border overflow-hidden bg-card flex items-center justify-center relative transition ${
+                  index === activeIndex
+                    ? "border-primary ring-2 ring-primary/30"
+                    : isSelectedVariant
+                      ? "border-primary/60"
+                      : "border-border hover:border-primary/60"
+                }`}
+              >
+                <Image
+                  src={img.url}
+                  alt={img.alt || productName}
+                  fill
+                  className="object-contain p-2"
+                  sizes="20vw"
+                />
+                {isVariantImage && (
+                  <span className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
+                    isSelectedVariant ? "bg-primary" : "bg-muted-foreground/50"
+                  }`} />
+                )}
+              </button>
+            )
+          })}
         </div>
       )}
     </div>

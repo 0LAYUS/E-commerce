@@ -52,16 +52,8 @@ export async function optimizeImage(fileBuffer: Uint8Array): Promise<OptimizedIm
   return optimizeWithPhoton(fileBuffer)
 }
 
-let photonInitialized = false
-
 async function optimizeWithPhoton(fileBuffer: Uint8Array): Promise<OptimizedImage> {
-  const { PhotonImage, SamplingFilter, resize, initPhoton } = await import("@cf-wasm/photon/others")
-  const photonWasmUrl = (await import("@cf-wasm/photon/photon.wasm")).default
-
-  if (!photonInitialized) {
-    await initPhoton({ module_or_path: new URL(photonWasmUrl, import.meta.url) })
-    photonInitialized = true
-  }
+  const { PhotonImage, SamplingFilter, resize } = await import("@cf-wasm/photon/workerd")
 
   // new_from_blob decodes JPEG/PNG/WebP automatically via image crate
   const blob = new Blob([fileBuffer as BlobPart])
