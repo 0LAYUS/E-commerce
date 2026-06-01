@@ -56,10 +56,9 @@ let photonInitialized = false
 
 async function optimizeWithPhoton(fileBuffer: Uint8Array): Promise<OptimizedImage> {
   const { PhotonImage, SamplingFilter, resize, initPhoton } = await import("@cf-wasm/photon/others")
-  const photonWasmUrl = (await import("@cf-wasm/photon/photon.wasm")).default
 
   if (!photonInitialized) {
-    await initPhoton({ module_or_path: new URL(photonWasmUrl, import.meta.url) })
+    await initPhoton()
     photonInitialized = true
   }
 
