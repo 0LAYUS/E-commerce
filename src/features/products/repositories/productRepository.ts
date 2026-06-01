@@ -269,7 +269,7 @@ export async function insertSku(
   data: {
     product_id: string
     sku_code: string
-    price_override: number
+    price_override: number | null
     stock: number
     active: boolean
   }

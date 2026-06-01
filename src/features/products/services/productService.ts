@@ -234,7 +234,7 @@ async function createVariantsFromFormData(
     const sku = await insertSku(client, {
       product_id: productId,
       sku_code,
-      price_override: entry?.price_override ?? basePrice,
+      price_override: entry?.price_override ?? null,
       stock: entry?.stock ?? 0,
       active: entry?.active ?? true,
     })
@@ -320,7 +320,8 @@ async function updateVariantsFromFormData(
       // Update existing SKU — preserves ID so variant images stay linked
       await updateSku(client, existingSku.id, {
         stock: entry?.stock ?? 0,
-        price_override: entry?.price_override ?? basePrice,
+        // null means "inherit base product price" — do not default to basePrice
+        price_override: entry?.price_override ?? null,
         active: entry?.active ?? true,
       })
       skuId = existingSku.id
@@ -329,7 +330,7 @@ async function updateVariantsFromFormData(
       const sku = await insertSku(client, {
         product_id: productId,
         sku_code,
-        price_override: entry?.price_override ?? basePrice,
+        price_override: entry?.price_override ?? null,
         stock: entry?.stock ?? 0,
         active: entry?.active ?? true,
       })
@@ -432,9 +433,25 @@ export async function createProduct(formData: FormData) {
     image_url: "",
   })
 
-  if (hasVariants) await createVariantsFromFormData(client, product.id, formData, price)
-  if (imageOrder !== null || imageFiles.length > 0) {
-    await syncProductImages(client, product.id, imageFiles, imageOrder, name)
+  try {
+    if (hasVariants) await createVariantsFromFormData(client, product.id, formData, price)
+    if (imageOrder !== null || imageFiles.length > 0) {
+      await syncProductImages(client, product.id, imageFiles, imageOrder, name)
+    }
+  } catch (err) {
+    try {
+      const skuIds = await findSkuIdsByProduct(client, product.id)
+      if (skuIds.length > 0) {
+        await deleteSkuOptionValuesBySkuIds(client, skuIds)
+        await deleteSkusByProduct(client, product.id)
+      }
+      await deleteOptionValuesByProduct(client, product.id)
+      await deleteOptionTypesByProduct(client, product.id)
+      await client.from("products").delete().eq("id", product.id)
+    } catch (cleanupErr) {
+      console.error("Error during orphan product cleanup (product.id=%s):", product.id, cleanupErr)
+    }
+    throw err
   }
 
   return product
@@ -629,10 +646,12 @@ export async function deleteProduct(
   }
 
   const { deleteProduct: repoDelete } = await import("@/features/products/repositories/productRepository")
-    .then(() => ({ deleteProduct: async () => {
-      const { error } = await client.from("products").delete().eq("id", id)
-      if (error) throw new Error(error.message)
-    }}))
+    .then(() => ({
+      deleteProduct: async () => {
+        const { error } = await client.from("products").delete().eq("id", id)
+        if (error) throw new Error(error.message)
+      }
+    }))
 
   await repoDelete()
   return { success: true }
