@@ -50,37 +50,29 @@ export async function optimizeImage(fileBuffer: Uint8Array): Promise<OptimizedIm
   return optimizeWithPhoton(fileBuffer)
 }
 
-let photonInitPromise: Promise<void> | null = null
+let photonModule: Promise<{
+  PhotonImage: typeof import("@cf-wasm/photon/workerd").PhotonImage
+  SamplingFilter: typeof import("@cf-wasm/photon/workerd").SamplingFilter
+  resize: typeof import("@cf-wasm/photon/workerd").resize
+}> | null = null
 
-async function ensurePhoton() {
-  if (!photonInitPromise) {
-    photonInitPromise = (async () => {
-      const { initPhoton } = await import("@cf-wasm/photon/others")
-      // webpack emits WASM as a separate file via asset/resource
-      const wasmPath = (await import("@cf-wasm/photon/photon.wasm")).default
-
-      // Build absolute URL — workerd requires absolute URLs for fetch
-      const baseUrl = globalThis.location?.origin ?? "http://localhost:3000"
-      const wasmUrl = wasmPath.startsWith("http") ? wasmPath : `${baseUrl}${wasmPath}`
-
-      const response = await fetch(wasmUrl)
-      const wasmModule = await WebAssembly.compile(await response.arrayBuffer())
-
-      initPhoton.sync({ module: wasmModule })
-    })()
+async function getPhoton() {
+  if (!photonModule) {
+    photonModule = import("@cf-wasm/photon/workerd")
   }
-  return photonInitPromise
+  return photonModule
 }
 
 async function optimizeWithPhoton(fileBuffer: Uint8Array): Promise<OptimizedImage> {
-  await ensurePhoton()
+  const { PhotonImage, SamplingFilter, resize } = await getPhoton()
 
-  const { PhotonImage, SamplingFilter, resize } = await import("@cf-wasm/photon/others")
+  // new_from_byteslice copies bytes directly into WASM linear memory.
+  // new_from_blob relies on js_sys::Blob which calls Blob.arrayBuffer()
+  // via FFI — Cloudflare Workers Blob doesn't implement the full browser
+  // API that js_sys expects, causing a WASM panic ("unreachable").
+  const inputImage = PhotonImage.new_from_byteslice(fileBuffer)
 
-  const blob = new Blob([fileBuffer as BlobPart])
-  const inputImage = PhotonImage.new_from_blob(blob)
-
-  let outputImage: ReturnType<typeof PhotonImage.new_from_blob>
+  let outputImage: InstanceType<typeof PhotonImage> | null = null
   const originalWidth = inputImage.get_width()
   const originalHeight = inputImage.get_height()
 
@@ -89,16 +81,15 @@ async function optimizeWithPhoton(fileBuffer: Uint8Array): Promise<OptimizedImag
     const newWidth = MAX_WIDTH
     const newHeight = Math.round(MAX_WIDTH * aspectRatio)
     outputImage = resize(inputImage, newWidth, newHeight, SamplingFilter.Lanczos3)
-  } else {
-    outputImage = inputImage
   }
 
-  const webpBytes = outputImage.get_bytes_webp()
-  const width = outputImage.get_width()
-  const height = outputImage.get_height()
+  const target = outputImage ?? inputImage
+  const webpBytes = target.get_bytes_webp()
+  const width = target.get_width()
+  const height = target.get_height()
 
   inputImage.free()
-  if (outputImage !== inputImage) {
+  if (outputImage) {
     outputImage.free()
   }
 
