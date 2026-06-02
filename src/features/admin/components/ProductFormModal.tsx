@@ -27,6 +27,8 @@ type ProductFormModalProps = {
   onProductActiveChange: (value: boolean) => void
   onNewProductStockChange: (value: number) => void
   newProductStock: number
+  rejectedFiles: { name: string; reason: string }[]
+  onClearRejected: () => void
   variantsEditor: React.ReactNode
 }
 
@@ -50,6 +52,8 @@ export function ProductFormModal({
   onProductActiveChange,
   onNewProductStockChange,
   newProductStock,
+  rejectedFiles,
+  onClearRejected,
   variantsEditor,
 }: ProductFormModalProps) {
   const stockValue = hasVariants ? totalVariantStock : editingProduct ? editingProduct.stock : newProductStock
@@ -207,6 +211,23 @@ export function ProductFormModal({
               </div>
             )}
           </div>
+          {rejectedFiles.length > 0 && (
+            <div className="mt-3 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm font-semibold text-destructive">Archivos rechazados:</p>
+                <button
+                  type="button"
+                  onClick={onClearRejected}
+                  className="text-xs text-destructive/60 hover:text-destructive transition"
+                >
+                  Descartar
+                </button>
+              </div>
+              {rejectedFiles.map((f, i) => (
+                <p key={i} className="text-xs text-destructive/80">• {f.name}: {f.reason}</p>
+              ))}
+            </div>
+          )}
           {loadingVariants ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />

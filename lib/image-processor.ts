@@ -1,7 +1,7 @@
 /**
  * Image optimization for server actions.
  * - Node.js (dev): uses sharp (bundled with Next.js)
- * - Cloudflare Workers (prod): uses photon WASM
+ * - Cloudflare Workers (prod): uses photon WASM via workerd entry point
  */
 
 const MAX_WIDTH = 1200
@@ -30,7 +30,6 @@ export async function optimizeImage(fileBuffer: Uint8Array): Promise<OptimizedIm
 
   if (sharpPkg) {
     const sharp = sharpPkg.default
-    // Node.js dev server: use sharp (bundled with Next.js)
     const instance = sharp(fileBuffer)
     const metadata = await instance.metadata()
     const originalWidth = metadata.width ?? 0
@@ -48,14 +47,36 @@ export async function optimizeImage(fileBuffer: Uint8Array): Promise<OptimizedIm
     }
   }
 
-  // Cloudflare Workers prod: use photon WASM
   return optimizeWithPhoton(fileBuffer)
 }
 
-async function optimizeWithPhoton(fileBuffer: Uint8Array): Promise<OptimizedImage> {
-  const { PhotonImage, SamplingFilter, resize } = await import("@cf-wasm/photon/workerd")
+let photonInitPromise: Promise<void> | null = null
 
-  // new_from_blob decodes JPEG/PNG/WebP automatically via image crate
+async function ensurePhoton() {
+  if (!photonInitPromise) {
+    photonInitPromise = (async () => {
+      const { initPhoton } = await import("@cf-wasm/photon/others")
+      // webpack emits WASM as a separate file via asset/resource
+      const wasmPath = (await import("@cf-wasm/photon/photon.wasm")).default
+
+      // Build absolute URL — workerd requires absolute URLs for fetch
+      const baseUrl = globalThis.location?.origin ?? "http://localhost:3000"
+      const wasmUrl = wasmPath.startsWith("http") ? wasmPath : `${baseUrl}${wasmPath}`
+
+      const response = await fetch(wasmUrl)
+      const wasmModule = await WebAssembly.compile(await response.arrayBuffer())
+
+      initPhoton.sync({ module: wasmModule })
+    })()
+  }
+  return photonInitPromise
+}
+
+async function optimizeWithPhoton(fileBuffer: Uint8Array): Promise<OptimizedImage> {
+  await ensurePhoton()
+
+  const { PhotonImage, SamplingFilter, resize } = await import("@cf-wasm/photon/others")
+
   const blob = new Blob([fileBuffer as BlobPart])
   const inputImage = PhotonImage.new_from_blob(blob)
 

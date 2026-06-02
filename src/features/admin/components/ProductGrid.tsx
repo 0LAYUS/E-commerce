@@ -50,6 +50,8 @@ export default function ProductGrid({ products, categories }: { products: Produc
     handleDrop,
     closeCleanup,
     setImageItems,
+    rejectedFiles,
+    clearRejected,
   } = useProductImages()
 
   const handleAlert = (title: string, description: string) => {
@@ -78,6 +80,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
     setVariantStocks([])
     setNewProductStock(0)
     setProductActive(true)
+    clearRejected()
     setModalOpen(true)
   }
 
@@ -121,6 +124,7 @@ export default function ProductGrid({ products, categories }: { products: Produc
 
   const closeModal = () => {
     closeCleanup()
+    clearRejected()
     setModalOpen(false)
     setTimeout(() => {
       setEditingProduct(null)
@@ -260,6 +264,8 @@ export default function ProductGrid({ products, categories }: { products: Produc
           onProductActiveChange={setProductActive}
           onNewProductStockChange={setNewProductStock}
           newProductStock={newProductStock}
+          rejectedFiles={rejectedFiles}
+          onClearRejected={clearRejected}
           variantsEditor={
             editingProduct ? (
               <ProductVariantsEditor

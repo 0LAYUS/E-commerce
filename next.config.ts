@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 import type { Configuration, RuleSetRule } from "webpack";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+
+initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -13,17 +16,10 @@ const nextConfig: NextConfig = {
         hostname: "*.supabase.co",
         pathname: "/storage/v1/object/public/**",
       },
-      {
-        protocol: "https",
-        hostname: "cexetxvipvvnxgklgnja.supabase.co",
-        pathname: "/storage/v1/object/public/**",
-      },
     ],
   },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '5mb',
-    },
+  serverActions: {
+    bodySizeLimit: "5mb",
   },
   webpack: (config: Configuration) => {
     const existingRules = config.module?.rules as RuleSetRule[] | undefined;
@@ -37,7 +33,7 @@ const nextConfig: NextConfig = {
     }
 
     config.module?.rules?.push({
-      test: /\.wasm$/,
+      test: /photon_rs_bg\.wasm$/,
       type: "asset/resource",
     });
 
@@ -46,6 +42,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
-initOpenNextCloudflareForDev();
