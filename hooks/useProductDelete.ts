@@ -40,6 +40,7 @@ export function useProductDelete(onAlert: (title: string, description: string) =
       onAlert("Error", String(err))
     } finally {
       setDeleteTarget(null)
+      setDeleteConfirmOpen(false)
     }
   }, [deleteTarget, router, onAlert])
 
@@ -52,6 +53,7 @@ export function useProductDelete(onAlert: (title: string, description: string) =
       onAlert("Error", String(err))
     } finally {
       setDeleteTarget(null)
+      setArchiveConfirmOpen(false)
     }
   }, [deleteTarget, router, onAlert])
 
