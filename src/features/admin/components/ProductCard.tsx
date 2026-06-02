@@ -22,9 +22,9 @@ export function ProductCard({ product, onEdit, onDelete, onToggleActive }: Produ
         !isActive ? "opacity-50" : ""
       }`}
     >
-      <div className="aspect-square bg-muted flex items-center justify-center p-3 border-b border-border relative">
+      <div className="aspect-square bg-white flex items-center justify-center p-3 border-b border-border relative">
         {product.image_url ? (
-          <Image src={product.image_url} alt={product.name} fill className="object-contain mix-blend-multiply" />
+          <Image src={product.image_url} alt={product.name} fill className="object-contain" />
         ) : (
           <span className="text-xs text-muted-foreground font-mono">IMG</span>
         )}

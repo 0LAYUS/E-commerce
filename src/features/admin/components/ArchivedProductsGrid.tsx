@@ -76,9 +76,9 @@ export default function ArchivedProductsGrid({ products }: { products: ArchivedP
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {products?.map((p) => (
           <div key={p.id} className="bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col opacity-60">
-            <div className="aspect-[4/3] bg-muted flex items-center justify-center p-6 border-b border-border relative">
+            <div className="aspect-[4/3] bg-white flex items-center justify-center p-6 border-b border-border relative">
               {p.image_url ? (
-                <img src={p.image_url} alt={p.name} className="w-full h-full object-contain mix-blend-multiply grayscale" />
+                <img src={p.image_url} alt={p.name} className="w-full h-full object-contain grayscale"/>
               ) : (
                 <span className="text-xs text-muted-foreground font-mono">IMG</span>
               )}
