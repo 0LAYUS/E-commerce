@@ -3,6 +3,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { WorkOrder, WorkOrderStatus, CreateWorkOrderDTO } from "../types/work-order.types";
 import { revalidatePath } from "next/cache";
+import { WorkOrderNotifier } from "../services/work-order-notifier";
+import { ResendNotificationAdapter } from "../services/resend-notification.adapter";
 
 export async function createWorkOrder(data: CreateWorkOrderDTO) {
   const supabase = await createClient();
@@ -12,8 +14,8 @@ export async function createWorkOrder(data: CreateWorkOrderDTO) {
     .insert({
       customer_name: data.customer_name,
       customer_phone: data.customer_phone,
-      device_model: data.device_model,
-      issue_description: data.issue_description,
+      customer_email: data.customer_email || null,
+      custom_metadata: data.custom_metadata,
       estimated_cost: data.estimated_cost || null,
       notes: data.notes || null,
       status: "DRAFT",
@@ -44,6 +46,10 @@ export async function updateWorkOrderStatus(id: string, newStatus: WorkOrderStat
     console.error("Error updating work order status:", error);
     return { error: error.message };
   }
+
+  // Notify user
+  const notifier = new WorkOrderNotifier(new ResendNotificationAdapter());
+  await notifier.notifyStatusChange(workOrder as WorkOrder, newStatus);
 
   revalidatePath(`/admin/work-orders`);
   revalidatePath(`/admin/work-orders/${id}`);

@@ -58,3 +58,17 @@ export async function getWorkOrderEvidence(workOrderId: string) {
   }
   return data;
 }
+
+export async function getWorkOrderTemplates() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("work_order_templates")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching templates:", error);
+    return [];
+  }
+  return data;
+}

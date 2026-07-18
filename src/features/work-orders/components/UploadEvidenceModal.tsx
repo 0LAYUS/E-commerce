@@ -12,53 +12,65 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { optimizeImage } from "@/shared/utils/imageOptimizer";
-import { addEvidence } from "../../actions/workOrderActions";
+import { addEvidence } from "../actions/workOrderActions";
 import { createClient } from "@/lib/supabase/client";
 
 export function UploadEvidenceModal({ workOrderId }: { workOrderId: string }) {
   const [open, setOpen] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [stage, setStage] = useState("RECEIVED");
   const [notes, setNotes] = useState("");
   const [isUploading, setIsUploading] = useState(false);
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (files.length === 0) return;
+    if (files.length > 5) {
+      alert("Puedes subir un máximo de 5 fotos a la vez.");
+      return;
+    }
+    
     setIsUploading(true);
     
     try {
-      // 1. Optimize image locally
-      const blob = await optimizeImage(file);
-      
-      // 2. Upload to Supabase Storage
       const supabase = createClient();
-      const fileName = `${workOrderId}/${Date.now()}-${file.name}.webp`;
       
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("work_order_evidence")
-        .upload(fileName, blob, {
-          contentType: "image/webp",
-          upsert: false
-        });
+      // Upload all files in parallel
+      const uploadPromises = files.map(async (file) => {
+        // 1. Optimize image locally
+        const blob = await optimizeImage(file);
         
-      if (uploadError) throw new Error(uploadError.message);
-      
-      // 3. Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from("work_order_evidence")
-        .getPublicUrl(uploadData.path);
+        // 2. Upload to Supabase Storage
+        const fileName = `${workOrderId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}.webp`;
         
-      // 4. Save record to DB
-      const result = await addEvidence(workOrderId, stage, publicUrl, notes);
-      
-      if (result.error) throw new Error(result.error);
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("work_order_evidence")
+          .upload(fileName, blob, {
+            contentType: "image/webp",
+            upsert: false
+          });
+          
+        if (uploadError) throw new Error(uploadError.message);
+        
+        // 3. Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from("work_order_evidence")
+          .getPublicUrl(uploadData.path);
+          
+        // 4. Save record to DB
+        const result = await addEvidence(workOrderId, stage, publicUrl, notes);
+        if (result.error) throw new Error(result.error);
+        
+        return publicUrl;
+      });
+
+      await Promise.all(uploadPromises);
       
       setOpen(false);
-      setFile(null);
+      setFiles([]);
       setNotes("");
     } catch (err) {
       console.error(err);
-      alert("Error al subir evidencia.");
+      alert("Error al subir evidencia. Por favor intenta de nuevo.");
     } finally {
       setIsUploading(false);
     }
@@ -75,13 +87,31 @@ export function UploadEvidenceModal({ workOrderId }: { workOrderId: string }) {
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="file">Foto (JPEG, PNG)</Label>
+            <Label htmlFor="file">Fotos (JPEG, PNG) - Máx. 5</Label>
             <Input 
               id="file" 
               type="file" 
               accept="image/*"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              multiple
+              onChange={(e) => {
+                if (e.target.files) {
+                  const selectedFiles = Array.from(e.target.files);
+                  if (selectedFiles.length > 5) {
+                    alert("Solo puedes seleccionar hasta 5 fotos.");
+                    // Reset input
+                    e.target.value = "";
+                    setFiles([]);
+                  } else {
+                    setFiles(selectedFiles);
+                  }
+                }
+              }}
             />
+            {files.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-2">
+                {files.length} archivo(s) seleccionado(s).
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="stage">Etapa</Label>
@@ -103,7 +133,7 @@ export function UploadEvidenceModal({ workOrderId }: { workOrderId: string }) {
           <Button 
             className="w-full" 
             onClick={handleUpload}
-            disabled={!file || isUploading}
+            disabled={files.length === 0 || isUploading}
           >
             {isUploading ? "Subiendo..." : "Guardar Evidencia"}
           </Button>

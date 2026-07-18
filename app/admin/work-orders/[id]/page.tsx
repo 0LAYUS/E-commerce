@@ -6,9 +6,30 @@ import { UploadEvidenceModal } from "@/features/work-orders/components/UploadEvi
 import { StatusUpdater } from "@/features/work-orders/components/StatusUpdater";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { CopyLinkButton } from "@/features/work-orders/components/CopyLinkButton";
 import Image from "next/image";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { formatPrice } from "@/lib/format";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { X } from "lucide-react";
+
+const METADATA_TRANSLATIONS: Record<string, string> = {
+  device_model: "Modelo del Dispositivo",
+  issue_description: "Descripción del Problema",
+  password: "Contraseña",
+  email: "Correo Electrónico"
+};
+
+const STATUS_TRANSLATIONS: Record<string, string> = {
+  DRAFT: "Borrador",
+  RECEIVED: "Recibido",
+  IN_PROGRESS: "En Progreso",
+  ON_HOLD: "En Pausa",
+  COMPLETED: "Completado",
+  DELIVERED: "Entregado",
+  CANCELLED: "Cancelado"
+};
 
 export default async function WorkOrderDetailPage({
   params,
@@ -31,10 +52,13 @@ export default async function WorkOrderDetailPage({
           <ChevronLeft className="h-6 w-6" />
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Orden #{workOrder.tracking_id}</h1>
-          <p className="text-muted-foreground">
-            Creada el {format(new Date(workOrder.created_at), "PPP", { locale: es })}
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight mb-1">Orden #{workOrder.tracking_id}</h1>
+          <div className="flex items-center gap-4">
+            <p className="text-muted-foreground">
+              Creada el {format(new Date(workOrder.created_at), "PPP", { locale: es })}
+            </p>
+            <CopyLinkButton trackingId={workOrder.tracking_id} />
+          </div>
         </div>
       </div>
 
@@ -54,21 +78,30 @@ export default async function WorkOrderDetailPage({
                 <span className="font-medium">{workOrder.customer_phone}</span>
               </div>
               <div>
-                <span className="text-sm text-muted-foreground block">Dispositivo</span>
-                <span className="font-medium">{workOrder.device_model}</span>
+                <span className="text-sm text-muted-foreground block">Correo</span>
+                <span className="font-medium">{workOrder.customer_email || "No registrado"}</span>
               </div>
               <div>
                 <span className="text-sm text-muted-foreground block">Costo Estimado</span>
                 <span className="font-medium">
-                  {workOrder.estimated_cost ? `$${workOrder.estimated_cost}` : "Por definir"}
+                  {workOrder.estimated_cost ? formatPrice(workOrder.estimated_cost) : "Por definir"}
                 </span>
               </div>
             </div>
             
-            <div className="pt-4 border-t">
-              <span className="text-sm text-muted-foreground block mb-1">Descripción del Problema</span>
-              <p className="text-sm">{workOrder.issue_description}</p>
-            </div>
+            {workOrder.custom_metadata && Object.keys(workOrder.custom_metadata).length > 0 && (
+              <div className="pt-4 border-t space-y-4">
+                <span className="text-sm text-muted-foreground block mb-2 font-semibold">Datos Adicionales</span>
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(workOrder.custom_metadata).map(([key, value]) => (
+                    <div key={key}>
+                      <span className="text-sm text-muted-foreground block capitalize">{METADATA_TRANSLATIONS[key] || key.replace(/_/g, " ")}</span>
+                      <span className="text-sm">{String(value)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {workOrder.notes && (
               <div className="pt-4 border-t">
@@ -86,7 +119,7 @@ export default async function WorkOrderDetailPage({
           <CardContent className="space-y-6">
             <div>
               <Badge variant="outline" className="text-lg py-1 px-3">
-                {workOrder.status}
+                {STATUS_TRANSLATIONS[workOrder.status] || workOrder.status}
               </Badge>
             </div>
             <div className="border-t pt-4">
@@ -112,16 +145,34 @@ export default async function WorkOrderDetailPage({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {evidence.map((item: any) => (
                 <div key={item.id} className="group relative rounded-md border overflow-hidden">
-                  <div className="aspect-square relative bg-muted">
-                    <Image
-                      src={item.image_url}
-                      alt={item.notes || "Evidencia"}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <div className="aspect-square relative bg-muted cursor-pointer hover:opacity-90 transition-opacity">
+                        <Image
+                          src={item.image_url}
+                          alt={item.notes || "Evidencia"}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl p-1 bg-transparent border-none shadow-none" showCloseButton={false}>
+                      <DialogTitle className="sr-only">Evidencia Ampliada</DialogTitle>
+                      <div className="relative w-full h-[80vh]">
+                        <Image
+                          src={item.image_url}
+                          alt="Evidencia Ampliada"
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                      <DialogClose className="absolute top-2 right-2 md:-right-12 md:-top-12 md:text-white bg-background/80 hover:bg-background md:bg-transparent md:hover:bg-white/20 p-2 md:p-3 rounded-full md:border-none border shadow-sm transition-colors z-50">
+                        <X className="w-5 h-5 md:w-8 md:h-8" />
+                      </DialogClose>
+                    </DialogContent>
+                  </Dialog>
                   <div className="p-2 bg-background/90 text-xs">
-                    <span className="font-semibold">{item.stage}</span>
+                    <span className="font-semibold">{STATUS_TRANSLATIONS[item.stage] || item.stage}</span>
                     {item.notes && <p className="text-muted-foreground truncate">{item.notes}</p>}
                     <span className="text-[10px] text-muted-foreground block mt-1">
                       {format(new Date(item.created_at), "PP", { locale: es })}

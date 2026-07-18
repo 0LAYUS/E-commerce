@@ -25,7 +25,12 @@ export function AdminSidebar() {
         <span className="text-lg font-bold text-card-foreground">{storeBranding.name}</span>
       </Link>
       <nav className="p-4 space-y-1 flex-1">
-        {SIDEBAR_ITEMS.map((item) => (
+        {SIDEBAR_ITEMS.filter(item => {
+          if (item.featureFlag) {
+            return storeBranding.features?.[item.featureFlag as keyof typeof storeBranding.features];
+          }
+          return true;
+        }).map((item) => (
           <SidebarLink
             key={item.href}
             {...item}

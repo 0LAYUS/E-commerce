@@ -12,9 +12,9 @@ export interface WorkOrder {
   tracking_id: string;
   customer_name: string;
   customer_phone: string;
+  customer_email?: string | null;
   status: WorkOrderStatus;
-  device_model: string;
-  issue_description: string;
+  custom_metadata: Record<string, any>;
   estimated_cost: number | null;
   notes: string | null;
   created_at: string;
@@ -33,8 +33,17 @@ export interface WorkOrderEvidence {
 export interface CreateWorkOrderDTO {
   customer_name: string;
   customer_phone: string;
-  device_model: string;
-  issue_description: string;
+  customer_email?: string;
+  custom_metadata: Record<string, any>;
   estimated_cost?: number;
   notes?: string;
+}
+
+export interface WorkOrderTemplate {
+  id: string;
+  tenant_id: string;
+  name: string;
+  schema: Record<string, any>;
+  created_at: string;
+  updated_at: string;
 }

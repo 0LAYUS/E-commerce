@@ -22,6 +22,16 @@ export function StatusUpdater({
   const [status, setStatus] = useState<WorkOrderStatus>(currentStatus);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const STATUS_TRANSLATIONS: Record<WorkOrderStatus, string> = {
+    DRAFT: "Borrador",
+    RECEIVED: "Recibido",
+    IN_PROGRESS: "En Progreso",
+    ON_HOLD: "En Pausa",
+    COMPLETED: "Completado",
+    DELIVERED: "Entregado",
+    CANCELLED: "Cancelado"
+  };
+
   const statuses: WorkOrderStatus[] = [
     "DRAFT",
     "RECEIVED",
@@ -54,7 +64,7 @@ export function StatusUpdater({
         <SelectContent>
           {statuses.map((s) => (
             <SelectItem key={s} value={s}>
-              {s}
+              {STATUS_TRANSLATIONS[s]}
             </SelectItem>
           ))}
         </SelectContent>

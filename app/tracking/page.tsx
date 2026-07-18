@@ -8,18 +8,42 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 
-export default function TrackingGatewayPage() {
-  const [trackingId, setTrackingId] = useState("");
-  const [phone, setPhone] = useState("");
+function TrackingForm() {
+  const searchParams = useSearchParams();
+  const initialId = searchParams.get("id") || "";
+  const initialPhone = searchParams.get("phone") || "";
+
+  const [trackingId, setTrackingId] = useState(initialId);
+  const [phone, setPhone] = useState(initialPhone);
+  const [error, setError] = useState("");
   const router = useRouter();
+
+  const handleIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toUpperCase();
+    // Remover caracteres especiales y dar advertencia
+    if (/[^A-Z0-9]/.test(value)) {
+      setError("El ID de rastreo solo puede contener letras y números.");
+    } else {
+      setError("");
+    }
+    setTrackingId(value.replace(/[^A-Z0-9]/g, ""));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!trackingId || !phone) return;
-    
-    // Redirect to the detail page, passing phone as query param for validation
-    router.push(`/tracking/${trackingId}?phone=${encodeURIComponent(phone)}`);
+    if (!trackingId) {
+      setError("Por favor ingresa un ID de rastreo");
+      return;
+    }
+    if (!phone) {
+      setError("Por favor ingresa tu número de teléfono");
+      return;
+    }
+    setError("");
+    router.push(`/tracking/${trackingId}${phone ? `?phone=${encodeURIComponent(phone)}` : ""}`);
   };
 
   return (
@@ -38,13 +62,14 @@ export default function TrackingGatewayPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
             <div className="space-y-2">
               <Label htmlFor="trackingId">ID de Rastreo</Label>
               <Input 
                 id="trackingId" 
                 placeholder="Ej: A1B2C3D4" 
                 value={trackingId}
-                onChange={(e) => setTrackingId(e.target.value.toUpperCase())}
+                onChange={handleIdChange}
                 required
               />
             </div>
@@ -66,5 +91,17 @@ export default function TrackingGatewayPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function TrackingGatewayPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+        <p className="text-muted-foreground">Cargando...</p>
+      </div>
+    }>
+      <TrackingForm />
+    </Suspense>
   );
 }

@@ -4,6 +4,7 @@ export type SidebarItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  featureFlag?: string;
 };
 
 export type SidebarLinkProps = {
