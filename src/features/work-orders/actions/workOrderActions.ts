@@ -28,6 +28,10 @@ export async function createWorkOrder(data: CreateWorkOrderDTO) {
     return { error: error.message };
   }
 
+  // Notify user about creation
+  const notifier = new WorkOrderNotifier(new ResendNotificationAdapter());
+  await notifier.notifyCreation(workOrder as WorkOrder);
+
   revalidatePath("/admin/work-orders");
   return { data: workOrder };
 }
