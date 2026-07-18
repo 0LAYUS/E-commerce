@@ -3,7 +3,9 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { CartProvider, useCart } from '@/shared/components/CartProvider'
 import React from 'react'
 
-const mockFetch = vi.fn()
+const mockFetch = vi.fn().mockImplementation(() => Promise.resolve({
+  json: () => Promise.resolve({ success: true, items: [], has_problems: false, blocked_items: [] })
+}))
 global.fetch = mockFetch
 
 function createMockLocalStorage(initialData: Record<string, string> = {}) {
@@ -132,11 +134,12 @@ describe('CartProvider', () => {
         render(<CartProvider><TestConsumer /></CartProvider>)
       })
 
-      fireEvent.click(screen.getByTestId('add-btn'))
-
-      await waitFor(() => {
-        expect(screen.getByTestId('item-count').textContent).toBe('0')
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('add-btn'))
       })
+
+      const itemCount = screen.getByTestId('item-count')
+      expect(itemCount.textContent).toBe('0')
     })
 
     it('should increment quantity when adding existing item', async () => {
@@ -157,9 +160,8 @@ describe('CartProvider', () => {
         render(<CartProvider><TestConsumer /></CartProvider>)
       })
 
-      await waitFor(() => {
-        expect(screen.getByTestId('item-count').textContent).toBe('1')
-      })
+      const itemCount = screen.getByTestId('item-count')
+      expect(itemCount.textContent).toBe('1')
 
       mockFetch.mockResolvedValueOnce({
         json: async () => ({
@@ -299,12 +301,13 @@ describe('CartProvider', () => {
 
       await act(async () => {
         vi.advanceTimersByTime(2000)
+        await Promise.resolve()
+        await Promise.resolve()
+        await Promise.resolve()
       })
 
-      await waitFor(() => {
-        const hasBlocked = screen.getByTestId('has-blocked')
-        expect(hasBlocked.textContent).toBe('true')
-      })
+      const hasBlocked = screen.getByTestId('has-blocked')
+      expect(hasBlocked.textContent).toBe('true')
     })
 
     it('should be false when all items are valid or price_changed only', async () => {
@@ -327,12 +330,13 @@ describe('CartProvider', () => {
 
       await act(async () => {
         vi.advanceTimersByTime(2000)
+        await Promise.resolve()
+        await Promise.resolve()
+        await Promise.resolve()
       })
 
-      await waitFor(() => {
-        const hasBlocked = screen.getByTestId('has-blocked')
-        expect(hasBlocked.textContent).toBe('false')
-      })
+      const hasBlocked = screen.getByTestId('has-blocked')
+      expect(hasBlocked.textContent).toBe('false')
     })
   })
 
@@ -374,12 +378,13 @@ describe('CartProvider', () => {
 
       await act(async () => {
         vi.advanceTimersByTime(2000)
+        await Promise.resolve()
+        await Promise.resolve()
+        await Promise.resolve()
       })
 
-      await waitFor(() => {
-        const hasBlocked = screen.getByTestId('has-blocked')
-        expect(hasBlocked.textContent).toBe('false')
-      })
+      const hasBlocked = screen.getByTestId('has-blocked')
+      expect(hasBlocked.textContent).toBe('false')
     })
 
     it('should adjust quantity when stock is reduced during revalidation', async () => {
@@ -409,12 +414,13 @@ describe('CartProvider', () => {
 
       await act(async () => {
         vi.advanceTimersByTime(2000)
+        await Promise.resolve()
+        await Promise.resolve()
+        await Promise.resolve()
       })
 
-      await waitFor(() => {
-        const qtyEl = screen.getByTestId('qty-prod-1')
-        expect(qtyEl.textContent).toBe('3')
-      })
+      const qtyEl = screen.getByTestId('qty-prod-1')
+      expect(qtyEl.textContent).toBe('3')
     })
   })
 
