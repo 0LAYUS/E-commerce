@@ -124,7 +124,7 @@ export default async function WorkOrderDetailPage({
             </div>
             <div className="border-t pt-4">
               <span className="text-sm text-muted-foreground block mb-2">Cambiar Estado</span>
-              <StatusUpdater workOrderId={workOrder.id} currentStatus={workOrder.status} />
+              <StatusUpdater workOrderId={workOrder.id} currentStatus={workOrder.status} estimatedCost={workOrder.estimated_cost} />
             </div>
           </CardContent>
         </Card>

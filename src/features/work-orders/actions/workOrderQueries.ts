@@ -17,7 +17,7 @@ export async function getWorkOrders(
   }
 
   if (search) {
-    query = query.or(`customer_name.ilike.%${search}%,customer_phone.ilike.%${search}%,tracking_id.ilike.%${search}%`);
+    query = query.or(`customer_name.ilike.%${search}%,customer_phone.ilike.%${search}%,tracking_id.ilike.%${search}%,custom_metadata::text.ilike.%${search}%`);
   }
 
   const { data, error } = await query;

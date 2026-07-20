@@ -13,6 +13,17 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { WorkOrderStatus } from "@/features/work-orders/types/work-order.types";
+import { WorkOrdersFilters } from "@/features/work-orders/components/WorkOrdersFilters";
+
+const STATUS_TRANSLATIONS: Record<string, string> = {
+  DRAFT: "Borrador",
+  RECEIVED: "Recibido",
+  IN_PROGRESS: "En Progreso",
+  ON_HOLD: "En Pausa",
+  COMPLETED: "Completado",
+  DELIVERED: "Entregado",
+  CANCELLED: "Cancelado"
+};
 
 function getStatusBadgeVariant(status: WorkOrderStatus) {
   switch (status) {
@@ -52,6 +63,8 @@ export default async function WorkOrdersAdminPage({
         </Button>
       </div>
 
+      <WorkOrdersFilters />
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -81,10 +94,10 @@ export default async function WorkOrdersAdminPage({
                       {wo.customer_phone}
                     </div>
                   </TableCell>
-                  <TableCell>{wo.device_model}</TableCell>
+                  <TableCell>{wo.custom_metadata?.device_model || 'No especificado'}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(wo.status)}>
-                      {wo.status}
+                      {STATUS_TRANSLATIONS[wo.status] || wo.status}
                     </Badge>
                   </TableCell>
                   <TableCell>
