@@ -31,7 +31,7 @@ export default function AboutPage() {
       >
         <div className="relative h-64 md:h-80 w-full">
           <Image
-            src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&h=400&fit=crop"
+            src={storeBranding.assets.aboutHero}
             alt={`${storeBranding.name} - Tienda online`}
             fill
             className="object-cover"
@@ -126,7 +126,7 @@ export default function AboutPage() {
         >
           <div className="relative h-48 w-full">
             <Image
-              src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&h=200&fit=crop"
+              src={storeBranding.assets.aboutTeam}
               alt="Nuestro equipo"
               fill
               className="object-cover"
@@ -151,7 +151,7 @@ export default function AboutPage() {
         >
           <div className="relative h-48 w-full">
             <Image
-              src="https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?w=600&h=200&fit=crop"
+              src={storeBranding.assets.aboutWarehouse}
               alt={`Almacén ${storeBranding.name}`}
               fill
               className="object-cover"

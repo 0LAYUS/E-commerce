@@ -68,8 +68,8 @@ export default function RootLayout({
         <ThemeVariables>
           <NextThemeProvider
             attribute="class"
-            defaultTheme="light"
-            enableSystem
+            defaultTheme={storeBranding.theme.defaultTheme}
+            enableSystem={false}
             disableTransitionOnChange
           >
             <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-card" />}>

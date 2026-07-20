@@ -15,25 +15,25 @@ export class WorkOrderNotifier {
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
-          .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden; }
-          .header { background-color: #0f172a; padding: 32px 40px; text-align: center; }
-          .header h1 { color: #ffffff; font-size: 24px; font-weight: 700; margin: 0; letter-spacing: -0.025em; }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0a0a0a; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+          .container { max-width: 600px; margin: 40px auto; background-color: #141414; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden; border: 1px solid #27272a; }
+          .header { background-color: #0a0a0a; padding: 32px 40px; text-align: center; border-bottom: 1px solid #27272a; }
+          .header img { height: 48px; margin: 0 auto; display: block; }
           .content { padding: 40px; }
-          .title { color: #0f172a; font-size: 20px; font-weight: 600; margin-top: 0; margin-bottom: 20px; }
-          .message { color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 32px; }
+          .title { color: #fafafa; font-size: 20px; font-weight: 600; margin-top: 0; margin-bottom: 20px; }
+          .message { color: #a1a1aa; font-size: 16px; line-height: 1.6; margin-bottom: 32px; }
           .button-container { text-align: center; margin-bottom: 32px; }
-          .button { background-color: #3b82f6; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; transition: background-color 0.2s; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); }
-          .button:hover { background-color: #2563eb; }
-          .footer { background-color: #f8fafc; padding: 24px 40px; text-align: center; border-top: 1px solid #e2e8f0; }
-          .footer p { color: #64748b; font-size: 13px; margin: 0 0 8px 0; line-height: 1.5; }
-          .link-fallback { color: #3b82f6; text-decoration: underline; word-break: break-all; }
+          .button { background-color: #8a5cf6; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; transition: background-color 0.2s; box-shadow: 0 2px 4px rgba(138, 92, 246, 0.3); }
+          .button:hover { background-color: #7c3aed; }
+          .footer { background-color: #0a0a0a; padding: 24px 40px; text-align: center; border-top: 1px solid #27272a; }
+          .footer p { color: #52525b; font-size: 13px; margin: 0 0 8px 0; line-height: 1.5; }
+          .link-fallback { color: #8a5cf6; text-decoration: underline; word-break: break-all; }
         </style>
       </head>
       <body>
         <div class="container">
           <div class="header">
-            <h1>${storeBranding.name}</h1>
+            <img src="https://prigma.net/_next/image?url=%2Fimages%2Fprigma_logo_sin_fondo.png&w=256&q=75" alt="PRIGMA" />
           </div>
           <div class="content">
             <h2 class="title">${title}</h2>
@@ -83,6 +83,7 @@ export class WorkOrderNotifier {
       IN_PROGRESS: 'En Progreso',
       ON_HOLD: 'En Pausa',
       COMPLETED: 'Completado',
+      DELIVERED: 'Entregado',
       CANCELLED: 'Cancelado'
     };
     

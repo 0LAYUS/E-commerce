@@ -79,57 +79,57 @@ function buildEmailHtml(data: OrderEmailData): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Confirmación de pedido — ${siteName}</title>
 </head>
-<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 20px;">
+<body style="margin:0;padding:0;background-color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 20px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;border:1px solid #27272a;border-radius:12px;">
 
           <!-- Header -->
           <tr>
             <td style="background:#18181b;padding:32px;border-radius:12px 12px 0 0;text-align:center;">
-              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.5px;">
-                ${siteName}
-              </h1>
+              <a href="${siteUrl}" target="_blank" style="display:inline-block;text-decoration:none;">
+                <img alt="Logo PRIGMA - Desarrollo de Software a Medida en Colombia" loading="lazy" width="70" height="70" decoding="async" data-nimg="1" style="color:transparent;display:block;margin:0 auto;" srcset="https://prigma.net/_next/image?url=%2Fimages%2Fprigma_logo_sin_fondo.png&amp;w=96&amp;q=75 1x, https://prigma.net/_next/image?url=%2Fimages%2Fprigma_logo_sin_fondo.png&amp;w=256&amp;q=75 2x" src="https://prigma.net/_next/image?url=%2Fimages%2Fprigma_logo_sin_fondo.png&amp;w=256&amp;q=75">
+              </a>
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
-            <td style="background:#ffffff;padding:40px 40px 32px;border-radius:0 0 12px 12px;">
+            <td style="background:#18181b;padding:40px 40px 32px;border-radius:0 0 12px 12px;">
 
               <!-- Icono de éxito -->
               <div style="text-align:center;margin-bottom:28px;">
-                <div style="display:inline-block;width:60px;height:60px;background:#ecfdf5;border-radius:50%;line-height:60px;text-align:center;">
-                  <span style="font-size:28px;">✓</span>
+                <div style="display:inline-block;width:60px;height:60px;background:#8a5cf620;border-radius:50%;line-height:60px;text-align:center;">
+                  <span style="font-size:28px;color:#8a5cf6;">✓</span>
                 </div>
               </div>
 
-              <h2 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#1a1a1a;text-align:center;">
+              <h2 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#ffffff;text-align:center;">
                 ¡Pago confirmado!
               </h2>
-              <p style="margin:0 0 32px;color:#666;font-size:15px;text-align:center;line-height:1.6;">
-                Hola <strong>${data.customerName}</strong>, recibimos tu pago correctamente.<br>
+              <p style="margin:0 0 32px;color:#a1a1aa;font-size:15px;text-align:center;line-height:1.6;">
+                Hola <strong style="color:#ffffff;">${data.customerName}</strong>, recibimos tu pago correctamente.<br>
                 Pronto procesaremos y enviaremos tu pedido.
               </p>
 
               <!-- Referencia del pedido -->
-              <div style="background:#f8f8f8;border-radius:8px;padding:16px 20px;margin-bottom:32px;">
+              <div style="background:#27272a;border-radius:8px;padding:16px 20px;margin-bottom:32px;">
                 <table width="100%" cellpadding="0" cellspacing="0">
                   <tr>
-                    <td style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">
+                    <td style="font-size:12px;color:#a1a1aa;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">
                       N° de Pedido
                     </td>
-                    <td style="text-align:right;font-family:monospace;font-size:14px;color:#1a1a1a;font-weight:700;">
+                    <td style="text-align:right;font-family:monospace;font-size:14px;color:#ffffff;font-weight:700;">
                       #${orderShortId}
                     </td>
                   </tr>
                   ${data.wompiTransactionId ? `
                   <tr>
-                    <td style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;padding-top:8px;">
+                    <td style="font-size:12px;color:#a1a1aa;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;padding-top:8px;">
                       ID Transacción Wompi
                     </td>
-                    <td style="text-align:right;font-family:monospace;font-size:11px;color:#888;padding-top:8px;word-break:break-all;">
+                    <td style="text-align:right;font-family:monospace;font-size:11px;color:#a1a1aa;padding-top:8px;word-break:break-all;">
                       ${data.wompiTransactionId}
                     </td>
                   </tr>` : ""}
@@ -137,17 +137,17 @@ function buildEmailHtml(data: OrderEmailData): string {
               </div>
 
               <!-- Items del pedido -->
-              <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">
+              <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">
                 Resumen del pedido
               </h3>
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
-                ${itemsRows}
+                ${itemsRows.replace(/#1a1a1a/g, '#ffffff').replace(/#555/g, '#a1a1aa').replace(/#f0f0f0/g, '#27272a')}
                 <tr>
                   <td colspan="3" style="padding-top:16px;">
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="font-size:16px;font-weight:700;color:#1a1a1a;">Total pagado</td>
-                        <td style="text-align:right;font-size:18px;font-weight:800;color:#18181b;">
+                        <td style="font-size:16px;font-weight:700;color:#ffffff;">Total pagado</td>
+                        <td style="text-align:right;font-size:18px;font-weight:800;color:#8a5cf6;">
                           ${formatCOP(data.totalAmount)}
                         </td>
                       </tr>
@@ -157,11 +157,11 @@ function buildEmailHtml(data: OrderEmailData): string {
               </table>
 
               <!-- Dirección de envío -->
-              <div style="background:#f0fdf4;border:1px solid #d1fae5;border-radius:8px;padding:16px 20px;margin-bottom:32px;">
-                <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#065f46;text-transform:uppercase;letter-spacing:0.5px;">
+              <div style="background:#27272a;border-left:4px solid #8a5cf6;border-radius:8px;padding:16px 20px;margin-bottom:32px;">
+                <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#a1a1aa;text-transform:uppercase;letter-spacing:0.5px;">
                   Dirección de envío
                 </p>
-                <p style="margin:0;font-size:14px;color:#1a1a1a;line-height:1.5;">
+                <p style="margin:0;font-size:14px;color:#e4e4e7;line-height:1.5;">
                   ${data.shippingAddress}
                 </p>
               </div>
@@ -169,16 +169,16 @@ function buildEmailHtml(data: OrderEmailData): string {
               <!-- CTA -->
               <div style="text-align:center;margin-bottom:32px;">
                 <a href="${siteUrl}/profile/orders"
-                   style="display:inline-block;background:#18181b;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:14px 32px;border-radius:8px;">
+                   style="display:inline-block;background:#8a5cf6;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:14px 32px;border-radius:8px;">
                   Ver mis pedidos
                 </a>
               </div>
 
-              <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;">
+              <hr style="border:none;border-top:1px solid #27272a;margin:0 0 24px;">
 
-              <p style="margin:0;font-size:13px;color:#aaa;text-align:center;line-height:1.6;">
+              <p style="margin:0;font-size:13px;color:#71717a;text-align:center;line-height:1.6;">
                 Si tienes dudas sobre tu pedido, responde este correo.<br>
-                <a href="${siteUrl}" style="color:#18181b;text-decoration:none;font-weight:600;">${siteName}</a>
+                <a href="${siteUrl}" style="color:#a1a1aa;text-decoration:none;font-weight:600;">${siteName}</a>
               </p>
             </td>
           </tr>
