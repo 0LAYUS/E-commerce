@@ -3,7 +3,7 @@
   "scripts": {
     "generate:theme": "npx tsx scripts/generate-theme.mjs",
     "prebuild": "npm run generate:theme",
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -37,7 +37,8 @@
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.82.0",
     "resend": "^6.12.2",
-    "tailwind-merge": "^3.3.0"
+    "tailwind-merge": "^3.3.0",
+    "use-debounce": "^10.1.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

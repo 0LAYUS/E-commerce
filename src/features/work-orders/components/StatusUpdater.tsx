@@ -11,16 +11,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { WorkOrderBillingModal } from "./WorkOrderBillingModal";
 
 export function StatusUpdater({
   workOrderId,
   currentStatus,
+  estimatedCost,
 }: {
   workOrderId: string;
   currentStatus: WorkOrderStatus;
+  estimatedCost: number | null;
 }) {
   const [status, setStatus] = useState<WorkOrderStatus>(currentStatus);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
 
   const STATUS_TRANSLATIONS: Record<WorkOrderStatus, string> = {
     DRAFT: "Borrador",
@@ -43,6 +47,11 @@ export function StatusUpdater({
   ];
 
   const handleUpdate = async () => {
+    if (status === "DELIVERED") {
+      setIsBillingModalOpen(true);
+      return;
+    }
+
     setIsUpdating(true);
     try {
       const res = await updateWorkOrderStatus(workOrderId, status);
@@ -55,10 +64,29 @@ export function StatusUpdater({
     }
   };
 
+  const handleBillingConfirm = async (billingData: any) => {
+    setIsUpdating(true);
+    try {
+      const { closeWorkOrderAndBill } = await import("../actions/workOrderActions");
+      const res = await closeWorkOrderAndBill(workOrderId, billingData);
+      if (res.error) alert("Error: " + res.error);
+      else setIsBillingModalOpen(false);
+    } catch (e) {
+      console.error(e);
+      alert("Error inesperado al facturar");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
-    <div className="flex items-center gap-4">
-      <Select value={status} onValueChange={(val) => setStatus(val as WorkOrderStatus)}>
-        <SelectTrigger className="w-[200px]">
+    <div className="flex flex-col items-stretch sm:items-start gap-4">
+      <Select 
+        value={status} 
+        onValueChange={(val) => setStatus(val as WorkOrderStatus)}
+        disabled={currentStatus === "DELIVERED"}
+      >
+        <SelectTrigger className="w-full sm:w-[200px]">
           <SelectValue placeholder="Estado" />
         </SelectTrigger>
         <SelectContent>
@@ -72,10 +100,21 @@ export function StatusUpdater({
       <Button 
         variant="outline" 
         onClick={handleUpdate} 
-        disabled={status === currentStatus || isUpdating}
+        disabled={status === currentStatus || isUpdating || currentStatus === "DELIVERED"}
+        className="w-full sm:w-auto"
       >
         {isUpdating ? "Actualizando..." : "Actualizar Estado"}
       </Button>
+
+      {isBillingModalOpen && (
+        <WorkOrderBillingModal
+          isOpen={isBillingModalOpen}
+          onClose={() => setIsBillingModalOpen(false)}
+          estimatedCost={estimatedCost}
+          onConfirm={handleBillingConfirm}
+          isSubmitting={isUpdating}
+        />
+      )}
     </div>
   );
 }
