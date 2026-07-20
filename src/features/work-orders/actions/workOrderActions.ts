@@ -29,8 +29,10 @@ export async function createWorkOrder(data: CreateWorkOrderDTO) {
   }
 
   // Notify user about creation
+  console.log(`🔔 [WorkOrderActions] Iniciando notificación para nueva orden: ${workOrder.id}`);
   const notifier = new WorkOrderNotifier(new ResendNotificationAdapter());
   await notifier.notifyCreation(workOrder as WorkOrder);
+  console.log(`🔔 [WorkOrderActions] Notificación de creación finalizada.`);
 
   revalidatePath("/admin/work-orders");
   return { data: workOrder };
