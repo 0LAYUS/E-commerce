@@ -84,3 +84,84 @@ export async function addEvidence(workOrderId: string, stage: string, imageUrl: 
   revalidatePath(`/admin/work-orders/${workOrderId}`);
   return { data: evidence };
 }
+
+export async function closeWorkOrderAndBill(
+  id: string,
+  data: {
+    resolution_note: string;
+    final_cost: number;
+    payment_method: string;
+    payments?: { method: string; amount: number }[];
+    amount_received?: number;
+    change_amount?: number;
+  }
+) {
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  if (!authData.user) return { error: "No autorizado" };
+
+  const { data: workOrder, error: fetchError } = await supabase
+    .from("work_orders")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !workOrder) return { error: "Orden no encontrada" };
+
+  // Call POS Sale Service (using dynamic import to avoid circular dependencies if any)
+  const { createSale } = await import("@/features/pos/services/posSaleService");
+
+  try {
+    // We pass undefined for product_id so that the DB RPC `decrement_pos_stock` skips it.
+    await createSale(authData.user.id, {
+      customer_name: workOrder.customer_name,
+      items: [
+        {
+          name: `Servicio Técnico - Orden #${workOrder.tracking_id}`,
+          quantity: 1,
+          unit_price: data.final_cost,
+          discount_pct: 0,
+          subtotal: data.final_cost,
+          product_id: undefined as any,
+          sku: null,
+        },
+      ],
+      discount_amount: 0,
+      subtotal: data.final_cost,
+      total: data.final_cost,
+      payment_method: data.payment_method,
+      amount_received: data.amount_received,
+      change_amount: data.change_amount,
+      payments: data.payments,
+      notes: data.resolution_note,
+      channel: "work_order",
+      work_order_id: workOrder.id,
+    });
+
+    // Update work order status
+    const { error: updateError } = await supabase
+      .from("work_orders")
+      .update({
+        status: "DELIVERED",
+        resolution_note: data.resolution_note,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+
+    if (updateError) {
+      console.error("Error updating work order after billing:", updateError);
+      return { error: updateError.message };
+    }
+
+    const notifier = new WorkOrderNotifier(new ResendNotificationAdapter());
+    await notifier.notifyStatusChange(workOrder as WorkOrder, "DELIVERED");
+
+    revalidatePath(`/admin/work-orders`);
+    revalidatePath(`/admin/work-orders/${id}`);
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error closing work order and billing:", error);
+    return { error: error.message || "Error cerrando orden de trabajo" };
+  }
+}
+

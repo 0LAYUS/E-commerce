@@ -277,6 +277,7 @@ export type Database = {
           seller_id: string
           subtotal: number
           total: number
+          work_order_id: string | null
         }
         Insert: {
           amount_received?: number | null
@@ -294,6 +295,7 @@ export type Database = {
           seller_id: string
           subtotal: number
           total: number
+          work_order_id?: string | null
         }
         Update: {
           amount_received?: number | null
@@ -311,6 +313,7 @@ export type Database = {
           seller_id?: string
           subtotal?: number
           total?: number
+          work_order_id?: string | null
         }
         Relationships: [
           {

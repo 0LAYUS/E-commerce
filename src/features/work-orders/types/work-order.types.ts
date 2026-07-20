@@ -17,6 +17,7 @@ export interface WorkOrder {
   custom_metadata: Record<string, any>;
   estimated_cost: number | null;
   notes: string | null;
+  resolution_note: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -165,6 +165,7 @@ export async function insertPosSale(
     change_amount: number | null
     notes: string | null
     channel: string
+    work_order_id?: string | null
   }
 ) {
   const { data: sale, error } = await client
