@@ -68,7 +68,7 @@ export default async function WorkOrderDetailPage({
             <CardTitle>Detalles del Servicio</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <span className="text-sm text-muted-foreground block">Cliente</span>
                 <span className="font-medium">{workOrder.customer_name}</span>
@@ -79,7 +79,7 @@ export default async function WorkOrderDetailPage({
               </div>
               <div>
                 <span className="text-sm text-muted-foreground block">Correo</span>
-                <span className="font-medium">{workOrder.customer_email || "No registrado"}</span>
+                <span className="font-medium break-all">{workOrder.customer_email || "No registrado"}</span>
               </div>
               <div>
                 <span className="text-sm text-muted-foreground block">Costo Estimado</span>
@@ -92,11 +92,11 @@ export default async function WorkOrderDetailPage({
             {workOrder.custom_metadata && Object.keys(workOrder.custom_metadata).length > 0 && (
               <div className="pt-4 border-t space-y-4">
                 <span className="text-sm text-muted-foreground block mb-2 font-semibold">Datos Adicionales</span>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {Object.entries(workOrder.custom_metadata).map(([key, value]) => (
                     <div key={key}>
                       <span className="text-sm text-muted-foreground block capitalize">{METADATA_TRANSLATIONS[key] || key.replace(/_/g, " ")}</span>
-                      <span className="text-sm">{String(value)}</span>
+                      <span className="text-sm break-all">{String(value)}</span>
                     </div>
                   ))}
                 </div>
