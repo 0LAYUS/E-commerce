@@ -9,9 +9,10 @@ type ShippingZoneCardProps = {
   zone: ShippingZone
   onEdit: (zone: ShippingZone) => void
   onDelete: (id: string, name: string) => void
+  onToggleActive?: (zone: ShippingZone) => void
 }
 
-export default function ShippingZoneCard({ zone, onEdit, onDelete }: ShippingZoneCardProps) {
+export default function ShippingZoneCard({ zone, onEdit, onDelete, onToggleActive }: ShippingZoneCardProps) {
   return (
     <div
       className={`bg-card rounded-xl shadow-sm border p-5 flex flex-col hover:shadow-md transition ${
@@ -47,16 +48,25 @@ export default function ShippingZoneCard({ zone, onEdit, onDelete }: ShippingZon
         </div>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-border">
-        <span
-          className={`text-xs font-semibold px-2 py-1 rounded ${
-            zone.active
-              ? "bg-success-muted text-success"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          {zone.active ? "Activa" : "Inactiva"}
-        </span>
+      <div className="mt-4 pt-3 border-t border-border flex justify-between items-center">
+        <div className="flex gap-2 items-center">
+          <button
+            onClick={() => onToggleActive?.(zone)}
+            className={`text-xs font-semibold px-2 py-1 rounded transition-colors hover:opacity-80 ${
+              zone.active
+                ? "bg-success-muted text-success"
+                : "bg-muted text-muted-foreground"
+            }`}
+            title={zone.active ? "Desactivar zona" : "Activar zona"}
+          >
+            {zone.active ? "Activa" : "Inactiva"}
+          </button>
+          {zone.manual_payment_allowed && (
+            <span className="text-xs font-semibold px-2 py-1 rounded bg-blue-500/10 text-blue-500">
+              Contra Entrega
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )

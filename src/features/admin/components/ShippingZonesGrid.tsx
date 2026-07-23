@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Plus } from "lucide-react"
-import { deleteShippingZone } from "@/features/admin/actions/adminActions"
+import { deleteShippingZone, updateShippingZone } from "@/features/admin/actions/adminActions"
 import { AlertDialog, ConfirmDialog } from "@/components/ui/modal"
 import { Button } from "@/components/ui/button"
 import ShippingZoneCard from "@/features/admin/components/ShippingZoneCard"
@@ -14,6 +14,10 @@ import type { ShippingZone } from "@/features/cart/types/cart.types"
 export default function ShippingZonesGrid({ zones }: { zones: ShippingZone[] }) {
   const router = useRouter()
   const [zonesList, setZonesList] = useState(zones)
+
+  useEffect(() => {
+    setZonesList(zones)
+  }, [zones])
   const [modalOpen, setModalOpen] = useState(false)
   const [editingZone, setEditingZone] = useState<ShippingZone | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -47,6 +51,27 @@ export default function ShippingZonesGrid({ zones }: { zones: ShippingZone[] }) 
     setAlertConfig({ title, description })
     setAlertOpen(true)
     setIsSubmitting(false)
+  }
+
+  const handleToggleActive = async (zone: ShippingZone) => {
+    try {
+      const fd = new FormData()
+      fd.append("id", zone.id)
+      fd.append("name", zone.name)
+      fd.append("cost", zone.cost.toString())
+      fd.append("free_threshold", zone.free_threshold.toString())
+      if (zone.manual_payment_allowed) fd.append("manual_payment_allowed", "true")
+      if (!zone.active) fd.append("active", "true")
+      
+      setZonesList((prev) => prev.map((z) => (z.id === zone.id ? { ...z, active: !z.active } : z)))
+      
+      await updateShippingZone(fd)
+      router.refresh()
+    } catch (err) {
+      setZonesList((prev) => prev.map((z) => (z.id === zone.id ? { ...z, active: zone.active } : z)))
+      setAlertConfig({ title: "Error al cambiar estado", description: String(err) })
+      setAlertOpen(true)
+    }
   }
 
   const handleDelete = async () => {
@@ -89,6 +114,7 @@ export default function ShippingZonesGrid({ zones }: { zones: ShippingZone[] }) 
               zone={zone}
               onEdit={openEditModal}
               onDelete={openDeleteConfirm}
+              onToggleActive={handleToggleActive}
             />
           ))}
           {(!zonesList || zonesList.length === 0) && (

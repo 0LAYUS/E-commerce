@@ -213,7 +213,8 @@ export async function createOrder(
   customerName: string,
   shippingAddress: string,
   shippingCost: number,
-  shippingZoneId?: string
+  shippingZoneId?: string,
+  paymentMethod: 'wompi' | 'manual' = 'wompi'
 ): Promise<string> {
   const client = await createClient()
   const { data: { user } } = await client.auth.getUser()
@@ -261,7 +262,8 @@ export async function createOrder(
   const order = await insertOrder(client, {
     user_id: user.id,
     total_amount: totalAmount,
-    status: "PENDING",
+    status: paymentMethod === 'manual' ? "PENDING_MANUAL" : "PENDING",
+    payment_method: paymentMethod,
     customer_name: customerName,
     customer_email: userEmail,
     shipping_address: shippingAddress,

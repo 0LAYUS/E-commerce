@@ -13,6 +13,7 @@ type StatusTab = {
 const STATUS_TABS: StatusTab[] = [
   { label: "Todas", value: "ALL" },
   { label: "Pendientes", value: "PENDING" },
+  { label: "Manual (Pdte)", value: "PENDING_MANUAL" },
   { label: "Aprobadas", value: "APPROVED" },
   { label: "Rechazadas", value: "DECLINED" },
   { label: "Error", value: "ERROR" },

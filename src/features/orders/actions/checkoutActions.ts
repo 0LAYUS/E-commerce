@@ -5,6 +5,8 @@ import {
   validateStock as svcValidateStock,
   createOrder as svcCreateOrder,
 } from "@/features/orders/services/orderService"
+import { createClient } from "@/lib/supabase/server"
+import { sendManualOrderCreatedEmail } from "@/features/orders/services/orderConfirmation"
 import type { OrderItem } from "@/features/orders/types/order.types"
 
 /**
@@ -25,7 +27,8 @@ export async function createOrder(
   customerName: string,
   shippingAddress: string,
   shippingCost: number,
-  shippingZoneId?: string
+  shippingZoneId?: string,
+  paymentMethod: 'wompi' | 'manual' = 'wompi'
 ): Promise<string> {
   const orderId = await svcCreateOrder(
     items,
@@ -33,8 +36,33 @@ export async function createOrder(
     customerName,
     shippingAddress,
     shippingCost,
-    shippingZoneId
+    shippingZoneId,
+    paymentMethod
   )
+
+  if (paymentMethod === 'manual') {
+    const client = await createClient()
+    const { data: { user } } = await client.auth.getUser()
+    
+    if (user?.email) {
+      const emailData = {
+        orderId,
+        customerName,
+        customerEmail: user.email,
+        shippingAddress,
+        totalAmount: subtotalAmount + shippingCost,
+        items: items.map(item => ({
+          name: item.name || "Producto",
+          quantity: item.quantity,
+          price_at_purchase: item.price,
+          sku_code: item.variant_id ? "Variante" : null
+        }))
+      }
+      
+      // Fire and forget (don't await so it doesn't block response)
+      sendManualOrderCreatedEmail(emailData).catch(console.error)
+    }
+  }
   
   revalidatePath("/admin/orders")
   return orderId

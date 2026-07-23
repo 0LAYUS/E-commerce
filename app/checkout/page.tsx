@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { createOrder } from "@/features/orders/actions/checkoutActions"
 import { getWompiIntegritySignature } from "@/features/orders/actions/wompiActions"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-import { AlertTriangle, Clock } from "lucide-react"
+import { AlertTriangle, Clock, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import { useCheckoutSetup } from "@/hooks/useCheckoutSetup"
 import { useStockReservation } from "@/hooks/useStockReservation"
@@ -15,6 +15,7 @@ import { OrderSummary } from "@/components/checkout/OrderSummary"
 import { BlockedItemsAlert } from "@/components/checkout/BlockedItemsAlert"
 import { PriceChangeAlert } from "@/components/checkout/PriceChangeAlert"
 import { wompiPublicKey, wompiWidgetDefaults } from "@/lib/constants/checkout"
+import { createClient } from "@/lib/supabase/client"
 import type { WompiResult } from "@/types/checkout.types"
 
 export default function CheckoutPage() {
@@ -24,13 +25,29 @@ export default function CheckoutPage() {
   const [error, setError] = useState("")
   const [isValidating, setIsValidating] = useState(false)
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null)
+  
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'manual'>('wompi')
 
-  const { zones, nombre, email, direccion, setNombre, setDireccion } = useCheckoutSetup()
+  const { zones, nombre, email, direccion, telefono, setNombre, setDireccion, setTelefono } = useCheckoutSetup()
 
   const { reservationId, reservationExpiresAt, reserveStock, cancelReservation } = useStockReservation(
     items,
     hasBlockedItems
   )
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login?redirect=/checkout')
+      } else {
+        setIsCheckingAuth(false)
+      }
+    }
+    checkAuth()
+  }, [router])
 
   useEffect(() => {
     const validateBeforeCheckout = async () => {
@@ -63,6 +80,9 @@ export default function CheckoutPage() {
 
   const grandTotal = useMemo(() => total + shippingCost, [total, shippingCost])
 
+  const isManualAllowed = selectedZone?.manual_payment_allowed ?? false
+  const manualZones = useMemo(() => zones.filter(z => z.manual_payment_allowed).map(z => z.name).join(", "), [zones])
+
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -73,6 +93,16 @@ export default function CheckoutPage() {
 
     if (!selectedZoneId) {
       setError("Por favor selecciona una ciudad de envío.")
+      return
+    }
+    
+    if (!telefono) {
+      setError("Por favor ingresa un número de teléfono.")
+      return
+    }
+
+    if (paymentMethod === 'manual' && !isManualAllowed) {
+      setError("El pago manual no está disponible para la zona de envío seleccionada.")
       return
     }
 
@@ -87,18 +117,34 @@ export default function CheckoutPage() {
           product_id: i.product_id,
           variant_id: i.variant_id,
           quantity: i.quantity,
+          name: i.name,
+          price: i.price,
         })),
         total,
         nombre,
         direccion,
         shippingCost,
-        selectedZoneId || undefined
+        selectedZoneId || undefined,
+        paymentMethod
       )
+
+      if (paymentMethod === 'manual') {
+        if (reservationId) {
+          await fetch("/api/cart/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reservation_id: reservationId }),
+          }).catch(console.error)
+        }
+        clearCart()
+        router.push("/checkout/success/manual")
+        return
+      }
 
       const amountInCents = Math.round(grandTotal) * 100
       const integritySignature = await getWompiIntegritySignature(orderId, amountInCents, "COP")
 
-            const widgetConfig: Record<string, unknown> = {
+      const widgetConfig: Record<string, unknown> = {
         currency: wompiWidgetDefaults.currency,
         amountInCents,
         reference: orderId,
@@ -107,6 +153,7 @@ export default function CheckoutPage() {
         customerData: {
           email: email,
           fullName: nombre,
+          phoneNumber: telefono,
         },
       }
 
@@ -165,6 +212,12 @@ export default function CheckoutPage() {
     return status?.original_price && status?.current_price && status.original_price !== status.current_price
   })
 
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">Verificando sesión...</div>
+    )
+  }
+
   if (items.length === 0) {
     return (
       <div className="text-center mt-20 text-muted-foreground">
@@ -178,7 +231,12 @@ export default function CheckoutPage() {
 
   return (
     <div className="mt-8 mb-20 px-4 sm:px-6 lg:px-80">
-      <h1 className="text-3xl font-extrabold mb-8 text-foreground">Checkout</h1>
+      <div className="flex items-center gap-4 mb-8">
+        <Link href="/cart" className="text-muted-foreground hover:text-foreground">
+          <ChevronLeft className="h-8 w-8" />
+        </Link>
+        <h1 className="text-3xl font-extrabold text-foreground">Checkout</h1>
+      </div>
 
       {reservationExpiresAt && (
         <Alert className="mb-6 bg-success-muted border-success/30">
@@ -219,11 +277,50 @@ export default function CheckoutPage() {
             nombre={nombre}
             email={email}
             direccion={direccion}
+            telefono={telefono}
             selectedZoneId={selectedZoneId}
             onNombreChange={setNombre}
             onDireccionChange={setDireccion}
+            onTelefonoChange={setTelefono}
             onZoneChange={setSelectedZoneId}
           />
+
+          <div className="mt-8 mb-6">
+            <h2 className="text-xl font-bold text-card-foreground mb-4">Método de Pago</h2>
+            <div className="space-y-3">
+              <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="wompi"
+                  checked={paymentMethod === 'wompi'}
+                  onChange={() => setPaymentMethod('wompi')}
+                  className="h-4 w-4 text-primary focus:ring-primary"
+                />
+                <div>
+                  <div className="font-semibold">Pago en Línea (Wompi)</div>
+                  <div className="text-sm text-muted-foreground">Tarjetas de crédito, PSE, Nequi, Daviplata</div>
+                </div>
+              </label>
+              
+              <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="manual"
+                  checked={paymentMethod === 'manual'}
+                  onChange={() => setPaymentMethod('manual')}
+                  className="h-4 w-4 text-primary focus:ring-primary"
+                />
+                <div>
+                  <div className="font-semibold">Pago Contra Entrega / Transferencia</div>
+                  <div className="text-sm text-muted-foreground">
+                    {manualZones ? `Disponible en: ${manualZones}` : "No disponible en ninguna ciudad"}
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
 
           <OrderSummary
             items={items}
@@ -234,18 +331,42 @@ export default function CheckoutPage() {
           />
 
           {error && <div className="mb-4 text-destructive text-sm bg-destructive/10 p-3 rounded-lg">{error}</div>}
+          
+          {paymentMethod === 'manual' && selectedZoneId && !isManualAllowed && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Método de pago no disponible</AlertTitle>
+              <AlertDescription>
+                El pago contra entrega no está habilitado para la zona de envío seleccionada. Por favor, elige pago en línea o contacta al administrador.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <button
             type="submit"
-            disabled={loading || hasBlockedItems || isValidating || !selectedZoneId}
+            disabled={loading || hasBlockedItems || isValidating || !nombre || !telefono || !selectedZoneId || !direccion || (paymentMethod === 'manual' && !isManualAllowed)}
             className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm mt-2"
           >
-            {loading || isValidating ? "Verificando stock..." : !selectedZoneId ? "Selecciona una ciudad" : "Proceder al Pago"}
+            {loading || isValidating 
+              ? "Verificando..." 
+              : !nombre
+                ? "Ingresa tu nombre"
+                : !telefono
+                  ? "Ingresa un teléfono"
+                  : !selectedZoneId 
+                    ? "Selecciona una ciudad"
+                    : !direccion
+                      ? "Ingresa tu dirección"
+                      : paymentMethod === 'manual' 
+                        ? (!isManualAllowed ? "Pago manual no disponible" : "Confirmar Pedido Manual")
+                        : "Proceder al Pago"}
           </button>
 
-          <p className="text-center text-xs text-muted-foreground mt-5">
-            Serás redirigido a Wompi para completar tu pago de forma segura.
-          </p>
+          {paymentMethod === 'wompi' && (
+            <p className="text-center text-xs text-muted-foreground mt-5">
+              Serás redirigido a Wompi para completar tu pago de forma segura.
+            </p>
+          )}
         </form>
       </div>
     </div>

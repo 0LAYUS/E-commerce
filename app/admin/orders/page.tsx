@@ -1,4 +1,4 @@
-import { getOrders } from "@/features/orders/actions/orderActions"
+import { getOrders } from "@/features/orders/services/orderService"
 import { OrdersFilters } from "@/features/admin/components/OrdersFilters"
 import { OrdersTable } from "@/features/admin/components/OrdersTable"
 import { OrdersPagination } from "@/features/admin/components/OrdersPagination"
@@ -24,7 +24,7 @@ export default async function AdminOrdersPage({
   const rawPage = params.page
 
   // Validate status - only allow valid values
-  const validStatuses: OrderStatus[] = ["PENDING", "APPROVED", "DECLINED", "ERROR"]
+  const validStatuses: OrderStatus[] = ["PENDING", "PENDING_MANUAL", "APPROVED", "DECLINED", "ERROR"]
   const status: OrderStatus | "ALL" =
     rawStatus && validStatuses.includes(rawStatus as OrderStatus)
       ? (rawStatus as OrderStatus)

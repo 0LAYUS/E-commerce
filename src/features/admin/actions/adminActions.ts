@@ -1,4 +1,4 @@
-﻿"use server"
+"use server"
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
@@ -457,6 +457,7 @@ export async function createShippingZone(formData: FormData) {
   const name = (formData.get("name") as string)?.trim()
   const costStr = formData.get("cost") as string
   const freeThresholdStr = formData.get("free_threshold") as string
+  const manualPaymentAllowed = formData.get("manual_payment_allowed") === "true"
 
   if (!name || name.length === 0) {
     throw new Error("El nombre de la zona es requerido")
@@ -476,7 +477,7 @@ export async function createShippingZone(formData: FormData) {
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.from("shipping_zones").insert([{ name, cost, free_threshold: freeThreshold }])
+  const { error } = await supabase.from("shipping_zones").insert([{ name, cost, free_threshold: freeThreshold, manual_payment_allowed: manualPaymentAllowed }])
 
   if (error) throw new Error(error.message)
   revalidatePath("/admin/shipping")
@@ -488,6 +489,7 @@ export async function updateShippingZone(formData: FormData) {
   const costStr = formData.get("cost") as string
   const freeThresholdStr = formData.get("free_threshold") as string
   const active = formData.get("active") === "true"
+  const manualPaymentAllowed = formData.get("manual_payment_allowed") === "true"
 
   if (!name || name.length === 0) {
     throw new Error("El nombre de la zona es requerido")
@@ -507,7 +509,7 @@ export async function updateShippingZone(formData: FormData) {
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.from("shipping_zones").update({ name, cost, free_threshold: freeThreshold, active }).eq("id", id)
+  const { error } = await supabase.from("shipping_zones").update({ name, cost, free_threshold: freeThreshold, active, manual_payment_allowed: manualPaymentAllowed }).eq("id", id)
 
   if (error) throw new Error(error.message)
   revalidatePath("/admin/shipping")

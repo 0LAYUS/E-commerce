@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/modal"
 import { formatPrice } from "@/lib/format"
 import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT } from "@/lib/constants/orders"
-import { updateOrderStatus, rollbackOrderStock, markOrderAsError } from "@/features/orders/actions/orderActions"
+import { updateOrderStatus, rollbackOrderStock, markOrderAsError, approveManualOrder, cancelManualOrder } from "@/features/orders/actions/orderActions"
 import type { OrderWithRelations, OrderStatus } from "@/features/orders/types/order.types"
 
 const STATUS_LABELS = {
@@ -16,6 +16,7 @@ const STATUS_LABELS = {
   APPROVED: "Aprobada",
   DECLINED: "Rechazada",
   ERROR: "Error",
+  PENDING_MANUAL: "Manual (Pendiente)",
 } as const
 
 function formatDate(dateString: string): string {
@@ -54,6 +55,16 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
   async function handleMarkAsError() {
     await markOrderAsError(order.id)
     setErrorConfirmOpen(false)
+    router.refresh()
+  }
+
+  async function handleApproveManual() {
+    await approveManualOrder(order.id)
+    router.refresh()
+  }
+
+  async function handleCancelManual() {
+    await cancelManualOrder(order.id)
     router.refresh()
   }
 
@@ -183,6 +194,7 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
               className="px-3 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="PENDING">PENDIENTE</option>
+              <option value="PENDING_MANUAL">PENDIENTE (MANUAL)</option>
               <option value="APPROVED">APROBADA</option>
               <option value="DECLINED">RECHAZADA</option>
               <option value="ERROR">ERROR</option>
@@ -196,6 +208,16 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
                 <AlertTriangle className="w-4 h-4" />
                 Marcar como Error (con rollback)
               </Button>
+            )}
+            {order.status === "PENDING_MANUAL" && (
+              <>
+                <Button variant="default" onClick={handleApproveManual} className="bg-green-600 hover:bg-green-700 text-white">
+                  Aprobar Pago
+                </Button>
+                <Button variant="destructive" onClick={handleCancelManual}>
+                  Cancelar Orden (con rollback)
+                </Button>
+              </>
             )}
             <Button variant="outline" onClick={() => setRollbackConfirmOpen(true)}>
               <RotateCcw className="w-4 h-4" />

@@ -12,6 +12,7 @@ interface OrdersTableProps {
 
 const STATUS_LABELS = {
   PENDING: "Pendiente",
+  PENDING_MANUAL: "Manual (Pdte)",
   APPROVED: "Aprobada",
   DECLINED: "Rechazada",
   ERROR: "Error",

@@ -111,6 +111,20 @@ export default function ShippingZoneForm({
               </div>
             )}
 
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="manual_payment_allowed"
+                name="manual_payment_allowed"
+                value="true"
+                defaultChecked={editingZone?.manual_payment_allowed ?? false}
+                className="w-4 h-4 rounded border-input text-primary focus:ring-primary"
+              />
+              <label htmlFor="manual_payment_allowed" className="text-sm font-medium text-card-foreground">
+                Permitir Pago Contra Entrega
+              </label>
+            </div>
+
             <div className="pt-4 border-t border-border mt-2">
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? "Guardando..." : editingZone ? "Actualizar Zona" : "Crear Zona"}

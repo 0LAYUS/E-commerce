@@ -69,6 +69,7 @@ export type ShippingZone = {
   free_threshold: number
   active?: boolean
   position?: number
+  manual_payment_allowed?: boolean
 }
 
 export type CartContextType = {
