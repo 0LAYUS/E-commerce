@@ -30,6 +30,13 @@ La página "Nosotros" (`/about`) lee dinámicamente las imágenes de `assets`:
 - `aboutTeam`: Imagen para la sección "Nuestro Equipo".
 - `aboutWarehouse`: Imagen para la sección de infraestructura / instalaciones.
 
+### Configuración de Módulos (Feature Flags)
+El objeto `features` permite encender o apagar módulos enteros de la tienda cambiando su valor a `true` o `false`.
+
+- `features.workOrders`: Habilita o deshabilita el módulo de Reparaciones.
+- `features.payments.wompi`: Oculta o muestra la opción de pago en línea (Wompi) en el Checkout. Ideal para cuando Wompi está en mantenimiento. (Nota: Las órdenes pasadas pagadas con Wompi seguirán mostrándose correctamente en el admin).
+- `features.payments.manual`: Oculta o muestra la opción de Pago Contra Entrega en el Checkout. Ideal para clientes que solo quieren pagos electrónicos.
+
 ## 2. Configuración de Prigma (Plataforma)
 
 El archivo `lib/constants/branding-prigma.ts` controla la marca de la plataforma (Prigma) que se muestra en áreas de administración o licenciamiento (donde el cliente sabe que la plataforma fue hecha por Prigma).

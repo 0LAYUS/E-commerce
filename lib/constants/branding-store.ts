@@ -74,9 +74,13 @@ export const storeBranding = {
       secure: "100%",
     } as const,
   },
-  
+
   // Features flags
   features: {
     workOrders: true,
+    payments: {
+      wompi: true,
+      manual: true,
+    }
   },
 } as const;

@@ -17,6 +17,7 @@ import { PriceChangeAlert } from "@/components/checkout/PriceChangeAlert"
 import { wompiPublicKey, wompiWidgetDefaults } from "@/lib/constants/checkout"
 import { createClient } from "@/lib/supabase/client"
 import type { WompiResult } from "@/types/checkout.types"
+import { storeBranding } from "@/lib/constants/branding-store"
 
 export default function CheckoutPage() {
   const { items, total, clearCart, revalidateCart, hasBlockedItems, itemStatuses } = useCart()
@@ -27,7 +28,12 @@ export default function CheckoutPage() {
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null)
   
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
-  const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'manual'>('wompi')
+  
+  const isWompiEnabled = storeBranding.features?.payments?.wompi ?? true
+  const isManualEnabled = storeBranding.features?.payments?.manual ?? true
+  const defaultPayment = isWompiEnabled ? 'wompi' : (isManualEnabled ? 'manual' : 'wompi')
+  
+  const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'manual'>(defaultPayment)
 
   const { zones, nombre, email, direccion, telefono, setNombre, setDireccion, setTelefono } = useCheckoutSetup()
 
@@ -301,39 +307,53 @@ export default function CheckoutPage() {
 
           <div className="mt-8 mb-6">
             <h2 className="text-xl font-bold text-card-foreground mb-4">Método de Pago</h2>
-            <div className="space-y-3">
-              <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="wompi"
-                  checked={paymentMethod === 'wompi'}
-                  onChange={() => setPaymentMethod('wompi')}
-                  className="h-4 w-4 text-primary focus:ring-primary"
-                />
-                <div>
-                  <div className="font-semibold">Pago en Línea (Wompi)</div>
-                  <div className="text-sm text-muted-foreground">Tarjetas de crédito, PSE, Nequi, Daviplata</div>
-                </div>
-              </label>
-              
-              <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="manual"
-                  checked={paymentMethod === 'manual'}
-                  onChange={() => setPaymentMethod('manual')}
-                  className="h-4 w-4 text-primary focus:ring-primary"
-                />
-                <div>
-                  <div className="font-semibold">Pago Contra Entrega / Transferencia</div>
-                  <div className="text-sm text-muted-foreground">
-                    {manualZones ? `Disponible en: ${manualZones}` : "No disponible en ninguna ciudad"}
-                  </div>
-                </div>
-              </label>
-            </div>
+            {(!isWompiEnabled && !isManualEnabled) ? (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Pagos no disponibles</AlertTitle>
+                <AlertDescription>
+                  Los métodos de pago están deshabilitados temporalmente. Por favor intenta más tarde o contacta al administrador.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="space-y-3">
+                {isWompiEnabled && (
+                  <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="wompi"
+                      checked={paymentMethod === 'wompi'}
+                      onChange={() => setPaymentMethod('wompi')}
+                      className="h-4 w-4 text-primary focus:ring-primary"
+                    />
+                    <div>
+                      <div className="font-semibold">Pago en Línea (Wompi)</div>
+                      <div className="text-sm text-muted-foreground">Tarjetas de crédito, PSE, Nequi, Daviplata</div>
+                    </div>
+                  </label>
+                )}
+                
+                {isManualEnabled && (
+                  <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="manual"
+                      checked={paymentMethod === 'manual'}
+                      onChange={() => setPaymentMethod('manual')}
+                      className="h-4 w-4 text-primary focus:ring-primary"
+                    />
+                    <div>
+                      <div className="font-semibold">Pago Contra Entrega / Transferencia</div>
+                      <div className="text-sm text-muted-foreground">
+                        {manualZones ? `Disponible en: ${manualZones}` : "No disponible en ninguna ciudad"}
+                      </div>
+                    </div>
+                  </label>
+                )}
+              </div>
+            )}
           </div>
 
           <OrderSummary
@@ -358,7 +378,7 @@ export default function CheckoutPage() {
 
           <button
             type="submit"
-            disabled={loading || hasBlockedItems || isValidating || isReserving || !nombre || !telefono || !selectedZoneId || !direccion || (paymentMethod === 'manual' && !isManualAllowed)}
+            disabled={loading || hasBlockedItems || isValidating || isReserving || !nombre || !telefono || !selectedZoneId || !direccion || (paymentMethod === 'manual' && !isManualAllowed) || (!isWompiEnabled && !isManualEnabled)}
             className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm mt-2"
           >
             {loading || isValidating 
@@ -373,12 +393,14 @@ export default function CheckoutPage() {
                       ? "Selecciona una ciudad"
                       : !direccion
                         ? "Ingresa tu dirección"
-                        : paymentMethod === 'manual' 
-                          ? (!isManualAllowed ? "Pago manual no disponible" : "Confirmar Pedido Manual")
-                          : "Proceder al Pago"}
+                        : (!isWompiEnabled && !isManualEnabled)
+                          ? "Pagos deshabilitados"
+                          : paymentMethod === 'manual' 
+                            ? (!isManualAllowed ? "Pago manual no disponible" : "Confirmar Pedido Manual")
+                            : "Proceder al Pago"}
           </button>
 
-          {paymentMethod === 'wompi' && (
+          {paymentMethod === 'wompi' && isWompiEnabled && (
             <p className="text-center text-xs text-muted-foreground mt-5">
               Serás redirigido a Wompi para completar tu pago de forma segura.
             </p>
