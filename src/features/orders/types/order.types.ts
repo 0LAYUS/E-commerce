@@ -37,7 +37,9 @@ export type OrderWithRelations = {
   wompi_transaction_id: string | null
   customer_name: string
   customer_email: string
+  customer_phone: string | null
   shipping_address: string
+  shipping_zones?: { name: string } | null
   payment_method?: 'wompi' | 'manual'
   created_at: string
   order_items?: OrderItemWithRelations[]
