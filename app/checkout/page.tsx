@@ -31,7 +31,7 @@ export default function CheckoutPage() {
 
   const { zones, nombre, email, direccion, telefono, setNombre, setDireccion, setTelefono } = useCheckoutSetup()
 
-  const { reservationId, reservationExpiresAt, reserveStock, cancelReservation } = useStockReservation(
+  const { reservationId, reservationExpiresAt, isReserving, reservationError, reserveStock, cancelReservation } = useStockReservation(
     items,
     hasBlockedItems
   )
@@ -58,17 +58,8 @@ export default function CheckoutPage() {
     validateBeforeCheckout()
   }, [revalidateCart])
 
-  useEffect(() => {
-    if (items.length > 0 && !hasBlockedItems) {
-      reserveStock(
-        items.map((item) => ({
-          product_id: item.product_id,
-          variant_id: item.variant_id,
-          quantity: item.quantity,
-        }))
-      )
-    }
-  }, [items, hasBlockedItems, reserveStock])
+  // El useEffect que reservaba el stock automáticamente se eliminó.
+  // Ahora el stock se reserva/descuenta al momento de darle a Confirmar/Comprar.
 
   const selectedZone = useMemo(() => zones.find((z) => z.id === selectedZoneId) || null, [zones, selectedZoneId])
 
@@ -111,6 +102,24 @@ export default function CheckoutPage() {
     setLoading(true)
     setError("")
     try {
+      let activeReservationId = reservationId
+
+      if (paymentMethod === 'wompi') {
+        const newReservationId = await reserveStock(
+          items.map((item) => ({
+            product_id: item.product_id,
+            variant_id: item.variant_id,
+            quantity: item.quantity,
+          }))
+        )
+        if (!newReservationId) {
+          setError(reservationError || "No se pudo reservar el stock. Es posible que los productos se hayan agotado.")
+          setLoading(false)
+          return
+        }
+        activeReservationId = newReservationId
+      }
+
       const orderId = await createOrder(
         items.map((i) => ({
           id: i.id,
@@ -126,17 +135,11 @@ export default function CheckoutPage() {
         direccion,
         shippingCost,
         selectedZoneId || undefined,
-        paymentMethod
+        paymentMethod,
+        activeReservationId || undefined
       )
 
       if (paymentMethod === 'manual') {
-        if (reservationId) {
-          await fetch("/api/cart/confirm", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reservation_id: reservationId }),
-          }).catch(console.error)
-        }
         clearCart()
         router.push("/checkout/success/manual")
         return
@@ -167,18 +170,18 @@ export default function CheckoutPage() {
       checkout.open(async (result: WompiResult) => {
         const transaction = result.transaction
 
-        if (transaction.status === "APPROVED" && reservationId) {
+        if (transaction.status === "APPROVED" && activeReservationId) {
           await fetch("/api/cart/confirm", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reservation_id: reservationId }),
+            body: JSON.stringify({ reservation_id: activeReservationId }),
           }).catch(console.error)
           clearCart()
-        } else if (reservationId && transaction.status !== "APPROVED") {
+        } else if (activeReservationId && transaction.status !== "APPROVED") {
           await fetch("/api/cart/cancel", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reservation_id: reservationId }),
+            body: JSON.stringify({ reservation_id: activeReservationId }),
           }).catch(console.error)
         }
 
@@ -239,12 +242,22 @@ export default function CheckoutPage() {
         <h1 className="text-3xl font-extrabold text-foreground">Checkout</h1>
       </div>
 
-      {reservationExpiresAt && (
+      {reservationExpiresAt && !reservationError && (
         <Alert className="mb-6 bg-success-muted border-success/30">
           <Clock className="h-4 w-4 text-success" />
           <AlertTitle className="text-success">Stock reservado</AlertTitle>
           <AlertDescription className="text-success/80">
             Tu stock está reservado por 15 minutos. Completa el pago antes de que expire.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {reservationError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error al reservar stock</AlertTitle>
+          <AlertDescription>
+            {reservationError} Por favor, recarga la página o intenta más tarde.
           </AlertDescription>
         </Alert>
       )}
@@ -345,22 +358,24 @@ export default function CheckoutPage() {
 
           <button
             type="submit"
-            disabled={loading || hasBlockedItems || isValidating || !nombre || !telefono || !selectedZoneId || !direccion || (paymentMethod === 'manual' && !isManualAllowed)}
+            disabled={loading || hasBlockedItems || isValidating || isReserving || !nombre || !telefono || !selectedZoneId || !direccion || (paymentMethod === 'manual' && !isManualAllowed)}
             className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm mt-2"
           >
             {loading || isValidating 
               ? "Verificando..." 
-              : !nombre
-                ? "Ingresa tu nombre"
-                : !telefono
-                  ? "Ingresa un teléfono"
-                  : !selectedZoneId 
-                    ? "Selecciona una ciudad"
-                    : !direccion
-                      ? "Ingresa tu dirección"
-                      : paymentMethod === 'manual' 
-                        ? (!isManualAllowed ? "Pago manual no disponible" : "Confirmar Pedido Manual")
-                        : "Proceder al Pago"}
+              : isReserving
+                ? "Reservando stock..."
+                : !nombre
+                  ? "Ingresa tu nombre"
+                  : !telefono
+                    ? "Ingresa un teléfono"
+                    : !selectedZoneId 
+                      ? "Selecciona una ciudad"
+                      : !direccion
+                        ? "Ingresa tu dirección"
+                        : paymentMethod === 'manual' 
+                          ? (!isManualAllowed ? "Pago manual no disponible" : "Confirmar Pedido Manual")
+                          : "Proceder al Pago"}
           </button>
 
           {paymentMethod === 'wompi' && (

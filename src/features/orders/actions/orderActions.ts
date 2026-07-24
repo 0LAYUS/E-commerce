@@ -31,6 +31,11 @@ export async function updateOrderStatus(
   orderId: string,
   newStatus: OrderStatus
 ): Promise<{ success: boolean; error?: string }> {
+  const order = await getOrderById(orderId)
+  if (order && ["APPROVED", "DECLINED", "ERROR"].includes(order.status)) {
+    return { success: false, error: `No se puede cambiar el estado de una orden que ya está en ${order.status}.` }
+  }
+
   const result = await svcUpdateOrderStatus(orderId, newStatus)
   if (result.success) {
     revalidatePath("/admin/orders")
@@ -64,6 +69,11 @@ export async function markOrderAsError(
 export async function approveManualOrder(
   orderId: string
 ): Promise<{ success: boolean; error?: string }> {
+  const order = await getOrderById(orderId)
+  if (!order || order.status !== "PENDING_MANUAL") {
+    return { success: false, error: "Solo las órdenes PENDING_MANUAL pueden ser aprobadas manualmente." }
+  }
+
   const result = await svcUpdateOrderStatus(orderId, "APPROVED")
   if (result.success) {
     // Send confirmation email
@@ -96,6 +106,11 @@ export async function approveManualOrder(
 export async function cancelManualOrder(
   orderId: string
 ): Promise<{ success: boolean; error?: string }> {
+  const order = await getOrderById(orderId)
+  if (!order || order.status !== "PENDING_MANUAL") {
+    return { success: false, error: "Solo las órdenes PENDING_MANUAL pueden ser canceladas." }
+  }
+
   const statusResult = await svcUpdateOrderStatus(orderId, "DECLINED")
   if (statusResult.success) {
     const rollbackResult = await svcRollbackOrderStock(orderId)

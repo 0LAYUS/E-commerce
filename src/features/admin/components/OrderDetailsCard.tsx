@@ -225,7 +225,8 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
             <select
               value={order.status}
               onChange={(e) => handleStatusChange(e.target.value as OrderStatus)}
-              className="px-3 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              disabled={["APPROVED", "DECLINED", "ERROR"].includes(order.status)}
+              className="px-3 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="PENDING">PENDIENTE</option>
               <option value="PENDING_MANUAL">PENDIENTE (MANUAL)</option>

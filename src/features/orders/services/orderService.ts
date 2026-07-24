@@ -73,6 +73,23 @@ export async function rollbackOrderStock(
 ): Promise<{ success: boolean; error?: string }> {
   const client = await createClient()
 
+  // Guardián atómico de duplicación
+  const { data, error } = await client
+    .from('orders')
+    .update({ stock_returned: true })
+    .eq('id', orderId)
+    .eq('stock_returned', false)
+    .select('id')
+
+  if (error) {
+    console.error("Error updating stock_returned:", error)
+    return { success: false, error: "Database error during rollback" }
+  }
+
+  if (!data || data.length === 0) {
+    return { success: false, error: "STOCK_ALREADY_RETURNED" }
+  }
+
   const items = await findOrderItems(client, orderId)
   if (!items || items.length === 0) {
     return { success: false, error: "No items found for this order" }
@@ -215,7 +232,8 @@ export async function createOrder(
   shippingAddress: string,
   shippingCost: number,
   shippingZoneId?: string,
-  paymentMethod: 'wompi' | 'manual' = 'wompi'
+  paymentMethod: 'wompi' | 'manual' = 'wompi',
+  reservationId?: string
 ): Promise<string> {
   const client = await createClient()
   const { data: { user } } = await client.auth.getUser()
@@ -260,20 +278,7 @@ export async function createOrder(
 
   const totalAmount = calculatedSubtotal + shippingCost
 
-  const order = await insertOrder(client, {
-    user_id: user.id,
-    total_amount: totalAmount,
-    status: paymentMethod === 'manual' ? "PENDING_MANUAL" : "PENDING",
-    payment_method: paymentMethod,
-    customer_name: customerName,
-    customer_email: userEmail,
-    customer_phone: customerPhone,
-    shipping_address: shippingAddress,
-    shipping_cost: shippingCost,
-    shipping_zone_id: shippingZoneId || null,
-  })
-
-  const orderItems = items.map((i) => {
+  const orderItemsData = items.map((i) => {
     let priceAtPurchase = 0
     if (i.variant_id) {
       const sku = skuMap.get(i.variant_id)
@@ -283,7 +288,6 @@ export async function createOrder(
       priceAtPurchase = productMap.get(i.product_id)?.price ?? i.price
     }
     return {
-      order_id: order.id,
       product_id: i.product_id,
       variant_id: i.variant_id || null,
       quantity: i.quantity,
@@ -291,6 +295,56 @@ export async function createOrder(
     }
   })
 
-  await insertOrderItems(client, orderItems)
+  if (paymentMethod === 'manual') {
+    const orderData = {
+      user_id: user.id,
+      total_amount: totalAmount,
+      status: "PENDING_MANUAL",
+      payment_method: paymentMethod,
+      customer_name: customerName,
+      customer_email: userEmail,
+      customer_phone: customerPhone,
+      shipping_address: shippingAddress,
+      shipping_cost: shippingCost,
+      shipping_zone_id: shippingZoneId || null,
+    }
+
+    const { data: newOrderId, error } = await client.rpc('create_manual_order_with_stock', {
+      p_order_data: orderData,
+      p_items: orderItemsData
+    })
+
+    if (error) {
+      if (error.message.includes('STOCK_AGOTADO')) {
+        throw new Error("Stock agotado al momento de transacción")
+      }
+      throw new Error(`Error creando orden manual: ${error.message}`)
+    }
+
+    return newOrderId as string
+  }
+
+  // Wompi Flow
+  const order = await insertOrder(client, {
+    user_id: user.id,
+    total_amount: totalAmount,
+    status: "PENDING",
+    payment_method: paymentMethod,
+    customer_name: customerName,
+    customer_email: userEmail,
+    customer_phone: customerPhone,
+    shipping_address: shippingAddress,
+    shipping_cost: shippingCost,
+    shipping_zone_id: shippingZoneId || null,
+    // @ts-expect-error - DB types are out of sync with migration
+    reservation_id: reservationId || null
+  })
+
+  const orderItemsWithOrderId = orderItemsData.map((i) => ({
+    ...i,
+    order_id: order.id
+  }))
+
+  await insertOrderItems(client, orderItemsWithOrderId)
   return order.id
 }

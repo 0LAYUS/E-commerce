@@ -29,7 +29,8 @@ export async function createOrder(
   shippingAddress: string,
   shippingCost: number,
   shippingZoneId?: string,
-  paymentMethod: 'wompi' | 'manual' = 'wompi'
+  paymentMethod: 'wompi' | 'manual' = 'wompi',
+  reservationId?: string
 ): Promise<string> {
   const orderId = await svcCreateOrder(
     items,
@@ -39,7 +40,8 @@ export async function createOrder(
     shippingAddress,
     shippingCost,
     shippingZoneId,
-    paymentMethod
+    paymentMethod,
+    reservationId
   )
 
   if (paymentMethod === 'manual') {

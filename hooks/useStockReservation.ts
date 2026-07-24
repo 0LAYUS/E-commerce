@@ -5,17 +5,24 @@ import { useState, useEffect, useCallback } from "react"
 type UseStockReservationReturn = {
   reservationId: string | null
   reservationExpiresAt: Date | null
-  reserveStock: (items: { product_id: string; variant_id?: string; quantity: number }[]) => Promise<void>
+  isReserving: boolean
+  reservationError: string | null
+  reserveStock: (items: { product_id: string; variant_id?: string; quantity: number }[]) => Promise<string | null>
   cancelReservation: () => void
 }
 
 export function useStockReservation(items: unknown[], hasBlockedItems: boolean): UseStockReservationReturn {
   const [reservationId, setReservationId] = useState<string | null>(null)
   const [reservationExpiresAt, setReservationExpiresAt] = useState<Date | null>(null)
+  const [isReserving, setIsReserving] = useState(false)
+  const [reservationError, setReservationError] = useState<string | null>(null)
 
   const reserveStock = useCallback(
     async (items: { product_id: string; variant_id?: string; quantity: number }[]) => {
-      if (items.length === 0 || hasBlockedItems) return
+      if (items.length === 0 || hasBlockedItems) return null
+
+      setIsReserving(true)
+      setReservationError(null)
 
       try {
         const response = await fetch("/api/cart/reserve", {
@@ -29,9 +36,18 @@ export function useStockReservation(items: unknown[], hasBlockedItems: boolean):
           setReservationId(data.reservation_id)
           const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
           setReservationExpiresAt(expiresAt)
+          return data.reservation_id as string
+        } else {
+          const data = await response.json().catch(() => ({}))
+          setReservationError(data.error || "No se pudo reservar el stock.")
+          return null
         }
       } catch (err) {
         console.error("Failed to reserve stock:", err)
+        setReservationError("Error de conexión al reservar el stock.")
+        return null
+      } finally {
+        setIsReserving(false)
       }
     },
     [hasBlockedItems]
@@ -54,5 +70,5 @@ export function useStockReservation(items: unknown[], hasBlockedItems: boolean):
     return () => window.removeEventListener("beforeunload", cancelReservation)
   }, [reservationExpiresAt, cancelReservation])
 
-  return { reservationId, reservationExpiresAt, reserveStock, cancelReservation }
+  return { reservationId, reservationExpiresAt, isReserving, reservationError, reserveStock, cancelReservation }
 }
