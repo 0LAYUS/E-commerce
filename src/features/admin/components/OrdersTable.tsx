@@ -2,21 +2,13 @@
 
 import Link from "next/link"
 import { formatPrice } from "@/lib/format"
-import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT } from "@/lib/constants/orders"
+import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT, STATUS_LABELS } from "@/lib/constants/orders"
 import type { OrderWithRelations } from "@/features/orders/types/order.types"
 
 interface OrdersTableProps {
   orders: OrderWithRelations[]
   isLoading?: boolean
 }
-
-const STATUS_LABELS = {
-  PENDING: "Pendiente",
-  PENDING_MANUAL: "Manual (Pdte)",
-  APPROVED: "Aprobada",
-  DECLINED: "Rechazada",
-  ERROR: "Error",
-} as const
 
 export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
   if (isLoading) {
@@ -86,17 +78,39 @@ export function OrdersTable({ orders, isLoading }: OrdersTableProps) {
                   </Link>
                 </td>
                 <td className="px-4 py-3">
-                  <Link
-                    href={`/admin/orders/${order.id}`}
-                    className="block"
-                  >
-                    <div className="text-sm font-medium text-foreground">
+                  <div className="text-sm font-medium text-foreground">
+                    <span className="text-muted-foreground mr-1">Nombre:</span>
+                    <Link href={`/admin/orders/${order.id}`} className="hover:text-primary">
                       {order.customer_name || "Sin nombre"}
+                    </Link>
+                  </div>
+                  
+                  {(order.customer_email || order.profiles?.email) && (
+                    <div className="text-xs mt-1">
+                      <span className="text-muted-foreground mr-1">Email:</span>
+                      <a href={`mailto:${order.customer_email || order.profiles?.email}`} className="text-primary hover:text-primary/80 hover:underline">
+                        {order.customer_email || order.profiles?.email}
+                      </a>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {order.customer_email || order.profiles?.email || "Sin email"}
+                  )}
+
+                  {order.customer_phone && (
+                    <div className="text-xs mt-1">
+                      <span className="text-muted-foreground mr-1">Tel:</span>
+                      <a href={`tel:${order.customer_phone}`} className="text-primary hover:text-primary/80 hover:underline">
+                        {order.customer_phone}
+                      </a>
                     </div>
-                  </Link>
+                  )}
+                  
+                  {order.shipping_zones?.name && (
+                    <div className="text-xs mt-1">
+                      <span className="text-muted-foreground mr-1">Ciudad:</span>
+                      <span className="font-semibold text-foreground">
+                        {order.shipping_zones.name}
+                      </span>
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <div className="text-sm text-foreground">

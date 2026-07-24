@@ -1,8 +1,17 @@
 export const STATUS_BADGE_STYLES: Record<string, string> = {
   APPROVED: "bg-success-muted text-success border-success",
   PENDING: "bg-warning-muted text-warning border-warning",
+  PENDING_MANUAL: "bg-warning-muted text-warning border-warning",
   DECLINED: "bg-danger-muted text-danger border-danger",
   ERROR: "bg-danger-muted text-danger border-danger",
+}
+
+export const STATUS_LABELS: Record<string, string> = {
+  PENDING: "Pendiente",
+  PENDING_MANUAL: "Manual (Pdte)",
+  APPROVED: "Aprobada",
+  DECLINED: "Rechazada",
+  ERROR: "Error",
 }
 
 export const STATUS_BADGE_DEFAULT = "bg-muted text-muted-foreground border-border"

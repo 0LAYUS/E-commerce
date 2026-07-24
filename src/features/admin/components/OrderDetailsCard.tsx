@@ -73,9 +73,18 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Orden #{order.id.slice(0, 8)}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">
+              Orden #{order.id.slice(0, 8)}
+            </h1>
+            <button
+              onClick={() => navigator.clipboard.writeText(order.id)}
+              className="text-muted-foreground hover:text-foreground text-xs underline"
+              title="Copiar ID completo"
+            >
+              Copiar ID
+            </button>
+          </div>
           <p className="text-muted-foreground text-sm mt-1">
             Creada el {formatDate(order.created_at)}
           </p>
@@ -99,7 +108,27 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
           </h2>
           <div className="space-y-2">
             <p className="font-medium text-foreground">{order.customer_name || "Sin nombre"}</p>
-            <p className="text-sm text-muted-foreground">{order.customer_email || order.profiles?.email || "Sin email"}</p>
+            <p className="text-sm">
+              <span className="text-muted-foreground mr-1">Email:</span>
+              {(order.customer_email || order.profiles?.email) ? (
+                <a href={`mailto:${order.customer_email || order.profiles?.email}`} className="text-primary hover:text-primary/80 hover:underline">
+                  {order.customer_email || order.profiles?.email}
+                </a>
+              ) : <span className="text-muted-foreground">Sin email</span>}
+            </p>
+            {order.customer_phone && (
+              <p className="text-sm">
+                <span className="text-muted-foreground mr-1">Teléfono:</span>
+                <a href={`tel:${order.customer_phone}`} className="text-primary hover:text-primary/80 hover:underline">
+                  {order.customer_phone}
+                </a>
+              </p>
+            )}
+            {order.payment_method && (
+              <p className="text-sm font-medium mt-2">
+                Pago: {order.payment_method === 'wompi' ? 'En línea (Wompi)' : 'Contra entrega (Manual)'}
+              </p>
+            )}
             {order.wompi_transaction_id && (
               <p className="text-xs font-mono text-muted-foreground mt-2">
                 Wompi ID: {order.wompi_transaction_id}
@@ -114,6 +143,11 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
             <MapPin className="w-4 h-4" />
             Dirección de Envío
           </h2>
+          {order.shipping_zones?.name && (
+            <p className="text-sm font-medium text-foreground mb-1">
+              Ciudad: {order.shipping_zones.name}
+            </p>
+          )}
           <p className="text-sm text-foreground whitespace-pre-wrap">
             {order.shipping_address || "No proporcionada"}
           </p>
