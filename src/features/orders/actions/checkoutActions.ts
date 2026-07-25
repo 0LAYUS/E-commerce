@@ -58,7 +58,7 @@ export async function createOrder(
         items: items.map(item => ({
           name: item.name || "Producto",
           quantity: item.quantity,
-          price_at_purchase: item.price,
+          price_at_purchase: item.price ?? 0,
           sku_code: item.variant_id ? "Variante" : null
         }))
       }
