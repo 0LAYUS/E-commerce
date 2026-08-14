@@ -6,6 +6,11 @@ export const storeBranding = {
   url: "http://localhost:3000",
   locale: "es_CO" as const,
 
+  // Theme
+  theme: {
+    defaultTheme: "light" as const,
+  },
+
   // Contact
   contact: {
     phone: "+57 300 7612827",

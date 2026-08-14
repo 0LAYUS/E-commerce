@@ -124,12 +124,16 @@ const cssContent = `@tailwind base;
  */
 
 @layer base {
-  :root {
-${darkDeclarations}
+  :root,
+  .light {
+${lightDeclarations}
     --radius: ${borderRadius};
   }
 
-${lightDeclarations ? `  .light {\n${lightDeclarations}\n  }` : ""}
+  .dark {
+${darkDeclarations}
+    --radius: ${borderRadius};
+  }
 }
 
 @layer base {

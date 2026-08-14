@@ -68,7 +68,7 @@ export default function RootLayout({
         <ThemeVariables>
           <NextThemeProvider
             attribute="class"
-            defaultTheme={storeBranding.theme.defaultTheme}
+            defaultTheme={storeBranding.theme?.defaultTheme || "dark"}
             enableSystem={false}
             disableTransitionOnChange
           >

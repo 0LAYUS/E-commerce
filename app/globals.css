@@ -9,40 +9,7 @@
  */
 
 @layer base {
-  :root {
-    --primary: 159 50% 20%;
-    --primary-foreground: 147 43% 96%;
-    --secondary: 158 54% 30%;
-    --secondary-foreground: 147 43% 96%;
-    --accent: 154 37% 52%;
-    --accent-foreground: 162 52% 9%;
-    --background: 162 52% 9%;
-    --foreground: 147 43% 96%;
-    --card: 160 50% 16%;
-    --card-foreground: 147 43% 96%;
-    --muted: 159 53% 24%;
-    --muted-foreground: 146 45% 90%;
-    --border: 158 54% 30%;
-    --input: 159 50% 20%;
-    --ring: 152 41% 65%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 147 43% 96%;
-    --color-success: 154 37% 52%;
-    --success-foreground: 162 52% 9%;
-    --bg-success: 146 45% 90%;
-    --color-warning: 158 54% 30%;
-    --warning-foreground: 147 43% 96%;
-    --bg-warning: 149 44% 80%;
-    --color-info: 152 41% 65%;
-    --info-foreground: 162 52% 9%;
-    --bg-info: 146 45% 90%;
-    --color-danger: 0 72% 51%;
-    --danger-foreground: 147 43% 96%;
-    --bg-danger: 0 96% 89%;
-    --color-purple: 156 48% 39%;
-    --radius: 0.75rem;
-  }
-
+  :root,
   .light {
     --background: 147 43% 96%;
     --foreground: 162 52% 9%;
@@ -74,6 +41,41 @@
     --danger-foreground: 147 43% 96%;
     --bg-danger: 0 96% 89%;
     --color-purple: 156 48% 39%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --primary: 142 76% 36%;
+    --primary-foreground: 147 43% 96%;
+    --secondary: 144 61% 20%;
+    --secondary-foreground: 147 43% 96%;
+    --accent: 148 32% 17%;
+    --accent-foreground: 141 84% 93%;
+    --background: 0 0% 4%;
+    --foreground: 147 43% 96%;
+    --card: 0 0% 8%;
+    --card-foreground: 147 43% 96%;
+    --muted: 135 14% 11%;
+    --muted-foreground: 144 10% 60%;
+    --border: 135 11% 14%;
+    --input: 0 0% 8%;
+    --ring: 142 76% 36%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 147 43% 96%;
+    --color-success: 142 71% 45%;
+    --success-foreground: 0 0% 4%;
+    --bg-success: 144 61% 20%;
+    --color-warning: 45 93% 47%;
+    --warning-foreground: 0 0% 4%;
+    --bg-warning: 28 73% 26%;
+    --color-info: 198 93% 60%;
+    --info-foreground: 0 0% 4%;
+    --bg-info: 202 80% 24%;
+    --color-danger: 0 72% 51%;
+    --danger-foreground: 147 43% 96%;
+    --bg-danger: 0 63% 31%;
+    --color-purple: 160 84% 39%;
+    --radius: 0.75rem;
   }
 }
 

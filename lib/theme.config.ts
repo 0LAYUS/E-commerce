@@ -1,33 +1,8 @@
 /**
- * E-commerce Theme Configuration
+ * E-commerce Theme Configuration - Vitaminas Pa' Ti
  *
  * Edit this file to change your store's appearance.
  * All colors use HEX format (e.g., "#2a2a2a" or "#fff").
- *
- * Palette:
- *   #0b231c — Verde noche profundo
- *   #153f31 — Verde bosque oscuro
- *   #194c3a — Verde esmeralda profundo
- *   #1d5f48 — Verde hoja
- *   #247758 — Verde vibrante
- *   #34956e — Verde fresco
- *   #56b18a — Verde suave
- *   #81caa8 — Verde menta claro
- *   #b7e3cc — Verde crema
- *   #daf1e4 — Verde agua
- *   #f0f9f4 — Crema claro
- *
- * Structure:
- * - brand: Main brand colors (buttons, links, accents)
- * - surfaces: Page backgrounds, cards, borders
- * - semantic: Status colors (success, warning, info, destructive, danger)
- * - custom: Extra colors for special features
- * - borderRadius: Global border radius
- *
- * lightTheme overrides can be added for light mode.
- * Values not overridden in lightTheme fall back to dark theme.
- *
- * Theme detection: automatic via next-themes (enableSystem in app/layout.tsx)
  */
 
 export interface ThemeConfig {
@@ -73,116 +48,64 @@ export interface ThemeConfig {
 }
 
 // ─────────────────────────────────────────────
-// DARK THEME (default)
-// Fondo: verde oscuro #2D5A27
+// DARK THEME (Fondo negro y tonos verdes oscuros sobrios)
 // ─────────────────────────────────────────────
 
 export const themeConfig: ThemeConfig = {
   // ── BRAND ──────────────────────────────────
   brand: {
-    // bg-primary, text-primary, border-primary, ring-primary
-    // → Botones principales, CTA, links de navegación
-    primary: "#194c3a",
-
-    // text-primary-foreground, bg-primary-foreground
-    // → Texto sobre fondos primarios (botones, iconos, toggles)
+    primary: "#16a34a",
     primaryForeground: "#f0f9f4",
-
-    // bg-secondary, text-secondary
-    // → Fondos secundarios: badges, icon containers, table headers
-    secondary: "#247758",
-
-    // text-secondary-foreground
-    // → Texto sobre fondos secundarios
+    secondary: "#14532d",
     secondaryForeground: "#f0f9f4",
-
-    // bg-accent — VERDE SUAVE
-    // → Texto crema sobre acento natural
-    accent: "#56b18a",
-
-    // text-accent-foreground — OSCURO PROFUNDO
-    accentForeground: "#0b231c",
+    accent: "#1e3a2b",
+    accentForeground: "#dcfce7",
   },
 
   // ── SURFACES ───────────────────────────────
   surfaces: {
-    // bg-background — VERDE NOCHE PROFUNDO (fondo de toda la página)
-    background: "#0b231c",
-
-    // text-foreground — CREMA CLARO (texto principal)
+    background: "#0a0a0a", // Fondo negro puro
     foreground: "#f0f9f4",
-
-    // bg-card — VERDE BOSQUE OSCURO (tarjetas sobre fondo oscuro)
-    card: "#153f31",
-
-    // text-card-foreground — CREMA CLARO (texto sobre cards)
+    card: "#141414", // Tarjetas oscuras
     cardForeground: "#f0f9f4",
-
-    // bg-muted — VERDE HOJA (fondos sutiles, placeholders, toggle off)
-    muted: "#1d5f48",
-
-    // text-muted-foreground — VERDE AGUA CLARO (texto secundario)
-    mutedForeground: "#daf1e4",
-
-    // border-border — VERDE VIBRANTE (bordes generales)
-    border: "#247758",
-
-    // border-input, bg-input — VERDE ESMERALDA PROFUNDO (inputs)
-    input: "#194c3a",
-
-    // ring-ring — VERDE MENTA CLARO (focus rings)
-    ring: "#81caa8",
+    muted: "#18201a",
+    mutedForeground: "#8fa397",
+    border: "#202822",
+    input: "#141414",
+    ring: "#16a34a",
   },
 
   // ─ SEMANTIC ───────────────────────────────
   semantic: {
     destructive: "#dc2626",
     destructiveForeground: "#f0f9f4",
-
-    // success — VERDE SUAVE
-    success: "#56b18a",
-    successForeground: "#0b231c",
-    // successMuted — VERDE AGUA
-    successMuted: "#daf1e4",
-
-    // warning — VERDE VIBRANTE
-    warning: "#247758",
-    warningForeground: "#f0f9f4",
-    // warningMuted — VERDE CREMA
-    warningMuted: "#b7e3cc",
-
-    // info — VERDE MENTA CLARO
-    info: "#81caa8",
-    infoForeground: "#0b231c",
-    // infoMuted — VERDE AGUA
-    infoMuted: "#daf1e4",
-
+    success: "#22c55e",
+    successForeground: "#0a0a0a",
+    successMuted: "#14532d",
+    warning: "#eab308",
+    warningForeground: "#0a0a0a",
+    warningMuted: "#713f12",
+    info: "#38bdf8",
+    infoForeground: "#0a0a0a",
+    infoMuted: "#0c4a6e",
     danger: "#dc2626",
     dangerForeground: "#f0f9f4",
-    dangerMuted: "#fecaca",
+    dangerMuted: "#7f1d1d",
   },
 
   // ── CUSTOM ─────────────────────────────────
   custom: {
-    // purple — TONO VERDE FRESCO (método transferencia en admin POS)
-    purple: "#34956e",
+    purple: "#10b981",
   },
 
   borderRadius: "0.75rem",
 };
 
 // ─────────────────────────────────────────────
-// LIGHT THEME (overrides only)
-// Values not specified here fall back to dark theme.
-// Fondo también verde oscuro para consistencia.
+// LIGHT THEME (El tema claro original de Vitaminas Pa' Ti)
 // ─────────────────────────────────────────────
 
-export const lightTheme: Partial<ThemeConfig> & {
-  surfaces?: Partial<ThemeConfig["surfaces"]>;
-  brand?: Partial<ThemeConfig["brand"]>;
-  semantic?: Partial<ThemeConfig["semantic"]>;
-  custom?: Partial<ThemeConfig["custom"]>;
-} = {
+export const lightTheme: ThemeConfig = {
   surfaces: {
     background: "#f0f9f4",
     foreground: "#0b231c",
@@ -221,4 +144,5 @@ export const lightTheme: Partial<ThemeConfig> & {
   custom: {
     purple: "#34956e",
   },
+  borderRadius: "0.75rem",
 };
