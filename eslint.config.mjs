@@ -11,10 +11,21 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
-    ignores: [".next/**", "node_modules/**", "*.config.js"],
+    ignores: [
+      ".next/**",
+      "node_modules/**",
+      ".open-next/**",
+      ".vercel/**",
+      ".wrangler/**",
+      "dist/**",
+      "build/**",
+      "*.config.js",
+      "*.config.mjs",
+      "*.config.ts"
+    ],
   },
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
   // Custom rule: prevent hardcoded Tailwind color classes (warn during migration)
   {
     plugins: {

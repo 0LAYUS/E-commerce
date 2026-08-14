@@ -10,9 +10,11 @@ type ShippingInfoFormProps = {
   nombre: string
   email: string
   direccion: string
+  telefono: string
   selectedZoneId: string | null
   onNombreChange: (v: string) => void
   onDireccionChange: (v: string) => void
+  onTelefonoChange: (v: string) => void
   onZoneChange: (v: string | null) => void
 }
 
@@ -21,9 +23,11 @@ export function ShippingInfoForm({
   nombre,
   email,
   direccion,
+  telefono,
   selectedZoneId,
   onNombreChange,
   onDireccionChange,
+  onTelefonoChange,
   onZoneChange,
 }: ShippingInfoFormProps) {
   return (
@@ -46,6 +50,17 @@ export function ShippingInfoForm({
           <Label htmlFor="shipping-email">Email</Label>
           <Input id="shipping-email" type="email" value={email} disabled className="bg-muted" />
           <p className="text-xs text-muted-foreground mt-1">Email de tu cuenta</p>
+        </div>
+        <div>
+          <Label htmlFor="shipping-phone">Teléfono</Label>
+          <Input
+            id="shipping-phone"
+            type="tel"
+            value={telefono}
+            onChange={(e) => onTelefonoChange(e.target.value)}
+            required
+            placeholder="Teléfono"
+          />
         </div>
         <div>
           <Label htmlFor="shipping-zone">Ciudad de Envío</Label>

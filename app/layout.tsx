@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   description: siteDescription,
   icons: {
     icon: "/favicon.ico",
-    shortcut: "/favicon-32x32.png",
+    shortcut: "/favicon-96x96.png",
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
@@ -68,8 +68,8 @@ export default function RootLayout({
         <ThemeVariables>
           <NextThemeProvider
             attribute="class"
-            defaultTheme="light"
-            enableSystem
+            defaultTheme={storeBranding.theme.defaultTheme}
+            enableSystem={false}
             disableTransitionOnChange
           >
             <Suspense fallback={<div className="h-16 border-b shadow-sm w-full top-0 bg-card" />}>

@@ -18,10 +18,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  serverActions: {
-    bodySizeLimit: "5mb",
-  },
+  serverExternalPackages: ["@cf-wasm/photon"],
   webpack: (config: Configuration) => {
+    // Remove default webpack WASM rule
     const existingRules = config.module?.rules as RuleSetRule[] | undefined;
     if (existingRules) {
       const wasmRuleIndex = existingRules.findIndex(
@@ -31,11 +30,6 @@ const nextConfig: NextConfig = {
         existingRules.splice(wasmRuleIndex, 1);
       }
     }
-
-    config.module?.rules?.push({
-      test: /photon_rs_bg\.wasm$/,
-      type: "asset/resource",
-    });
 
     return config;
   },

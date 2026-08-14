@@ -84,6 +84,7 @@ CREATE TABLE pos_sales (
   change_amount DECIMAL(10,2),
   notes TEXT,
   channel TEXT DEFAULT 'pos',
+  work_order_id UUID, -- References work_orders.id (for work order billing)
   created_at TIMESTAMPTZ DEFAULT now()
 );
 ```

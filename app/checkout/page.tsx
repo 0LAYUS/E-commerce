@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { createOrder } from "@/features/orders/actions/checkoutActions"
 import { getWompiIntegritySignature } from "@/features/orders/actions/wompiActions"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-import { AlertTriangle, Clock } from "lucide-react"
+import { AlertTriangle, Clock, ChevronLeft } from "lucide-react"
 import Link from "next/link"
 import { useCheckoutSetup } from "@/hooks/useCheckoutSetup"
 import { useStockReservation } from "@/hooks/useStockReservation"
@@ -15,7 +15,9 @@ import { OrderSummary } from "@/components/checkout/OrderSummary"
 import { BlockedItemsAlert } from "@/components/checkout/BlockedItemsAlert"
 import { PriceChangeAlert } from "@/components/checkout/PriceChangeAlert"
 import { wompiPublicKey, wompiWidgetDefaults } from "@/lib/constants/checkout"
+import { createClient } from "@/lib/supabase/client"
 import type { WompiResult } from "@/types/checkout.types"
+import { storeBranding } from "@/lib/constants/branding-store"
 
 export default function CheckoutPage() {
   const { items, total, clearCart, revalidateCart, hasBlockedItems, itemStatuses } = useCart()
@@ -24,13 +26,34 @@ export default function CheckoutPage() {
   const [error, setError] = useState("")
   const [isValidating, setIsValidating] = useState(false)
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null)
+  
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  
+  const isWompiEnabled = storeBranding.features?.payments?.wompi ?? true
+  const isManualEnabled = storeBranding.features?.payments?.manual ?? true
+  const defaultPayment = isWompiEnabled ? 'wompi' : (isManualEnabled ? 'manual' : 'wompi')
+  
+  const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'manual'>(defaultPayment)
 
-  const { zones, nombre, email, direccion, setNombre, setDireccion } = useCheckoutSetup()
+  const { zones, nombre, email, direccion, telefono, setNombre, setDireccion, setTelefono } = useCheckoutSetup()
 
-  const { reservationId, reservationExpiresAt, reserveStock, cancelReservation } = useStockReservation(
+  const { reservationId, reservationExpiresAt, isReserving, reservationError, reserveStock, cancelReservation } = useStockReservation(
     items,
     hasBlockedItems
   )
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login?redirect=/checkout')
+      } else {
+        setIsCheckingAuth(false)
+      }
+    }
+    checkAuth()
+  }, [router])
 
   useEffect(() => {
     const validateBeforeCheckout = async () => {
@@ -41,17 +64,8 @@ export default function CheckoutPage() {
     validateBeforeCheckout()
   }, [revalidateCart])
 
-  useEffect(() => {
-    if (items.length > 0 && !hasBlockedItems) {
-      reserveStock(
-        items.map((item) => ({
-          product_id: item.product_id,
-          variant_id: item.variant_id,
-          quantity: item.quantity,
-        }))
-      )
-    }
-  }, [items, hasBlockedItems, reserveStock])
+  // El useEffect que reservaba el stock automáticamente se eliminó.
+  // Ahora el stock se reserva/descuenta al momento de darle a Confirmar/Comprar.
 
   const selectedZone = useMemo(() => zones.find((z) => z.id === selectedZoneId) || null, [zones, selectedZoneId])
 
@@ -62,6 +76,9 @@ export default function CheckoutPage() {
   }, [selectedZone, total])
 
   const grandTotal = useMemo(() => total + shippingCost, [total, shippingCost])
+
+  const isManualAllowed = selectedZone?.manual_payment_allowed ?? false
+  const manualZones = useMemo(() => zones.filter(z => z.manual_payment_allowed).map(z => z.name).join(", "), [zones])
 
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,30 +92,69 @@ export default function CheckoutPage() {
       setError("Por favor selecciona una ciudad de envío.")
       return
     }
+    
+    if (!telefono) {
+      setError("Por favor ingresa un número de teléfono.")
+      return
+    }
+
+    if (paymentMethod === 'manual' && !isManualAllowed) {
+      setError("El pago manual no está disponible para la zona de envío seleccionada.")
+      return
+    }
 
     if (items.length === 0) return
 
     setLoading(true)
     setError("")
     try {
+      let activeReservationId = reservationId
+
+      if (paymentMethod === 'wompi') {
+        const newReservationId = await reserveStock(
+          items.map((item) => ({
+            product_id: item.product_id,
+            variant_id: item.variant_id,
+            quantity: item.quantity,
+          }))
+        )
+        if (!newReservationId) {
+          setError(reservationError || "No se pudo reservar el stock. Es posible que los productos se hayan agotado.")
+          setLoading(false)
+          return
+        }
+        activeReservationId = newReservationId
+      }
+
       const orderId = await createOrder(
         items.map((i) => ({
           id: i.id,
           product_id: i.product_id,
           variant_id: i.variant_id,
           quantity: i.quantity,
+          name: i.name,
+          price: i.price,
         })),
         total,
         nombre,
+        telefono,
         direccion,
         shippingCost,
-        selectedZoneId || undefined
+        selectedZoneId || undefined,
+        paymentMethod,
+        activeReservationId || undefined
       )
+
+      if (paymentMethod === 'manual') {
+        clearCart()
+        router.push("/checkout/success/manual")
+        return
+      }
 
       const amountInCents = Math.round(grandTotal) * 100
       const integritySignature = await getWompiIntegritySignature(orderId, amountInCents, "COP")
 
-            const widgetConfig: Record<string, unknown> = {
+      const widgetConfig: Record<string, unknown> = {
         currency: wompiWidgetDefaults.currency,
         amountInCents,
         reference: orderId,
@@ -107,6 +163,7 @@ export default function CheckoutPage() {
         customerData: {
           email: email,
           fullName: nombre,
+          phoneNumber: telefono,
         },
       }
 
@@ -119,18 +176,18 @@ export default function CheckoutPage() {
       checkout.open(async (result: WompiResult) => {
         const transaction = result.transaction
 
-        if (transaction.status === "APPROVED" && reservationId) {
+        if (transaction.status === "APPROVED" && activeReservationId) {
           await fetch("/api/cart/confirm", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reservation_id: reservationId }),
+            body: JSON.stringify({ reservation_id: activeReservationId }),
           }).catch(console.error)
           clearCart()
-        } else if (reservationId && transaction.status !== "APPROVED") {
+        } else if (activeReservationId && transaction.status !== "APPROVED") {
           await fetch("/api/cart/cancel", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reservation_id: reservationId }),
+            body: JSON.stringify({ reservation_id: activeReservationId }),
           }).catch(console.error)
         }
 
@@ -165,6 +222,12 @@ export default function CheckoutPage() {
     return status?.original_price && status?.current_price && status.original_price !== status.current_price
   })
 
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">Verificando sesión...</div>
+    )
+  }
+
   if (items.length === 0) {
     return (
       <div className="text-center mt-20 text-muted-foreground">
@@ -178,14 +241,29 @@ export default function CheckoutPage() {
 
   return (
     <div className="mt-8 mb-20 px-4 sm:px-6 lg:px-80">
-      <h1 className="text-3xl font-extrabold mb-8 text-foreground">Checkout</h1>
+      <div className="flex items-center gap-4 mb-8">
+        <Link href="/cart" className="text-muted-foreground hover:text-foreground">
+          <ChevronLeft className="h-8 w-8" />
+        </Link>
+        <h1 className="text-3xl font-extrabold text-foreground">Checkout</h1>
+      </div>
 
-      {reservationExpiresAt && (
+      {reservationExpiresAt && !reservationError && (
         <Alert className="mb-6 bg-success-muted border-success/30">
           <Clock className="h-4 w-4 text-success" />
           <AlertTitle className="text-success">Stock reservado</AlertTitle>
           <AlertDescription className="text-success/80">
             Tu stock está reservado por 15 minutos. Completa el pago antes de que expire.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {reservationError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error al reservar stock</AlertTitle>
+          <AlertDescription>
+            {reservationError} Por favor, recarga la página o intenta más tarde.
           </AlertDescription>
         </Alert>
       )}
@@ -219,11 +297,64 @@ export default function CheckoutPage() {
             nombre={nombre}
             email={email}
             direccion={direccion}
+            telefono={telefono}
             selectedZoneId={selectedZoneId}
             onNombreChange={setNombre}
             onDireccionChange={setDireccion}
+            onTelefonoChange={setTelefono}
             onZoneChange={setSelectedZoneId}
           />
+
+          <div className="mt-8 mb-6">
+            <h2 className="text-xl font-bold text-card-foreground mb-4">Método de Pago</h2>
+            {(!isWompiEnabled && !isManualEnabled) ? (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Pagos no disponibles</AlertTitle>
+                <AlertDescription>
+                  Los métodos de pago están deshabilitados temporalmente. Por favor intenta más tarde o contacta al administrador.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="space-y-3">
+                {isWompiEnabled && (
+                  <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="wompi"
+                      checked={paymentMethod === 'wompi'}
+                      onChange={() => setPaymentMethod('wompi')}
+                      className="h-4 w-4 text-primary focus:ring-primary"
+                    />
+                    <div>
+                      <div className="font-semibold">Pago en Línea (Wompi)</div>
+                      <div className="text-sm text-muted-foreground">Tarjetas de crédito, PSE, Nequi, Daviplata</div>
+                    </div>
+                  </label>
+                )}
+                
+                {isManualEnabled && (
+                  <label className="flex items-center space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="manual"
+                      checked={paymentMethod === 'manual'}
+                      onChange={() => setPaymentMethod('manual')}
+                      className="h-4 w-4 text-primary focus:ring-primary"
+                    />
+                    <div>
+                      <div className="font-semibold">Pago Contra Entrega / Transferencia</div>
+                      <div className="text-sm text-muted-foreground">
+                        {manualZones ? `Disponible en: ${manualZones}` : "No disponible en ninguna ciudad"}
+                      </div>
+                    </div>
+                  </label>
+                )}
+              </div>
+            )}
+          </div>
 
           <OrderSummary
             items={items}
@@ -234,18 +365,46 @@ export default function CheckoutPage() {
           />
 
           {error && <div className="mb-4 text-destructive text-sm bg-destructive/10 p-3 rounded-lg">{error}</div>}
+          
+          {paymentMethod === 'manual' && selectedZoneId && !isManualAllowed && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Método de pago no disponible</AlertTitle>
+              <AlertDescription>
+                El pago contra entrega no está habilitado para la zona de envío seleccionada. Por favor, elige pago en línea o contacta al administrador.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <button
             type="submit"
-            disabled={loading || hasBlockedItems || isValidating || !selectedZoneId}
+            disabled={loading || hasBlockedItems || isValidating || isReserving || !nombre || !telefono || !selectedZoneId || !direccion || (paymentMethod === 'manual' && !isManualAllowed) || (!isWompiEnabled && !isManualEnabled)}
             className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm mt-2"
           >
-            {loading || isValidating ? "Verificando stock..." : !selectedZoneId ? "Selecciona una ciudad" : "Proceder al Pago"}
+            {loading || isValidating 
+              ? "Verificando..." 
+              : isReserving
+                ? "Reservando stock..."
+                : !nombre
+                  ? "Ingresa tu nombre"
+                  : !telefono
+                    ? "Ingresa un teléfono"
+                    : !selectedZoneId 
+                      ? "Selecciona una ciudad"
+                      : !direccion
+                        ? "Ingresa tu dirección"
+                        : (!isWompiEnabled && !isManualEnabled)
+                          ? "Pagos deshabilitados"
+                          : paymentMethod === 'manual' 
+                            ? (!isManualAllowed ? "Pago manual no disponible" : "Confirmar Pedido Manual")
+                            : "Proceder al Pago"}
           </button>
 
-          <p className="text-center text-xs text-muted-foreground mt-5">
-            Serás redirigido a Wompi para completar tu pago de forma segura.
-          </p>
+          {paymentMethod === 'wompi' && isWompiEnabled && (
+            <p className="text-center text-xs text-muted-foreground mt-5">
+              Serás redirigido a Wompi para completar tu pago de forma segura.
+            </p>
+          )}
         </form>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { signLicenseRequest } from "@/shared/utils/sign-request"
 import type { LicenseStatus, VerifyResponse, MensajeResponse } from "@/shared/types/license.types"
 
-const PRIGMA_URL = process.env.PRIGMA_URL || "https://prigma.onrender.com"
+const PRIGMA_URL = process.env.PRIGMA_URL
 const LICENSE_KEY = process.env.LICENSE_KEY || ""
 
 async function verificarLicenciaStatus(): Promise<VerifyResponse> {

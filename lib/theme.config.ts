@@ -4,29 +4,6 @@
  * Edit this file to change your store's appearance.
  * All colors use HEX format (e.g., "#2a2a2a" or "#fff").
  *
- * Palette:
- *   #0b231c — Verde noche profundo
- *   #153f31 — Verde bosque oscuro
- *   #194c3a — Verde esmeralda profundo
- *   #1d5f48 — Verde hoja
- *   #247758 — Verde vibrante
- *   #34956e — Verde fresco
- *   #56b18a — Verde suave
- *   #81caa8 — Verde menta claro
- *   #b7e3cc — Verde crema
- *   #daf1e4 — Verde agua
- *   #f0f9f4 — Crema claro
- *
- * Structure:
- * - brand: Main brand colors (buttons, links, accents)
- * - surfaces: Page backgrounds, cards, borders
- * - semantic: Status colors (success, warning, info, destructive, danger)
- * - custom: Extra colors for special features
- * - borderRadius: Global border radius
- *
- * lightTheme overrides can be added for light mode.
- * Values not overridden in lightTheme fall back to dark theme.
- *
  * Theme detection: automatic via next-themes (enableSystem in app/layout.tsx)
  */
 
@@ -73,108 +50,62 @@ export interface ThemeConfig {
 }
 
 // ─────────────────────────────────────────────
-// DARK THEME (default)
-// Fondo: verde oscuro #2D5A27
+// DARK THEME (default) - PRIGMA
 // ─────────────────────────────────────────────
 
 export const themeConfig: ThemeConfig = {
   // ── BRAND ──────────────────────────────────
   brand: {
-    // bg-primary, text-primary, border-primary, ring-primary
-    // → Botones principales, CTA, links de navegación
-    primary: "#194c3a",
-
-    // text-primary-foreground, bg-primary-foreground
-    // → Texto sobre fondos primarios (botones, iconos, toggles)
-    primaryForeground: "#f0f9f4",
-
-    // bg-secondary, text-secondary
-    // → Fondos secundarios: badges, icon containers, table headers
-    secondary: "#247758",
-
-    // text-secondary-foreground
-    // → Texto sobre fondos secundarios
-    secondaryForeground: "#f0f9f4",
-
-    // bg-accent — VERDE SUAVE
-    // → Texto crema sobre acento natural
-    accent: "#56b18a",
-
-    // text-accent-foreground — OSCURO PROFUNDO
-    accentForeground: "#0b231c",
+    primary: "#8a5cf6", // PRIGMA Purple
+    primaryForeground: "#ffffff",
+    secondary: "#1f1f1f", // Dark gray
+    secondaryForeground: "#ffffff",
+    accent: "#27272a", // Zinc-800
+    accentForeground: "#ffffff",
   },
 
   // ── SURFACES ───────────────────────────────
   surfaces: {
-    // bg-background — VERDE NOCHE PROFUNDO (fondo de toda la página)
-    background: "#0b231c",
-
-    // text-foreground — CREMA CLARO (texto principal)
-    foreground: "#f0f9f4",
-
-    // bg-card — VERDE BOSQUE OSCURO (tarjetas sobre fondo oscuro)
-    card: "#153f31",
-
-    // text-card-foreground — CREMA CLARO (texto sobre cards)
-    cardForeground: "#f0f9f4",
-
-    // bg-muted — VERDE HOJA (fondos sutiles, placeholders, toggle off)
-    muted: "#1d5f48",
-
-    // text-muted-foreground — VERDE AGUA CLARO (texto secundario)
-    mutedForeground: "#daf1e4",
-
-    // border-border — VERDE VIBRANTE (bordes generales)
-    border: "#247758",
-
-    // border-input, bg-input — VERDE ESMERALDA PROFUNDO (inputs)
-    input: "#194c3a",
-
-    // ring-ring — VERDE MENTA CLARO (focus rings)
-    ring: "#81caa8",
+    background: "#0a0a0a", // Almost black
+    foreground: "#fafafa",
+    card: "#141414", // Slightly lighter black
+    cardForeground: "#fafafa",
+    muted: "#27272a",
+    mutedForeground: "#a1a1aa", // Zinc-400
+    border: "#27272a",
+    input: "#27272a",
+    ring: "#8a5cf6",
   },
 
   // ─ SEMANTIC ───────────────────────────────
   semantic: {
-    destructive: "#dc2626",
-    destructiveForeground: "#f0f9f4",
-
-    // success — VERDE SUAVE
-    success: "#56b18a",
-    successForeground: "#0b231c",
-    // successMuted — VERDE AGUA
-    successMuted: "#daf1e4",
-
-    // warning — VERDE VIBRANTE
-    warning: "#247758",
-    warningForeground: "#f0f9f4",
-    // warningMuted — VERDE CREMA
-    warningMuted: "#b7e3cc",
-
-    // info — VERDE MENTA CLARO
-    info: "#81caa8",
-    infoForeground: "#0b231c",
-    // infoMuted — VERDE AGUA
-    infoMuted: "#daf1e4",
-
-    danger: "#dc2626",
-    dangerForeground: "#f0f9f4",
-    dangerMuted: "#fecaca",
+    destructive: "#ef4444", // Red-500
+    destructiveForeground: "#ffffff",
+    success: "#22c55e", // Green-500
+    successForeground: "#ffffff",
+    successMuted: "#14532d", // Green-900
+    warning: "#eab308", // Yellow-500
+    warningForeground: "#ffffff",
+    warningMuted: "#713f12", // Yellow-900
+    info: "#3b82f6", // Blue-500
+    infoForeground: "#ffffff",
+    infoMuted: "#1e3a8a", // Blue-900
+    danger: "#ef4444",
+    dangerForeground: "#ffffff",
+    dangerMuted: "#7f1d1d", // Red-900
   },
 
   // ── CUSTOM ─────────────────────────────────
   custom: {
-    // purple — TONO VERDE FRESCO (método transferencia en admin POS)
-    purple: "#34956e",
+    purple: "#8a5cf6",
   },
 
-  borderRadius: "0.75rem",
+  borderRadius: "0.5rem", // Standard PRIGMA radius
 };
 
 // ─────────────────────────────────────────────
 // LIGHT THEME (overrides only)
 // Values not specified here fall back to dark theme.
-// Fondo también verde oscuro para consistencia.
 // ─────────────────────────────────────────────
 
 export const lightTheme: Partial<ThemeConfig> & {
@@ -184,41 +115,41 @@ export const lightTheme: Partial<ThemeConfig> & {
   custom?: Partial<ThemeConfig["custom"]>;
 } = {
   surfaces: {
-    background: "#f0f9f4",
-    foreground: "#0b231c",
-    card: "#daf1e4",
-    cardForeground: "#0b231c",
-    muted: "#b7e3cc",
-    mutedForeground: "#153f31",
-    border: "#81caa8",
+    background: "#ffffff",
+    foreground: "#0a0a0a",
+    card: "#f4f4f5", // Zinc-100
+    cardForeground: "#0a0a0a",
+    muted: "#e4e4e7", // Zinc-200
+    mutedForeground: "#52525b", // Zinc-500
+    border: "#e4e4e7",
     input: "#ffffff",
-    ring: "#247758",
+    ring: "#8a5cf6",
   },
   brand: {
-    primary: "#247758",
-    primaryForeground: "#f0f9f4",
-    secondary: "#34956e",
-    secondaryForeground: "#f0f9f4",
-    accent: "#81caa8",
-    accentForeground: "#0b231c",
+    primary: "#8a5cf6",
+    primaryForeground: "#ffffff",
+    secondary: "#f4f4f5",
+    secondaryForeground: "#0a0a0a",
+    accent: "#e4e4e7",
+    accentForeground: "#0a0a0a",
   },
   semantic: {
-    destructive: "#dc2626",
-    destructiveForeground: "#f0f9f4",
-    success: "#56b18a",
-    successForeground: "#0b231c",
-    successMuted: "#daf1e4",
-    warning: "#34956e",
-    warningForeground: "#0b231c",
-    warningMuted: "#b7e3cc",
-    info: "#81caa8",
-    infoForeground: "#0b231c",
-    infoMuted: "#daf1e4",
-    danger: "#dc2626",
-    dangerForeground: "#f0f9f4",
-    dangerMuted: "#fecaca",
+    destructive: "#ef4444",
+    destructiveForeground: "#ffffff",
+    success: "#22c55e",
+    successForeground: "#ffffff",
+    successMuted: "#dcfce7",
+    warning: "#eab308",
+    warningForeground: "#ffffff",
+    warningMuted: "#fef08a",
+    info: "#3b82f6",
+    infoForeground: "#ffffff",
+    infoMuted: "#dbeafe",
+    danger: "#ef4444",
+    dangerForeground: "#ffffff",
+    dangerMuted: "#fee2e2",
   },
   custom: {
-    purple: "#34956e",
+    purple: "#8a5cf6",
   },
 };

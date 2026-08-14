@@ -4,6 +4,8 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Package } from 'lucide-react';
 
+import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT, STATUS_LABELS } from '@/lib/constants/orders';
+
 type OrderItemRow = {
   id: string
   quantity: number
@@ -19,6 +21,8 @@ type OrderRow = {
   customer_email: string | null
   shipping_address: string | null
   total_amount: number
+  customer_phone?: string | null
+  shipping_zones: { name: string } | null
   order_items: OrderItemRow[]
 }
 
@@ -37,6 +41,7 @@ export default async function OrderDetailsPage(props: { params: Promise<{ id: st
     .from('orders')
     .select(`
       *,
+      shipping_zones(name),
       order_items (
         id,
         quantity,
@@ -65,12 +70,10 @@ export default async function OrderDetailsPage(props: { params: Promise<{ id: st
       <div className="bg-card rounded-xl shadow-sm border overflow-hidden p-8 mb-8">
         <div className="flex justify-between items-start mb-2">
           <h1 className="text-2xl font-extrabold text-foreground">Orden #{order.id.split('-')[0]}</h1>
-          <span className={`px-4 py-1.5 text-sm font-semibold rounded-full ${
-            order.status === 'APPROVED' ? 'bg-success-muted text-success' :
-            order.status === 'PENDING' ? 'bg-info-muted text-info' :
-            'bg-muted text-muted-foreground'
+          <span className={`px-4 py-1.5 text-sm font-semibold rounded-full border ${
+            STATUS_BADGE_STYLES[order.status] ?? STATUS_BADGE_DEFAULT
           }`}>
-            {order.status === 'PENDING' ? 'Procesando' : order.status === 'APPROVED' ? 'Aprobado' : order.status}
+            {STATUS_LABELS[order.status] ?? order.status}
           </span>
         </div>
         <p className="text-muted-foreground mb-8">
@@ -88,7 +91,9 @@ export default async function OrderDetailsPage(props: { params: Promise<{ id: st
             <div className="text-muted-foreground space-y-1">
               <p>{order.customer_name || 'N/A'}</p>
               <p>{order.customer_email || 'N/A'}</p>
+              {order.customer_phone && <p>{order.customer_phone}</p>}
               <p className="mt-2 text-sm">{order.shipping_address || 'N/A'}</p>
+              {order.shipping_zones?.name && <p className="text-sm">Ciudad: {order.shipping_zones.name}</p>}
             </div>
           </div>
           

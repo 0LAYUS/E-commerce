@@ -10,13 +10,13 @@ import {
   InstagramLogo,
   TwitterLogo,
   YoutubeLogo,
-  PaperPlaneTilt,
 } from "@phosphor-icons/react";
 import { storeBranding } from "@/lib/constants/branding-store";
 import { prigmaBranding } from "@/lib/constants/branding-prigma";
 import { StoreLogo } from "@/components/branding/store-logo";
 import { StoreName } from "@/components/branding/store-name";
 import { PrigmaLogo } from "@/components/branding/prigma-logo";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -35,7 +35,7 @@ export default function Footer() {
 
       <div className="max-w-screen-2xl mx-auto px-6 pt-16 relative">
         <motion.div
-          className="grid grid-cols-2 md:grid-cols-2 gap-8 lg:gap-12 max-w-[800px] mx-auto"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-8 lg:gap-12 max-w-[800px] mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
@@ -174,6 +174,9 @@ export default function Footer() {
                   </Link>
                 </motion.div>
               ))}
+              <div className="flex items-center ml-4 border-l border-border pl-4">
+                <ThemeSwitcher />
+              </div>
             </motion.div>
           </div>
         </motion.div>

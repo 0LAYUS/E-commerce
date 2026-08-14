@@ -152,9 +152,12 @@ Components always read from their config by default, but ALL accept optional pro
 - **Wompi webhook**: `POST /api/webhooks/wompi` (payment confirmation)
 
 ## Existing Instruction Files
-- `RULES.md` — development rules, git workflow, conventions
-- `docs/SPEC.md` — POS system spec, data models, API endpoints
-- `docs/cart-validation-system.md` — stock reservation phases
+Toda la documentación técnica y de arquitectura vive en la carpeta `docs/`. **AGENTES Y DESARROLLADORES DEBEN LEER ESTA CARPETA ANTES DE HACER NADA**.
+- `docs/project-context.md` — Estructura del proyecto, reglas de oro.
+- `docs/deploy.md` — Reglas de despliegue en Cloudflare.
+- `docs/supabase.md` — Convenciones de base de datos y migraciones.
+- `docs/SPEC.md` — POS system spec, data models, API endpoints.
+- `docs/cart-validation-system.md` — Fases de reserva de stock del carrito.
 
 ## Testing
 - Vitest with jsdom + `@testing-library/react` + `@testing-library/user-event`

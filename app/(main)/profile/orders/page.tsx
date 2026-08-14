@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Eye } from "lucide-react";
 import { formatPrice } from "@/lib/format";
+import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT, STATUS_LABELS } from "@/lib/constants/orders";
 
 export default async function ProfileOrdersPage() {
   const supabase = await createClient();
@@ -47,15 +48,11 @@ export default async function ProfileOrdersPage() {
                   </p>
                 </div>
                 <span
-                  className={`px-4 py-1 text-xs font-semibold rounded-full ${
-                    order.status === "APPROVED"
-                      ? "bg-success-muted/50 text-success"
-                      : order.status === "PENDING"
-                        ? "bg-info-muted/50 text-info"
-                        : "bg-muted text-muted-foreground"
+                  className={`px-4 py-1 text-xs font-semibold rounded-full border ${
+                    STATUS_BADGE_STYLES[order.status] ?? STATUS_BADGE_DEFAULT
                   }`}
                 >
-                  {order.status === "PENDING" ? "Procesando" : order.status === "APPROVED" ? "Aprobado" : order.status}
+                  {STATUS_LABELS[order.status] ?? order.status}
                 </span>
               </div>
 

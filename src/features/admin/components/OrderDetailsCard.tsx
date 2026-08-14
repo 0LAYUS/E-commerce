@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/modal"
 import { formatPrice } from "@/lib/format"
 import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT } from "@/lib/constants/orders"
-import { updateOrderStatus, rollbackOrderStock, markOrderAsError } from "@/features/orders/actions/orderActions"
+import { updateOrderStatus, rollbackOrderStock, markOrderAsError, approveManualOrder, cancelManualOrder } from "@/features/orders/actions/orderActions"
 import type { OrderWithRelations, OrderStatus } from "@/features/orders/types/order.types"
 
 const STATUS_LABELS = {
@@ -16,6 +16,7 @@ const STATUS_LABELS = {
   APPROVED: "Aprobada",
   DECLINED: "Rechazada",
   ERROR: "Error",
+  PENDING_MANUAL: "Manual (Pendiente)",
 } as const
 
 function formatDate(dateString: string): string {
@@ -57,14 +58,33 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
     router.refresh()
   }
 
+  async function handleApproveManual() {
+    await approveManualOrder(order.id)
+    router.refresh()
+  }
+
+  async function handleCancelManual() {
+    await cancelManualOrder(order.id)
+    router.refresh()
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Orden #{order.id.slice(0, 8)}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground">
+              Orden #{order.id.slice(0, 8)}
+            </h1>
+            <button
+              onClick={() => navigator.clipboard.writeText(order.id)}
+              className="text-muted-foreground hover:text-foreground text-xs underline"
+              title="Copiar ID completo"
+            >
+              Copiar ID
+            </button>
+          </div>
           <p className="text-muted-foreground text-sm mt-1">
             Creada el {formatDate(order.created_at)}
           </p>
@@ -88,7 +108,27 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
           </h2>
           <div className="space-y-2">
             <p className="font-medium text-foreground">{order.customer_name || "Sin nombre"}</p>
-            <p className="text-sm text-muted-foreground">{order.customer_email || order.profiles?.email || "Sin email"}</p>
+            <p className="text-sm">
+              <span className="text-muted-foreground mr-1">Email:</span>
+              {(order.customer_email || order.profiles?.email) ? (
+                <a href={`mailto:${order.customer_email || order.profiles?.email}`} className="text-primary hover:text-primary/80 hover:underline">
+                  {order.customer_email || order.profiles?.email}
+                </a>
+              ) : <span className="text-muted-foreground">Sin email</span>}
+            </p>
+            {order.customer_phone && (
+              <p className="text-sm">
+                <span className="text-muted-foreground mr-1">Teléfono:</span>
+                <a href={`tel:${order.customer_phone}`} className="text-primary hover:text-primary/80 hover:underline">
+                  {order.customer_phone}
+                </a>
+              </p>
+            )}
+            {order.payment_method && (
+              <p className="text-sm font-medium mt-2">
+                Pago: {order.payment_method === 'wompi' ? 'En línea (Wompi)' : 'Contra entrega (Manual)'}
+              </p>
+            )}
             {order.wompi_transaction_id && (
               <p className="text-xs font-mono text-muted-foreground mt-2">
                 Wompi ID: {order.wompi_transaction_id}
@@ -103,6 +143,11 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
             <MapPin className="w-4 h-4" />
             Dirección de Envío
           </h2>
+          {order.shipping_zones?.name && (
+            <p className="text-sm font-medium text-foreground mb-1">
+              Ciudad: {order.shipping_zones.name}
+            </p>
+          )}
           <p className="text-sm text-foreground whitespace-pre-wrap">
             {order.shipping_address || "No proporcionada"}
           </p>
@@ -180,9 +225,11 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
             <select
               value={order.status}
               onChange={(e) => handleStatusChange(e.target.value as OrderStatus)}
-              className="px-3 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              disabled={["APPROVED", "DECLINED", "ERROR"].includes(order.status)}
+              className="px-3 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <option value="PENDING">PENDIENTE</option>
+              <option value="PENDING_MANUAL">PENDIENTE (MANUAL)</option>
               <option value="APPROVED">APROBADA</option>
               <option value="DECLINED">RECHAZADA</option>
               <option value="ERROR">ERROR</option>
@@ -196,6 +243,16 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
                 <AlertTriangle className="w-4 h-4" />
                 Marcar como Error (con rollback)
               </Button>
+            )}
+            {order.status === "PENDING_MANUAL" && (
+              <>
+                <Button variant="default" onClick={handleApproveManual} className="bg-green-600 hover:bg-green-700 text-white">
+                  Aprobar Pago
+                </Button>
+                <Button variant="destructive" onClick={handleCancelManual}>
+                  Cancelar Orden (con rollback)
+                </Button>
+              </>
             )}
             <Button variant="outline" onClick={() => setRollbackConfirmOpen(true)}>
               <RotateCcw className="w-4 h-4" />

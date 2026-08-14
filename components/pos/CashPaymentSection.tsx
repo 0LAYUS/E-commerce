@@ -69,7 +69,7 @@ export function CashPaymentSection({ total, amountReceived, onChange }: CashPaym
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {quickAmounts.map((amt) => (
+        {Array.from(new Set(quickAmounts)).map((amt) => (
           <button
             key={amt}
             onClick={() => onChange(amt.toString())}

@@ -7,6 +7,7 @@ import {
   ShoppingCart,
   Truck,
   ListOrdered,
+  Wrench,
 } from "lucide-react";
 import type { MensajeResponse } from "@/shared/types/license.types";
 import type { SidebarItem } from "@/types/admin.types";
@@ -29,6 +30,7 @@ export const SIDEBAR_ITEMS: readonly SidebarItem[] = [
   { href: "/admin/pos", label: "POS", icon: ShoppingCart },
   { href: "/admin/pos/sales", label: "Ventas POS", icon: ShoppingBag },
   { href: "/admin/shipping", label: "Envíos", icon: Truck },
+  { href: "/admin/work-orders", label: "Reparaciones", icon: Wrench, featureFlag: "workOrders" },
 ];
 
 export const DEVELOPER_CONTACT = {
