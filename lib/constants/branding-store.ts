@@ -1,26 +1,21 @@
 export const storeBranding = {
   // Core identity
-  name: "PRIGMA",
+  name: "Vitaminas Pa' Ti",
   description:
-    "Desarrollo de software personalizado para empresas en Colombia. Apps web, móviles y sistemas ERP/CRM.",
-  url: "https://prigma.net",
+    "Tienda online — Encuentra los mejores productos con envío a toda Colombia.",
+  url: "http://localhost:3000",
   locale: "es_CO" as const,
-
-  // Theme
-  theme: {
-    defaultTheme: "dark", // Can be "light", "dark", or "system"
-  },
 
   // Contact
   contact: {
-    phone: "+57 311 2078781",
-    email: "contacto@prigma.net",
-    address: "Colombia",
-    city: "Sogamoso",
+    phone: "+57 300 7612827",
+    email: "contacto@mitienda.com",
+    address: "Calle 123 #45-67",
+    city: "Bogotá",
     country: "Colombia",
-    schedule: "Lunes a Viernes 8am - 6pm",
+    schedule: "Lunes a Viernes 9am - 6pm",
   },
-  whatsapp: "573112078781",
+  whatsapp: "573007612827",
 
   // Social
   social: {
@@ -32,55 +27,52 @@ export const storeBranding = {
 
   // Legal
   legal: {
-    copyrightName: "PRIGMA",
+    copyrightName: "Prigma",
   },
 
   // Assets
   assets: {
-    logo: "/images/brandClient/prigma_logo_sin_fondo.png",
-    logoIcon: "/images/brandClient/prigma_logo_sin_fondo.png",
-    logoText: "/images/brandClient/prigma_logo_sin_fondo.png",
-    logoFull: "/images/brandClient/prigma_logo_sin_fondo.png",
-    favicon: "/images/brandClient/prigma_logo_sin_fondo.png",
-    ogImage: "/images/brandClient/prigma_logo.jpeg",
-    aboutHero: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&h=400&fit=crop", // Development/Laptop
-    aboutTeam: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=200&fit=crop", // Team working on software
-    aboutWarehouse: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&h=200&fit=crop", // Servers/Cloud
+    logo: "/images/brandClient/isotipo.png",
+    logoIcon: "/images/brandClient/isotipo.png",
+    logoText: "/images/brandClient/logotipo.png",
+    logoFull: "/images/brandClient/imagotipo.png",
+    favicon: "/images/brandClient/isotipo.png",
+    ogImage: "/images/brandClient/imagotipo.png",
   },
 
   // About page content
   about: {
-    heroTitle: "Desarrollo de Software a Medida",
+    heroTitle: "Sobre Nosotros",
     heroDescription:
-      "Soluciones de software personalizadas para transformar tu negocio. Apps web, móviles y sistemas empresariales.",
+      "Conoce la historia detrás de Mi Tienda, tu tienda online de confianza en Colombia.",
     storyTitle: "Nuestra Historia",
-    storySubtitle: "Más de 3 años de experiencia",
+    storySubtitle: "Desde 2020 conectando a Colombia",
     storyText:
-      "PRIGMA nació con la visión de potenciar a las empresas colombianas mediante tecnología de punta. Nos especializamos en entender las necesidades únicas de cada negocio y traducirlas en software robusto, escalable y eficiente.",
+      "Mi Tienda nació en 2020 con la misión de ofrecer productos de calidad a precios accesibles para todos los colombianos. Comenzamos como una pequeña tienda local y gracias a la confianza de nuestros clientes, hoy somos una de las tiendas online más reconocidas del país, conectando a miles de personas con productos que necesitan.",
     mission:
-      "Brindar soluciones de software personalizadas y de alta calidad que impulsen el crecimiento y la transformación digital de nuestros clientes.",
+      "Brindar acceso a productos de calidad a precios justos, facilitando la vida cotidiana de las familias colombianas a través de una experiencia de compra segura, rápida y confiable.",
     vision:
-      "Ser líderes en el desarrollo de software a medida en Colombia, reconocidos por nuestra innovación, calidad técnica y compromiso con el éxito de cada proyecto.",
+      "Ser la tienda online preferida de los colombianos, reconocida por nuestra excelencia en atención al cliente, innovación tecnológica y compromiso con la satisfacción del usuario.",
     tagline:
-      "Tu socio tecnológico para soluciones de software a medida.",
+      "Tu tienda online favorita con los mejores productos y precios. Calidad garantizada y envíos a todo el país.",
     teamText:
-      "Un equipo de ingenieros y diseñadores apasionados por crear productos digitales excepcionales.",
+      "Un equipo apasionado trabajando cada día para brindarte la mejor experiencia de compra online en Colombia.",
     warehouseText:
-      "Infraestructura cloud robusta y segura para desplegar tus aplicaciones.",
+      "Miles de productos listos para enviarte con la mayor brevedad posible.",
     stats: {
-      clients: "20+",
-      products: "50+",
-      years: "3+",
+      clients: "10K+",
+      products: "5K+",
+      years: "5+",
       secure: "100%",
     } as const,
   },
 
-  // Features flags
+  // Feature Flags
   features: {
     workOrders: true,
     payments: {
       wompi: true,
       manual: true,
-    }
+    },
   },
 } as const;
