@@ -74,9 +74,9 @@ export const storeBranding = {
 
   // Feature Flags
   features: {
-    workOrders: true,
+    workOrders: false,
     payments: {
-      wompi: true,
+      wompi: false,
       manual: true,
     },
   },
