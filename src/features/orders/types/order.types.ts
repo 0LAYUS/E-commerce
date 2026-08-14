@@ -1,4 +1,4 @@
-export type OrderStatus = "PENDING" | "APPROVED" | "DECLINED" | "ERROR"
+export type OrderStatus = "PENDING" | "APPROVED" | "DECLINED" | "ERROR" | "PENDING_MANUAL"
 
 export type OrderItem = {
   id: string
@@ -37,7 +37,10 @@ export type OrderWithRelations = {
   wompi_transaction_id: string | null
   customer_name: string
   customer_email: string
+  customer_phone: string | null
   shipping_address: string
+  shipping_zones?: { name: string } | null
+  payment_method?: 'wompi' | 'manual'
   created_at: string
   order_items?: OrderItemWithRelations[]
   profiles?: {

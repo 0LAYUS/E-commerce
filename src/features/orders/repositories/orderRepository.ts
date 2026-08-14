@@ -18,7 +18,7 @@ export async function findOrders(
 
   let query = client
     .from("orders")
-    .select("*, profiles(email)", { count: "exact" })
+    .select("*, profiles(email), shipping_zones(name)", { count: "exact" })
 
   if (filters.status && filters.status !== "ALL") {
     query = query.eq("status", filters.status)
@@ -49,6 +49,7 @@ export async function findOrderById(client: SupabaseClient, id: string) {
     .select(`
       *,
       profiles(email),
+      shipping_zones(name),
       order_items(
         id,
         product_id,
@@ -257,6 +258,23 @@ export async function findPendingOrdersOlderThan(
 }
 
 /**
+ * Returns PENDING_MANUAL orders created before the given cutoff time.
+ */
+export async function findPendingManualOrdersOlderThan(
+  client: SupabaseClient,
+  cutoffTime: string
+) {
+  const { data, error } = await client
+    .from("orders")
+    .select("id")
+    .eq("status", "PENDING_MANUAL")
+    .lt("created_at", cutoffTime)
+
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
+/**
  * Returns the current status of a single order.
  */
 export async function findOrderStatus(client: SupabaseClient, orderId: string) {
@@ -288,6 +306,8 @@ export async function insertOrder(
     shipping_address: string
     shipping_cost: number
     shipping_zone_id?: string | null
+    customer_phone?: string | null
+    payment_method?: 'wompi' | 'manual'
   }
 ) {
   const { data, error } = await client

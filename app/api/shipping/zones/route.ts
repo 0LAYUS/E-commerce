@@ -6,7 +6,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("shipping_zones")
-    .select("id, name, cost, free_threshold")
+    .select("id, name, cost, free_threshold, manual_payment_allowed")
     .eq("active", true)
     .order("position", { ascending: true })
 

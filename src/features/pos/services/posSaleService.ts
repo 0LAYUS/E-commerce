@@ -30,6 +30,8 @@ export type CreateSaleBody = {
   change_amount?: number
   payments?: SalePayment[]
   notes?: string
+  channel?: string
+  work_order_id?: string | null
 }
 
 /**
@@ -55,6 +57,8 @@ export async function createSale(
     change_amount,
     payments,
     notes,
+    channel,
+    work_order_id,
   } = body
 
   const sale = await insertPosSale(client, {
@@ -70,7 +74,8 @@ export async function createSale(
     amount_received: amount_received || null,
     change_amount: change_amount || null,
     notes: notes || null,
-    channel: "pos",
+    channel: channel || "pos",
+    work_order_id: work_order_id || null,
   })
 
   if (payments && payments.length > 1) {

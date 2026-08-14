@@ -216,3 +216,147 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
     console.error("[Email] Error inesperado enviando email:", err)
   }
 }
+
+// -------------------------------------------------------
+// Template HTML del email Manual
+// -------------------------------------------------------
+function buildManualEmailHtml(data: OrderEmailData): string {
+  const orderShortId = data.orderId.slice(0, 8).toUpperCase()
+
+  const itemsRows = data.items
+    .map(
+      (item) => `
+      <tr>
+        <td style="padding:12px 0;border-bottom:1px solid #f0f0f0;">
+          <span style="font-weight:600;color:#1a1a1a;">${item.name}</span>
+          ${item.sku_code ? `<br><span style="font-size:12px;color:#888;">${item.sku_code}</span>` : ""}
+        </td>
+        <td style="padding:12px 0;border-bottom:1px solid #f0f0f0;text-align:center;color:#555;">
+          x${item.quantity}
+        </td>
+        <td style="padding:12px 0;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:600;color:#1a1a1a;">
+          ${formatCOP(item.price_at_purchase * item.quantity)}
+        </td>
+      </tr>
+    `
+    )
+    .join("")
+
+  return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pedido Recibido — ${siteName}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;">
+          <tr>
+            <td style="background:#18181b;padding:32px;border-radius:12px 12px 0 0;text-align:center;">
+              <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.5px;">
+                ${siteName}
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="background:#ffffff;padding:40px 40px 32px;border-radius:0 0 12px 12px;">
+              <div style="text-align:center;margin-bottom:28px;">
+                <div style="display:inline-block;width:60px;height:60px;background:#fef3c7;border-radius:50%;line-height:60px;text-align:center;">
+                  <span style="font-size:28px;color:#d97706;">🕒</span>
+                </div>
+              </div>
+              <h2 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#1a1a1a;text-align:center;">
+                ¡Pedido recibido!
+              </h2>
+              <p style="margin:0 0 32px;color:#666;font-size:15px;text-align:center;line-height:1.6;">
+                Hola <strong>${data.customerName}</strong>, hemos recibido tu pedido y hemos reservado tus productos.<br>
+                Nos pondremos en contacto contigo pronto para coordinar el pago.
+              </p>
+              <div style="background:#f8f8f8;border-radius:8px;padding:16px 20px;margin-bottom:32px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">
+                      N° de Pedido
+                    </td>
+                    <td style="text-align:right;font-family:monospace;font-size:14px;color:#1a1a1a;font-weight:700;">
+                      #${orderShortId}
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">
+                Resumen del pedido
+              </h3>
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                ${itemsRows}
+                <tr>
+                  <td colspan="3" style="padding-top:16px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="font-size:16px;font-weight:700;color:#1a1a1a;">Total a pagar</td>
+                        <td style="text-align:right;font-size:18px;font-weight:800;color:#18181b;">
+                          ${formatCOP(data.totalAmount)}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <div style="background:#f0fdf4;border:1px solid #d1fae5;border-radius:8px;padding:16px 20px;margin-bottom:32px;">
+                <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#065f46;text-transform:uppercase;letter-spacing:0.5px;">
+                  Dirección de envío
+                </p>
+                <p style="margin:0;font-size:14px;color:#1a1a1a;line-height:1.5;">
+                  ${data.shippingAddress}
+                </p>
+              </div>
+              <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;">
+              <p style="margin:0;font-size:13px;color:#aaa;text-align:center;line-height:1.6;">
+                Si tienes dudas sobre tu pedido, responde este correo.<br>
+                <a href="${siteUrl}" style="color:#18181b;text-decoration:none;font-weight:600;">${siteName}</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim()
+}
+
+export async function sendManualOrderCreatedEmail(data: OrderEmailData): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY
+  const fromEmail = process.env.RESEND_FROM_EMAIL || `noreply@${(process.env.NEXT_PUBLIC_SITE_URL || "example.com").replace("https://", "").replace("http://", "")}`
+  const adminEmail = process.env.ADMIN_EMAIL || fromEmail
+
+  if (!apiKey || apiKey === "re_REEMPLAZAR_CON_API_KEY_DE_RESEND") {
+    console.warn("[Email] RESEND_API_KEY no configurado. Email de orden manual no enviado.")
+    return
+  }
+
+  const resend = new Resend(apiKey)
+  const orderShortId = data.orderId.slice(0, 8).toUpperCase()
+
+  try {
+    const { error } = await resend.emails.send({
+      from: `${siteName} <${fromEmail}>`,
+      to: [data.customerEmail, adminEmail],
+      subject: `🕒 Pedido #${orderShortId} recibido (Pendiente de pago) — ${siteName}`,
+      html: buildManualEmailHtml(data),
+    })
+
+    if (error) {
+      console.error("[Email] Error enviando email de orden manual:", error)
+    } else {
+      console.log(`[Email] Email de orden manual enviada a ${data.customerEmail} y ${adminEmail} para orden #${orderShortId}`)
+    }
+  } catch (err) {
+    console.error("[Email] Error inesperado enviando email de orden manual:", err)
+  }
+}

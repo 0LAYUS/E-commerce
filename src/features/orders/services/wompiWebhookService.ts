@@ -1,13 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/admin"
 import { sendOrderConfirmationEmail } from "@/features/orders/services/orderConfirmation"
 import {
-  findOrderItems,
   findOrderWithItemsForEmail,
 } from "@/features/orders/repositories/orderRepository"
-import {
-  incrementSkuStock,
-  incrementProductStock,
-} from "@/features/cart/repositories/stockRepository"
 
 async function sha256Hex(message: string): Promise<string> {
   const encoder = new TextEncoder()
@@ -78,34 +73,49 @@ export async function processWompiWebhook(
 
   const orderId = transaction.reference
   const newStatus = transaction.status
-
   const supabase = await createAdminClient()
 
-  const { error: updateError } = await supabase
+  // Find the order to get the reservation_id
+  const { data: orderData, error: orderError } = await supabase
     .from("orders")
-    .update({ status: newStatus, wompi_transaction_id: transaction.id })
+    .select("id, reservation_id, status")
     .eq("id", orderId)
+    .single()
 
-  if (updateError) {
-    console.error("[Wompi Webhook] Error actualizando orden:", updateError)
-    return { received: false, error: updateError.message }
-  }
-
-  if (newStatus === "DECLINED" || newStatus === "ERROR" || newStatus === "VOIDED") {
-    const items = await findOrderItems(supabase, orderId)
-
-    for (const item of items) {
-      if (item.variant_id) {
-        await incrementSkuStock(supabase, item.variant_id, item.quantity)
-      } else {
-        await incrementProductStock(supabase, item.product_id, item.quantity)
-      }
-    }
+  if (orderError || !orderData) {
+    console.error("[Wompi Webhook] Error fetching order:", orderError)
+    return { received: false, error: "Order not found" }
   }
 
   if (newStatus === "APPROVED") {
-    const order = await findOrderWithItemsForEmail(supabase, orderId)
+    // Call the idempotent RPC
+    const { data: rpcResult, error: rpcError } = await supabase.rpc(
+      "process_wompi_approved",
+      {
+        p_order_id: orderId,
+        p_reservation_id: orderData.reservation_id
+      }
+    )
 
+    if (rpcError) {
+      console.error("[Wompi Webhook] Error in process_wompi_approved RPC:", rpcError)
+      return { received: false, error: rpcError.message }
+    }
+
+    // Update the transaction ID separately since the RPC only handles status and stock
+    await supabase.from("orders").update({ wompi_transaction_id: transaction.id }).eq("id", orderId)
+
+    if (rpcResult === 'ALREADY_PROCESSED') {
+      return { received: true, skipped: true }
+    }
+
+    if (rpcResult === 'APPROVED_NEEDS_REVIEW') {
+      console.error(`ALERTA: Wompi tardío, reserva expirada, orden ${orderId} requiere revisión manual`)
+      // Continue sending email, but maybe the admin needs to see it
+    }
+
+    // Send confirmation email
+    const order = await findOrderWithItemsForEmail(supabase, orderId)
     if (order && order.customer_email) {
       const items = (order.order_items || []).map((item: unknown) => {
         const i = item as {
@@ -128,10 +138,47 @@ export async function processWompiWebhook(
         customerEmail: order.customer_email,
         shippingAddress: order.shipping_address || "",
         totalAmount: order.total_amount,
-        wompiTransactionId: order.wompi_transaction_id,
+        wompiTransactionId: transaction.id,
         items,
       })
     }
+  } else if (newStatus === "DECLINED" || newStatus === "ERROR" || newStatus === "VOIDED") {
+    // For failed Wompi transactions, update the status
+    const { error: updateError } = await supabase
+      .from("orders")
+      .update({ status: newStatus, wompi_transaction_id: transaction.id })
+      .eq("id", orderId)
+      .eq("status", "PENDING") // Only update if still pending
+
+    if (updateError) {
+      console.error("[Wompi Webhook] Error updating declined order:", updateError)
+    }
+
+    // Since it's a Wompi order, the stock is held in a reservation.
+    // We can just let the reservation expire naturally (or explicitly expire it).
+    // The expired reservation background job will return the stock to product_skus.
+    // To prevent manual rollbacks from duplicating this, we mark stock_returned = true 
+    // IF we manually expire it, but we won't over-engineer it here. The reservation handles itself.
+    
+    // Si queremos expirar la reserva de inmediato para liberar stock ya mismo:
+    if (orderData.reservation_id) {
+      await supabase.from("stock_reservations").update({ status: 'expired' }).eq("id", orderData.reservation_id)
+      // Y sumamos el stock usando rollbackOrderStock
+      // Wait, we should just let the cleanup job do it OR do it properly:
+      // A safe way: just mark order stock_returned = true, and manually return the stock now so it's available instantly.
+      // But wait! If we mark the reservation as 'expired', the cleanup job might NOT process it (since it looks for 'pending').
+      // Ah, if we mark it 'expired', the cleanup job ignores it?
+      // Let's look at cleanup_expired_reservations: it selects 'pending' and expires_at < now().
+      // So if we mark it 'confirmed' or 'expired' manually, the cleanup job won't restore stock.
+      
+      // Let's just update reservation to 'confirmed' (so it never auto-expires and double counts), 
+      // and then use our atomic rollbackOrderStock! This is the most consistent way.
+      await supabase.from("stock_reservations").update({ status: 'confirmed' }).eq("id", orderData.reservation_id).eq("status", "pending")
+    }
+
+    // Now safely rollback stock using our atomic function
+    const { rollbackOrderStock } = await import("@/features/orders/services/orderService")
+    await rollbackOrderStock(orderId)
   }
 
   return { received: true }

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { POST } from '@/app/api/cart/validate/route'
 import { NextRequest } from 'next/server'
-import * as cartValidator from '@/features/cart/services/cartValidationService'
+import * as cartValidator from '@/features/cart/services/cartValidator'
 
-vi.mock('@/features/cart/services/cartValidationService', () => ({
+vi.mock('@/features/cart/services/cartValidator', () => ({
   validateCartItems: vi.fn(),
 }))
 
