@@ -16,13 +16,19 @@ import {
 } from "@/features/orders/services/orderService"
 
 export async function markOrderAsPaid(
-  orderId: string
+  orderId: string,
+  paymentDetails?: {
+    method: string
+    amountReceived?: number
+    changeAmount?: number
+    payments?: { method: string; amount: number }[]
+  }
 ): Promise<{ success: boolean; error?: string }> {
   const client = await createClient()
   const { data: { user } } = await client.auth.getUser()
   const adminUser = user ? { id: user.id, email: user.email || "" } : undefined
 
-  const result = await svcMarkOrderAsPaid(orderId, adminUser)
+  const result = await svcMarkOrderAsPaid(orderId, adminUser, paymentDetails)
   if (result.success) {
     revalidatePath("/admin/orders")
     revalidatePath(`/admin/orders/${orderId}`)

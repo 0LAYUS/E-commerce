@@ -84,6 +84,6 @@ export type AuditLog = {
   target_type: string
   target_id: string
   reason: string | null
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   created_at: string
 }

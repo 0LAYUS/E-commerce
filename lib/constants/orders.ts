@@ -8,8 +8,8 @@ export const STATUS_BADGE_STYLES: Record<string, string> = {
 
 export const STATUS_LABELS: Record<string, string> = {
   PENDING: "Pendiente (En línea)",
-  PENDING_MANUAL: "Contra Entrega (Por Cobrar)",
-  APPROVED: "Aprobada / Cobrada",
+  PENDING_MANUAL: "Contra Entrega (Por Despachar)",
+  APPROVED: "Aprobada",
   DECLINED: "Cancelada",
   ERROR: "Error",
 }

@@ -105,7 +105,6 @@ export async function getDashboardMetrics(start: Date, end: Date): Promise<Dashb
   ])
 
   const onlineRevenue = onlineOrders
-    // @ts-expect-error - DB fields
     .filter((o) => o.payment_method === 'wompi' || o.is_paid === true)
     .reduce((sum, o) => sum + (o.total_amount ?? 0), 0)
   const posRevenue = posSales.reduce((sum, p) => sum + Number(p.total ?? 0), 0)
@@ -157,7 +156,6 @@ export async function getRevenueByDay(start: Date, end: Date): Promise<RevenueBy
 
   const onlineMap = new Map<string, number>()
   for (const o of onlineOrders) {
-    // @ts-expect-error - DB fields
     if (o.payment_method !== 'wompi' && o.is_paid !== true) continue
     const day = new Date(o.created_at).toISOString().split("T")[0]
     onlineMap.set(day, (onlineMap.get(day) ?? 0) + (o.total_amount ?? 0))

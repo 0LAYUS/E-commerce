@@ -17,6 +17,7 @@ import {
 } from "@/features/orders/actions/orderActions"
 import { canTransitionOrder } from "@/features/orders/services/orderStatusTransitions"
 import { CancelOrderModal } from "@/features/admin/components/CancelOrderModal"
+import PaymentModal from "@/features/pos/components/PaymentModal"
 import type { OrderWithRelations } from "@/features/orders/types/order.types"
 
 function formatDate(dateString: string): string {
@@ -82,10 +83,20 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
     }
   }
 
-  async function handleMarkPaid() {
+  async function handleMarkPaid(
+    method: string,
+    amountReceived?: number,
+    changeAmount?: number,
+    payments?: { method: string; amount: number }[]
+  ) {
     setActionLoading(true)
     try {
-      await markOrderAsPaid(order.id)
+      await markOrderAsPaid(order.id, {
+        method,
+        amountReceived,
+        changeAmount,
+        payments,
+      })
       setPayConfirmOpen(false)
       router.refresh()
     } finally {
@@ -397,14 +408,11 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
         cancelText="Volver"
       />
 
-      <ConfirmDialog
-        open={payConfirmOpen}
+      <PaymentModal
+        isOpen={payConfirmOpen}
         onClose={() => setPayConfirmOpen(false)}
+        total={order.total_amount}
         onConfirm={handleMarkPaid}
-        title="¿Confirmar recepción del dinero?"
-        description="Se registrará que el dinero fue cobrado exitosamente y entrará formalmente a los reportes financieros del Dashboard."
-        confirmText="Confirmar Pago Recibido"
-        cancelText="Volver"
       />
 
       <ConfirmDialog
