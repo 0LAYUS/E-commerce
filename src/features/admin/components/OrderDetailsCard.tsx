@@ -3,7 +3,7 @@
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Package, User, MapPin, CreditCard, AlertTriangle, RotateCcw, CheckCircle2, Ban } from "lucide-react"
+import { Package, User, MapPin, CreditCard, AlertTriangle, RotateCcw, CheckCircle2, Ban, Truck, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/modal"
 import { formatPrice } from "@/lib/format"
@@ -13,19 +13,12 @@ import {
   rollbackOrderStock,
   markOrderAsError,
   approveManualOrder,
+  markOrderAsPaid,
   cancelOrder,
 } from "@/features/orders/actions/orderActions"
 import { canTransitionOrder } from "@/features/orders/services/orderStatusTransitions"
 import { CancelOrderModal } from "@/features/admin/components/CancelOrderModal"
 import type { OrderWithRelations, OrderStatus } from "@/features/orders/types/order.types"
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  PENDING: "Pendiente (En línea)",
-  PENDING_MANUAL: "Pendiente (Contra entrega)",
-  APPROVED: "Aprobada",
-  DECLINED: "Cancelada / Rechazada",
-  ERROR: "Error de Sistema",
-}
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString("es-CO", {
@@ -45,6 +38,7 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
   const router = useRouter()
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [approveConfirmOpen, setApproveConfirmOpen] = useState(false)
+  const [payConfirmOpen, setPayConfirmOpen] = useState(false)
   const [rollbackConfirmOpen, setRollbackConfirmOpen] = useState(false)
   const [errorConfirmOpen, setErrorConfirmOpen] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
@@ -52,11 +46,48 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
   const isWompi = order.payment_method === "wompi" || !!order.wompi_transaction_id
   const canCancel = canTransitionOrder(order.status, "DECLINED")
 
+  // Badge label and style resolution
+  let badgeLabel: string = order.status
+  let badgeClass: string = STATUS_BADGE_STYLES[order.status] ?? STATUS_BADGE_DEFAULT
+
+  if (order.status === "APPROVED") {
+    if (isWompi) {
+      badgeLabel = "Aprobada (Pagada en línea)"
+      badgeClass = "bg-success-muted text-success border-success"
+    } else if (order.is_paid) {
+      badgeLabel = "Aprobada y Pagada"
+      badgeClass = "bg-success-muted text-success border-success"
+    } else {
+      badgeLabel = "Aprobada (Pendiente de Cobro)"
+      badgeClass = "bg-warning-muted text-warning border-warning"
+    }
+  } else if (order.status === "PENDING_MANUAL") {
+    badgeLabel = "Contra Entrega (Por Despachar)"
+    badgeClass = "bg-warning-muted text-warning border-warning"
+  } else if (order.status === "PENDING") {
+    badgeLabel = "Pendiente (En línea)"
+    badgeClass = "bg-warning-muted text-warning border-warning"
+  } else if (order.status === "DECLINED") {
+    badgeLabel = "Cancelada"
+    badgeClass = "bg-danger-muted text-danger border-danger"
+  }
+
   async function handleApproveManual() {
     setActionLoading(true)
     try {
       await approveManualOrder(order.id)
       setApproveConfirmOpen(false)
+      router.refresh()
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleMarkPaid() {
+    setActionLoading(true)
+    try {
+      await markOrderAsPaid(order.id)
+      setPayConfirmOpen(false)
       router.refresh()
     } finally {
       setActionLoading(false)
@@ -114,12 +145,8 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
             Creada el {formatDate(order.created_at)}
           </p>
         </div>
-        <span
-          className={`inline-flex px-3 py-1.5 text-sm font-medium rounded-full border ${
-            STATUS_BADGE_STYLES[order.status] ?? STATUS_BADGE_DEFAULT
-          }`}
-        >
-          {STATUS_LABELS[order.status] ?? order.status}
+        <span className={`inline-flex px-3 py-1.5 text-sm font-medium rounded-full border ${badgeClass}`}>
+          {badgeLabel}
         </span>
       </div>
 
@@ -141,7 +168,7 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
             </p>
           )}
           <p className="text-xs text-muted-foreground">
-            Estado de inventario: {order.stock_returned ? "✅ Stock reincorporado al inventario" : "Pendiente de devolución"}
+            Estado de inventario: {order.stock_returned ? "✅ Stock devuelto al inventario" : "Pendiente de devolución"}
           </p>
         </div>
       )}
@@ -174,7 +201,12 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
             )}
             {order.payment_method && (
               <p className="text-sm font-medium mt-2">
-                Pago: {order.payment_method === 'wompi' ? 'En línea (Wompi)' : 'Contra entrega (Manual)'}
+                Método de Pago: {order.payment_method === 'wompi' ? 'En línea (Wompi)' : 'Contra entrega (Efectivo / Transferencia)'}
+              </p>
+            )}
+            {order.payment_method === 'manual' && order.status === 'APPROVED' && (
+              <p className="text-xs font-semibold">
+                Estado del Cobro: {order.is_paid ? '🟢 Dinero Recibido' : '🟡 Pendiente de Cobro'}
               </p>
             )}
             {order.wompi_transaction_id && (
@@ -267,7 +299,7 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
         </h2>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Aprobar orden contra entrega */}
+          {/* 1. Paso Inicial: Aprobar orden contra entrega para despacho */}
           {order.status === "PENDING_MANUAL" && (
             <Button
               variant="default"
@@ -275,12 +307,25 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
               disabled={actionLoading}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
-              <CheckCircle2 className="w-4 h-4 mr-1.5" />
-              Confirmar Cobro y Entrega
+              <Truck className="w-4 h-4 mr-1.5" />
+              Aprobar para Despacho
             </Button>
           )}
 
-          {/* Botón de Cancelación Principal */}
+          {/* 2. Paso Secundario: Confirmar pago recaudado en entrega */}
+          {order.status === "APPROVED" && order.payment_method === "manual" && !order.is_paid && (
+            <Button
+              variant="default"
+              onClick={() => setPayConfirmOpen(true)}
+              disabled={actionLoading}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              <DollarSign className="w-4 h-4 mr-1.5" />
+              Confirmar Pago Recibido
+            </Button>
+          )}
+
+          {/* 3. Botón de Cancelación Universal (Válido para PENDING, PENDING_MANUAL y APPROVED) */}
           {canCancel && (
             <Button
               variant="destructive"
@@ -292,7 +337,7 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
             </Button>
           )}
 
-          {/* Fallback de error solo para órdenes PENDING */}
+          {/* Fallback de error solo para órdenes PENDING online */}
           {order.status === "PENDING" && (
             <Button
               variant="outline"
@@ -304,8 +349,8 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
             </Button>
           )}
 
-          {/* Rollback de stock individual si no se ha retornado */}
-          {!order.stock_returned && order.status !== "PENDING" && (
+          {/* Rollback de stock forzado solo si no se ha retornado */}
+          {!order.stock_returned && order.status !== "PENDING" && order.status !== "DECLINED" && (
             <Button
               variant="ghost"
               size="sm"
@@ -333,9 +378,19 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
         open={approveConfirmOpen}
         onClose={() => setApproveConfirmOpen(false)}
         onConfirm={handleApproveManual}
-        title="¿Confirmar cobro y entrega del pedido?"
-        description="La orden pasará a estado APROBADA / COBRADA, sumará el dinero oficialmente a los reportes del negocio y se enviará un correo de confirmación al cliente."
-        confirmText="Confirmar Cobro"
+        title="¿Aprobar pedido para despacho?"
+        description="La orden pasará a estado APROBADA para que pueda ser empacada y despachada al cliente. El estado quedará como 'Pendiente de Cobro' hasta que el mensajero confirme el pago."
+        confirmText="Aprobar para Despacho"
+        cancelText="Volver"
+      />
+
+      <ConfirmDialog
+        open={payConfirmOpen}
+        onClose={() => setPayConfirmOpen(false)}
+        onConfirm={handleMarkPaid}
+        title="¿Confirmar recepción del dinero?"
+        description="Se registrará que el dinero fue cobrado exitosamente y entrará formalmente a los reportes financieros del Dashboard."
+        confirmText="Confirmar Pago Recibido"
         cancelText="Volver"
       />
 

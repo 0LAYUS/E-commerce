@@ -158,6 +158,7 @@ export async function cancelOrder(
     .from("orders")
     .update({
       status: "DECLINED",
+      is_paid: false,
       cancellation_reason: reason.trim(),
       cancelled_at: new Date().toISOString(),
       cancelled_by: adminUser?.id || null,
@@ -183,6 +184,50 @@ export async function cancelOrder(
       customer_email: order.customer_email || order.profiles?.email,
       customer_name: order.customer_name,
       payment_method: order.payment_method,
+    },
+  })
+
+  return { success: true }
+}
+
+/**
+ * Marks an approved order as paid/collected by delivery agent.
+ */
+export async function markOrderAsPaid(
+  orderId: string,
+  adminUser?: { id: string; email: string }
+): Promise<{ success: boolean; error?: string }> {
+  const client = await createClient()
+  const order = await findOrderById(client, orderId)
+  if (!order) {
+    return { success: false, error: "Orden no encontrada." }
+  }
+
+  if (order.status !== "APPROVED") {
+    return { success: false, error: "Solo las órdenes aprobadas pueden marcarse como pagadas." }
+  }
+
+  const { error } = await client
+    .from("orders")
+    .update({ is_paid: true })
+    .eq("id", orderId)
+
+  if (error) {
+    console.error("Error marking order as paid:", error)
+    return { success: false, error: error.message }
+  }
+
+  await createAuditLog(client, {
+    user_id: adminUser?.id || null,
+    user_email: adminUser?.email || null,
+    action: "PAYMENT_COLLECTED",
+    target_type: "order",
+    target_id: orderId,
+    reason: "Confirmación de cobro / dinero recibido en efectivo o transferencia",
+    metadata: {
+      total_amount: order.total_amount,
+      customer_email: order.customer_email || order.profiles?.email,
+      customer_name: order.customer_name,
     },
   })
 

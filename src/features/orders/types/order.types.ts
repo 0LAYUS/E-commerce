@@ -43,6 +43,7 @@ export type OrderWithRelations = {
   shipping_cost?: number | null
   shipping_zone_id?: string | null
   stock_returned?: boolean
+  is_paid?: boolean
   needs_manual_review?: boolean
   cancellation_reason?: string | null
   cancelled_at?: string | null

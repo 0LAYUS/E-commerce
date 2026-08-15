@@ -96,7 +96,7 @@ export async function findOrdersByDateRange(
 ) {
   let query = client
     .from("orders")
-    .select("total_amount, created_at, status")
+    .select("total_amount, created_at, status, payment_method, is_paid")
     .gte("created_at", start.toISOString())
     .lte("created_at", end.toISOString())
 

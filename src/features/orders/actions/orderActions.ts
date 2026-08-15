@@ -10,9 +10,27 @@ import {
   updateOrderStatus as svcUpdateOrderStatus,
   rollbackOrderStock as svcRollbackOrderStock,
   cancelOrder as svcCancelOrder,
+  markOrderAsPaid as svcMarkOrderAsPaid,
   markOrderAsError as svcMarkOrderAsError,
   type CSVOrder as ServiceCSVOrder,
 } from "@/features/orders/services/orderService"
+
+export async function markOrderAsPaid(
+  orderId: string
+): Promise<{ success: boolean; error?: string }> {
+  const client = await createClient()
+  const { data: { user } } = await client.auth.getUser()
+  const adminUser = user ? { id: user.id, email: user.email || "" } : undefined
+
+  const result = await svcMarkOrderAsPaid(orderId, adminUser)
+  if (result.success) {
+    revalidatePath("/admin/orders")
+    revalidatePath(`/admin/orders/${orderId}`)
+    revalidatePath("/admin/sales")
+    revalidatePath("/admin")
+  }
+  return result
+}
 import { findAuditLogsByTarget, createAuditLog } from "@/features/admin/services/auditService"
 import { sendOrderConfirmationEmail } from "@/features/orders/services/orderConfirmation"
 import type {
