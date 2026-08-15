@@ -17,6 +17,8 @@ import {
 } from "@/features/cart/repositories/stockRepository"
 import type { OrderStatus, OrderFilters, PaginatedOrders, OrderWithRelations } from "@/features/orders/types/order.types"
 import type { OrderItem } from "@/features/orders/types/order.types"
+import { canTransitionOrder } from "./orderStatusTransitions"
+import { createAuditLog } from "@/features/admin/services/auditService"
 
 // ============================================
 // READ
@@ -53,6 +55,18 @@ export async function updateOrderStatus(
 ): Promise<{ success: boolean; error?: string }> {
   const client = await createClient()
   try {
+    const currentOrder = await findOrderById(client, orderId)
+    if (!currentOrder) {
+      return { success: false, error: "Orden no encontrada." }
+    }
+
+    if (!canTransitionOrder(currentOrder.status, newStatus)) {
+      return {
+        success: false,
+        error: `Transición no permitida de ${currentOrder.status} a ${newStatus}.`,
+      }
+    }
+
     await repoUpdateOrderStatus(client, orderId, newStatus)
     return { success: true }
   } catch (err) {
@@ -66,7 +80,7 @@ export async function updateOrderStatus(
 
 /**
  * Iterates order items and increments stock back to each product/variant.
- * Does NOT change the order status.
+ * Atomic guard via stock_returned column ensures stock cannot be returned twice.
  */
 export async function rollbackOrderStock(
   orderId: string
@@ -86,8 +100,9 @@ export async function rollbackOrderStock(
     return { success: false, error: "Database error during rollback" }
   }
 
+  // Si ya se devolvió el stock previamente, no duplicamos
   if (!data || data.length === 0) {
-    return { success: false, error: "STOCK_ALREADY_RETURNED" }
+    return { success: true }
   }
 
   const items = await findOrderItems(client, orderId)
@@ -107,6 +122,74 @@ export async function rollbackOrderStock(
 }
 
 /**
+ * Cancels an order using the state machine, rolls back stock, records audit log.
+ */
+export async function cancelOrder(
+  orderId: string,
+  reason: string,
+  adminUser?: { id: string; email: string }
+): Promise<{ success: boolean; error?: string }> {
+  if (!reason || reason.trim() === "") {
+    return { success: false, error: "El motivo de cancelación es obligatorio." }
+  }
+
+  const client = await createClient()
+  const order = await findOrderById(client, orderId)
+  if (!order) {
+    return { success: false, error: "Orden no encontrada." }
+  }
+
+  // 1. Validar con la Máquina de Estados
+  if (!canTransitionOrder(order.status, "DECLINED")) {
+    return {
+      success: false,
+      error: `No se puede cancelar una orden que ya está en estado ${order.status}.`,
+    }
+  }
+
+  // 2. Revertir stock si aún no ha sido devuelto
+  const rollbackResult = await rollbackOrderStock(orderId)
+  if (!rollbackResult.success) {
+    return { success: false, error: rollbackResult.error || "Error al revertir stock" }
+  }
+
+  // 3. Actualizar estado y metadatos de cancelación
+  const { error: updateError } = await client
+    .from("orders")
+    .update({
+      status: "DECLINED",
+      cancellation_reason: reason.trim(),
+      cancelled_at: new Date().toISOString(),
+      cancelled_by: adminUser?.id || null,
+    })
+    .eq("id", orderId)
+
+  if (updateError) {
+    console.error("Error updating order to DECLINED:", updateError)
+    return { success: false, error: updateError.message }
+  }
+
+  // 4. Registrar Log de Auditoría
+  await createAuditLog(client, {
+    user_id: adminUser?.id || null,
+    user_email: adminUser?.email || null,
+    action: "ORDER_CANCELLED",
+    target_type: "order",
+    target_id: orderId,
+    reason: reason.trim(),
+    metadata: {
+      previous_status: order.status,
+      total_amount: order.total_amount,
+      customer_email: order.customer_email || order.profiles?.email,
+      customer_name: order.customer_name,
+      payment_method: order.payment_method,
+    },
+  })
+
+  return { success: true }
+}
+
+/**
  * Verifies the order is PENDING, rolls back stock, then marks it as ERROR.
  */
 export async function markOrderAsError(
@@ -119,13 +202,9 @@ export async function markOrderAsError(
     return { success: false, error: `Order is not PENDING (current: ${currentOrder.status})` }
   }
 
-  const items = await findOrderItems(client, orderId)
-  for (const item of items) {
-    if (item.variant_id) {
-      await incrementSkuStock(client, item.variant_id, item.quantity)
-    } else {
-      await incrementProductStock(client, item.product_id, item.quantity)
-    }
+  const rollback = await rollbackOrderStock(orderId)
+  if (!rollback.success) {
+    return rollback
   }
 
   await repoUpdateOrderStatus(client, orderId, "ERROR")

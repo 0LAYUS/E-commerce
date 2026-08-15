@@ -3,21 +3,29 @@
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Package, User, MapPin, CreditCard, AlertTriangle, RotateCcw } from "lucide-react"
+import { Package, User, MapPin, CreditCard, AlertTriangle, RotateCcw, CheckCircle2, Ban } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ConfirmDialog } from "@/components/ui/modal"
 import { formatPrice } from "@/lib/format"
 import { STATUS_BADGE_STYLES, STATUS_BADGE_DEFAULT } from "@/lib/constants/orders"
-import { updateOrderStatus, rollbackOrderStock, markOrderAsError, approveManualOrder, cancelManualOrder } from "@/features/orders/actions/orderActions"
+import {
+  updateOrderStatus,
+  rollbackOrderStock,
+  markOrderAsError,
+  approveManualOrder,
+  cancelOrder,
+} from "@/features/orders/actions/orderActions"
+import { canTransitionOrder } from "@/features/orders/services/orderStatusTransitions"
+import { CancelOrderModal } from "@/features/admin/components/CancelOrderModal"
 import type { OrderWithRelations, OrderStatus } from "@/features/orders/types/order.types"
 
-const STATUS_LABELS = {
-  PENDING: "Pendiente",
+const STATUS_LABELS: Record<OrderStatus, string> = {
+  PENDING: "Pendiente (En línea)",
+  PENDING_MANUAL: "Pendiente (Contra entrega)",
   APPROVED: "Aprobada",
-  DECLINED: "Rechazada",
-  ERROR: "Error",
-  PENDING_MANUAL: "Manual (Pendiente)",
-} as const
+  DECLINED: "Cancelada / Rechazada",
+  ERROR: "Error de Sistema",
+}
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString("es-CO", {
@@ -35,37 +43,54 @@ interface OrderDetailsCardProps {
 
 export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
   const router = useRouter()
+  const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [approveConfirmOpen, setApproveConfirmOpen] = useState(false)
   const [rollbackConfirmOpen, setRollbackConfirmOpen] = useState(false)
   const [errorConfirmOpen, setErrorConfirmOpen] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false)
 
-  async function handleStatusChange(newStatus: OrderStatus) {
-    const formData = new FormData()
-    formData.append("orderId", order.id)
-    formData.append("status", newStatus)
-    await updateOrderStatus(order.id, newStatus)
-    router.refresh()
+  const isWompi = order.payment_method === "wompi" || !!order.wompi_transaction_id
+  const canCancel = canTransitionOrder(order.status, "DECLINED")
+
+  async function handleApproveManual() {
+    setActionLoading(true)
+    try {
+      await approveManualOrder(order.id)
+      setApproveConfirmOpen(false)
+      router.refresh()
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleCancelOrder(reason: string) {
+    const result = await cancelOrder(order.id, reason)
+    if (result.success) {
+      router.refresh()
+    }
+    return result
   }
 
   async function handleRollback() {
-    await rollbackOrderStock(order.id)
-    setRollbackConfirmOpen(false)
-    router.refresh()
+    setActionLoading(true)
+    try {
+      await rollbackOrderStock(order.id)
+      setRollbackConfirmOpen(false)
+      router.refresh()
+    } finally {
+      setActionLoading(false)
+    }
   }
 
   async function handleMarkAsError() {
-    await markOrderAsError(order.id)
-    setErrorConfirmOpen(false)
-    router.refresh()
-  }
-
-  async function handleApproveManual() {
-    await approveManualOrder(order.id)
-    router.refresh()
-  }
-
-  async function handleCancelManual() {
-    await cancelManualOrder(order.id)
-    router.refresh()
+    setActionLoading(true)
+    try {
+      await markOrderAsError(order.id)
+      setErrorConfirmOpen(false)
+      router.refresh()
+    } finally {
+      setActionLoading(false)
+    }
   }
 
   return (
@@ -97,6 +122,29 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
           {STATUS_LABELS[order.status] ?? order.status}
         </span>
       </div>
+
+      {/* Cancellation Banner */}
+      {order.status === "DECLINED" && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 space-y-2 text-sm text-foreground">
+          <div className="flex items-center gap-2 font-semibold text-destructive">
+            <Ban className="w-5 h-5" />
+            <span>Esta orden fue cancelada</span>
+          </div>
+          {order.cancellation_reason && (
+            <p className="text-xs">
+              <strong className="text-muted-foreground">Motivo:</strong> {order.cancellation_reason}
+            </p>
+          )}
+          {order.cancelled_at && (
+            <p className="text-xs text-muted-foreground">
+              Fecha de cancelación: {formatDate(order.cancelled_at)}
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Estado de inventario: {order.stock_returned ? "✅ Stock reincorporado al inventario" : "Pendiente de devolución"}
+          </p>
+        </div>
+      )}
 
       {/* Info Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -145,7 +193,7 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
           </h2>
           {order.shipping_zones?.name && (
             <p className="text-sm font-medium text-foreground mb-1">
-              Ciudad: {order.shipping_zones.name}
+              Ciudad / Zona: {order.shipping_zones.name}
             </p>
           )}
           <p className="text-sm text-foreground whitespace-pre-wrap">
@@ -215,60 +263,88 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
       <div className="bg-card rounded-lg border p-6">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground mb-4">
           <CreditCard className="w-4 h-4" />
-          Acciones
+          Gestión y Acciones de la Orden
         </h2>
 
-        <div className="space-y-4">
-          {/* Status selector */}
-          <div className="flex items-center gap-4">
-            <label className="text-sm font-medium text-foreground">Cambiar estado:</label>
-            <select
-              value={order.status}
-              onChange={(e) => handleStatusChange(e.target.value as OrderStatus)}
-              disabled={["APPROVED", "DECLINED", "ERROR"].includes(order.status)}
-              className="px-3 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Aprobar orden contra entrega */}
+          {order.status === "PENDING_MANUAL" && (
+            <Button
+              variant="default"
+              onClick={() => setApproveConfirmOpen(true)}
+              disabled={actionLoading}
             >
-              <option value="PENDING">PENDIENTE</option>
-              <option value="PENDING_MANUAL">PENDIENTE (MANUAL)</option>
-              <option value="APPROVED">APROBADA</option>
-              <option value="DECLINED">RECHAZADA</option>
-              <option value="ERROR">ERROR</option>
-            </select>
-          </div>
-
-          {/* Admin actions */}
-          <div className="flex flex-wrap gap-3 pt-4 border-t">
-            {order.status === "PENDING" && (
-              <Button variant="destructive" onClick={() => setErrorConfirmOpen(true)}>
-                <AlertTriangle className="w-4 h-4" />
-                Marcar como Error (con rollback)
-              </Button>
-            )}
-            {order.status === "PENDING_MANUAL" && (
-              <>
-                <Button variant="default" onClick={handleApproveManual} className="bg-green-600 hover:bg-green-700 text-white">
-                  Aprobar Pago
-                </Button>
-                <Button variant="destructive" onClick={handleCancelManual}>
-                  Cancelar Orden (con rollback)
-                </Button>
-              </>
-            )}
-            <Button variant="outline" onClick={() => setRollbackConfirmOpen(true)}>
-              <RotateCcw className="w-4 h-4" />
-              Restaurar Stock (sin cambiar estado)
+              <CheckCircle2 className="w-4 h-4 mr-1.5" />
+              Aprobar Pedido Contra Entrega
             </Button>
-          </div>
+          )}
+
+          {/* Botón de Cancelación Principal */}
+          {canCancel && (
+            <Button
+              variant="destructive"
+              onClick={() => setCancelModalOpen(true)}
+              disabled={actionLoading}
+            >
+              <Ban className="w-4 h-4 mr-1.5" />
+              Cancelar Compra
+            </Button>
+          )}
+
+          {/* Fallback de error solo para órdenes PENDING */}
+          {order.status === "PENDING" && (
+            <Button
+              variant="outline"
+              onClick={() => setErrorConfirmOpen(true)}
+              disabled={actionLoading}
+            >
+              <AlertTriangle className="w-4 h-4 mr-1.5" />
+              Marcar como Error
+            </Button>
+          )}
+
+          {/* Rollback de stock individual si no se ha retornado */}
+          {!order.stock_returned && order.status !== "PENDING" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setRollbackConfirmOpen(true)}
+              disabled={actionLoading}
+              className="text-xs text-muted-foreground"
+            >
+              <RotateCcw className="w-3.5 h-3.5 mr-1" />
+              Forzar Restauración de Stock
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Modales de Confirmación y Cancelación */}
+      <CancelOrderModal
+        open={cancelModalOpen}
+        onClose={() => setCancelModalOpen(false)}
+        onConfirm={handleCancelOrder}
+        orderId={order.id}
+        isWompiPayment={isWompi}
+      />
+
+      <ConfirmDialog
+        open={approveConfirmOpen}
+        onClose={() => setApproveConfirmOpen(false)}
+        onConfirm={handleApproveManual}
+        title="¿Aprobar pedido contra entrega?"
+        description="La orden pasará a estado APROBADA y se enviará un correo de confirmación al cliente."
+        confirmText="Aprobar Orden"
+        cancelText="Volver"
+      />
 
       <ConfirmDialog
         open={rollbackConfirmOpen}
         onClose={() => setRollbackConfirmOpen(false)}
         onConfirm={handleRollback}
         title="¿Restaurar stock?"
-        description="¿Estás seguro de que quieres restaurar el stock sin cambiar el estado?"
-        confirmText="Restaurar"
+        description="Esta acción devolverá las unidades de esta orden al inventario sin cambiar el estado actual."
+        confirmText="Restaurar Stock"
         cancelText="Cancelar"
       />
 
@@ -277,8 +353,8 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
         onClose={() => setErrorConfirmOpen(false)}
         onConfirm={handleMarkAsError}
         title="¿Marcar como error?"
-        description="¿Marcar esta orden como ERROR y restaurar el stock?"
-        confirmText="Marcar error"
+        description="La orden pasará a estado ERROR y se restaurará el stock automáticamente."
+        confirmText="Marcar Error"
         cancelText="Cancelar"
         destructive
       />
