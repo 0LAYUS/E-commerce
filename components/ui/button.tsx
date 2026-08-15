@@ -5,24 +5,21 @@ import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 cursor-pointer",
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.98]",
+          "hover:bg-accent hover:text-primary-foreground dark:hover:bg-accent/50 border",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 active:scale-[0.98]",
+          "bg-destructive text-primary-foreground hover:bg-destructive/90 hover:text-primary-foreground focus-visible:ring-destructive/20 dark:bg-destructive/60 dark:focus-visible:ring-destructive/40",
         outline:
-          "border border-border bg-card text-card-foreground shadow-xs hover:bg-muted hover:text-foreground active:scale-[0.98]",
+          "border bg-background shadow-xs hover:bg-accent hover:text-primary-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 active:scale-[0.98]",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:text-secondary-foreground",
         ghost:
-          "text-foreground hover:bg-muted hover:text-foreground",
-        link:
-          "text-primary underline-offset-4 hover:underline",
-        success:
-          "bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:scale-[0.98]",
+          "bg-primary hover:bg-primary/90 hover:text-primary-foreground text-primary-foreground",
+        link: "text-primary underline-offset-4 hover:underline hover:text-primary-foreground text-primary-foreground",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

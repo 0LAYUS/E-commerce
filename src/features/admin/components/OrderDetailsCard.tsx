@@ -315,10 +315,9 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
           {/* 1. Paso Inicial: Aprobar orden contra entrega para despacho */}
           {order.status === "PENDING_MANUAL" && (
             <Button
-              variant="success"
               onClick={() => setApproveConfirmOpen(true)}
               disabled={actionLoading}
-              className="px-5 cursor-pointer font-semibold shadow-xs"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 cursor-pointer font-semibold shadow-xs"
             >
               <Truck className="w-4 h-4 mr-2" />
               Aprobar para Despacho
@@ -328,10 +327,9 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
           {/* 2. Paso Secundario: Confirmar pago recaudado en entrega */}
           {order.status === "APPROVED" && order.payment_method === "manual" && !order.is_paid && (
             <Button
-              variant="success"
               onClick={() => setPayConfirmOpen(true)}
               disabled={actionLoading}
-              className="px-5 cursor-pointer font-semibold shadow-xs"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 cursor-pointer font-semibold shadow-xs"
             >
               <DollarSign className="w-4 h-4 mr-1.5" />
               Confirmar Pago Recibido
