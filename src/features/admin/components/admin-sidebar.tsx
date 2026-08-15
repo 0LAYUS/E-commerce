@@ -40,15 +40,19 @@ export function AdminSidebar() {
       </nav>
       <div className="p-4 border-t border-border space-y-2">
         <Link href="/">
-          <Button variant="outline" className="w-full justify-start">
-            <House className="w-5 h-5 mr-3" />
+          <Button variant="outline" className="w-full justify-start text-xs h-9 font-medium">
+            <House className="w-4 h-4 mr-2.5 shrink-0" />
             Ir a la tienda
           </Button>
         </Link>
         <form action={logout}>
-          <Button variant="destructive" type="submit" className="w-full justify-start">
-            <SignOut className="w-5 h-5 mr-3" />
-            Salir
+          <Button
+            variant="ghost"
+            type="submit"
+            className="w-full justify-start text-xs h-9 font-medium text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+          >
+            <SignOut className="w-4 h-4 mr-2.5 shrink-0" />
+            Cerrar sesión
           </Button>
         </form>
       </div>
