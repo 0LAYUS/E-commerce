@@ -25,7 +25,7 @@ export default function ManualSuccessPage() {
       </Alert>
 
       <Button asChild size="lg" className="font-bold px-10">
-        <Link href="/">
+        <Link href="/" aria-label="Volver a la tienda, Ir a la tienda" data-testid="back-to-store-btn">
           Volver a la tienda
         </Link>
       </Button>

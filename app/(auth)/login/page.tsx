@@ -15,11 +15,8 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <motion.div
+    <div
       className="w-full max-w-md space-y-8 rounded-2xl bg-card p-10 shadow-2xl border border-border"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
     >
       <div className="text-center">
         <Link href="/" className="inline-flex items-center gap-2 mb-6">
@@ -129,7 +126,7 @@ function LoginForm() {
           Regístrate aquí
         </Link>
       </p>
-    </motion.div>
+    </div>
   );
 }
 
