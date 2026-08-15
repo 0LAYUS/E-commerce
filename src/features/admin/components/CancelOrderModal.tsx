@@ -15,11 +15,12 @@ interface CancelOrderModalProps {
 }
 
 const PRESET_REASONS = [
+  "No se pudo cobrar el dinero (Cliente no pagó)",
   "Solicitado por el cliente",
+  "Devolución / Garantía de producto",
   "Datos de contacto falsos o inválidos",
   "Sin disponibilidad de inventario real",
   "Dirección de entrega fuera de cobertura",
-  "Error al generar la orden",
 ]
 
 export function CancelOrderModal({

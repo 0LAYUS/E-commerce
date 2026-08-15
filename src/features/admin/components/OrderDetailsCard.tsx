@@ -273,9 +273,10 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
               variant="default"
               onClick={() => setApproveConfirmOpen(true)}
               disabled={actionLoading}
+              className="bg-green-600 hover:bg-green-700 text-white"
             >
               <CheckCircle2 className="w-4 h-4 mr-1.5" />
-              Aprobar Pedido Contra Entrega
+              Confirmar Cobro y Entrega
             </Button>
           )}
 
@@ -332,9 +333,9 @@ export function OrderDetailsCard({ order }: OrderDetailsCardProps) {
         open={approveConfirmOpen}
         onClose={() => setApproveConfirmOpen(false)}
         onConfirm={handleApproveManual}
-        title="¿Aprobar pedido contra entrega?"
-        description="La orden pasará a estado APROBADA y se enviará un correo de confirmación al cliente."
-        confirmText="Aprobar Orden"
+        title="¿Confirmar cobro y entrega del pedido?"
+        description="La orden pasará a estado APROBADA / COBRADA, sumará el dinero oficialmente a los reportes del negocio y se enviará un correo de confirmación al cliente."
+        confirmText="Confirmar Cobro"
         cancelText="Volver"
       />
 
