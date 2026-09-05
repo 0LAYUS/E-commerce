@@ -3,7 +3,7 @@ import { User, ShoppingBag } from "lucide-react";
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col md:flex-row min-h-[calc(100vh-8rem)] bg-secondary rounded-lg overflow-hidden border">
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-8rem)] bg-background rounded-xl overflow-hidden border border-border shadow-sm">
       {/* Sidebar */}
       <div className="w-full md:w-64 bg-card shadow-sm border-b md:border-b-0 md:border-r border-border shrink-0">
         <div className="p-6 border-b border-border hidden md:block">

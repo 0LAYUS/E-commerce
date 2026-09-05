@@ -61,4 +61,4 @@ supabase/.temp/
 .wrangler/
 
 .idea/
-*.iml
+*.iml.env.backup

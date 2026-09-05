@@ -22,10 +22,15 @@ export const metadata: Metadata = {
   },
   description: siteDescription,
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
     shortcut: "/favicon-96x96.png",
     apple: "/apple-touch-icon.png",
   },
+  manifest: "/site.webmanifest",
   openGraph: {
     type: "website",
     locale: storeBranding.locale,
